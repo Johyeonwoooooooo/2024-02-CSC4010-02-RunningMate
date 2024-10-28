@@ -28,5 +28,5 @@ public class LeaderBoard {
     private Record record;
 
     @Column(nullable = false)
-    private Long rank;
+    private Long ranking;
 }

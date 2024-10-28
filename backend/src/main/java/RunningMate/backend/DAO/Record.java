@@ -31,8 +31,8 @@ public class Record {
     @JoinColumn(name="userId")
     private User user;
 
-    @OneToOne(mappedBy = "recordId")
-    LeaderBoard leaderBoard;
+    @OneToOne(mappedBy = "record")
+    private LeaderBoard leaderBoard;
 
     public void updateRecord(Long distance, Long runningTime){
         this.distance = distance;

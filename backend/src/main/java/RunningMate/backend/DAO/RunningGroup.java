@@ -37,6 +37,6 @@ public class RunningGroup {
     @Enumerated(EnumType.STRING)
     private GroupTag groupTag;
 
-    @OneToMany(mappedBy = "groupId")
-    List<LeaderBoard> leaderBoardList;
+    @OneToMany(mappedBy = "group")
+    private List<LeaderBoard> leaderBoardList;
 }

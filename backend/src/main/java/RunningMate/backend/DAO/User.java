@@ -31,17 +31,17 @@ public class User {
     @Column(nullable = false)
     private Long userHeight;
 
-    @OneToMany(mappedBy="userId")
+    @OneToMany(mappedBy="user")
     private List<Record> record;
 
-    @OneToMany(mappedBy = "userId")
+    @OneToMany(mappedBy = "user")
     private List<Post> postList;
 
-    @OneToMany(mappedBy = "userId")
+    @OneToMany(mappedBy = "user")
     private List<Comment> commentList;
 
-    @OneToMany(mappedBy = "userId")
-    private List<Like> LikeList;
+    @OneToMany(mappedBy = "user")
+    private List<PostLike> postLikeList;
     public void updateProfile(Long userWeight, Long userHeight){
         this.userWeight=userWeight;
         this.userHeight=userHeight;

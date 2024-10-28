@@ -38,9 +38,9 @@ public class Post {
     @JoinColumn(name="userId")
     private User user;
 
-    @OneToMany(mappedBy = "postId")
+    @OneToMany(mappedBy = "post")
     private List<Comment> commentList;
 
-    @OneToMany(mappedBy = "postId")
-    private List<Like> likeList;
+    @OneToMany(mappedBy = "post")
+    private List<PostLike> postLikeList;
 }
