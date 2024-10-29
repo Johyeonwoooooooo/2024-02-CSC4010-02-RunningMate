@@ -1,5 +1,6 @@
-package RunningMate.backend.DAO;
+package RunningMate.backend.domain.community.entity;
 
+import RunningMate.backend.domain.User.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,10 +1,10 @@
-package RunningMate.backend.DAO;
+package RunningMate.backend.domain.running.entity;
 
+import RunningMate.backend.domain.User.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.springframework.security.core.parameters.P;
 
 @Entity
 @Getter

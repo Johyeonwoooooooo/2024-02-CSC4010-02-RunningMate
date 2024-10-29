@@ -1,9 +1,9 @@
-package RunningMate.backend.DAO;
+package RunningMate.backend.domain.community.entity;
 
+import RunningMate.backend.domain.User.entity.User;
+import RunningMate.backend.domain.community.entity.Post;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.Date;
 

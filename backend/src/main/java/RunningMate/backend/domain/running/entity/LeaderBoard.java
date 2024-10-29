@@ -1,11 +1,9 @@
-package RunningMate.backend.DAO;
+package RunningMate.backend.domain.running.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-
-import javax.swing.*;
 
 @Entity
 @Getter
