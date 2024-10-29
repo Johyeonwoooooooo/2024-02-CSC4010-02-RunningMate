@@ -15,6 +15,7 @@ export default function TabLayout() {
         headerShown: false,
       }}
     >
+      {/* home page */}
       <Tabs.Screen
         name="index"
         options={{
@@ -27,6 +28,7 @@ export default function TabLayout() {
           ),
         }}
       />
+      {/* running page */}
       <Tabs.Screen
         name="running"
         options={{
@@ -39,25 +41,27 @@ export default function TabLayout() {
           ),
         }}
       />
+      {/* community page */}
       <Tabs.Screen
         name="community"
         options={{
           title: "Community",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "code-slash" : "code-slash-outline"}
+              name={focused ? "home" : "home-outline"}
               color={color}
             />
           ),
         }}
       />
+      {/* myPage page */}
       <Tabs.Screen
         name="mypage"
         options={{
-          title: "MyPage",
+          title: "My Page",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "code-slash" : "code-slash-outline"}
+              name={focused ? "home" : "home-outline"}
               color={color}
             />
           ),
