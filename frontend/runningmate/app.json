@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "csc4010runningmate",
+    "name": "runningmate",
+    "slug": "runningmate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -34,9 +34,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "8f74a71f-e713-4875-97b7-7877ba1a611a"
+        "projectId": "9d96be2e-11b2-4be5-91df-03c102bb1767"
       }
     },
-    "owner": "seong_jun2"
+    "owner": "dgu-csc4010-runningmate"
   }
 }
