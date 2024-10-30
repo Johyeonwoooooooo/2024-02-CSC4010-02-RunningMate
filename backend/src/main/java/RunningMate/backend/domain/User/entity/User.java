@@ -49,6 +49,7 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<PostLike> postLikeList;
+
     public void updateProfile(Long userWeight, Long userHeight){
         this.userWeight=userWeight;
         this.userHeight=userHeight;

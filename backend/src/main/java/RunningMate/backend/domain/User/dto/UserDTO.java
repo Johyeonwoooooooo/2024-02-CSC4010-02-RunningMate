@@ -26,7 +26,6 @@ public class UserDTO {
     @Builder
     @Getter
     public static class GetProfileResponse {
-        private Long userId;
         private String userNickname;
         private Long userWeight;
         private Long userHeight;

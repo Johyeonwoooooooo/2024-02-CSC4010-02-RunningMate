@@ -6,13 +6,11 @@ import RunningMate.backend.domain.User.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
@@ -30,7 +28,7 @@ public class UserController {
     public ResponseEntity<?> signUp(@RequestBody UserDTO.SignUpRequest request){ // 추후 response type, cookie or session 추가
         try {
             User user = userService.signUp(request);
-            return ResponseEntity.ok().body(user.getUserNickname() + user.getUserEmail());
+            return ResponseEntity.ok("회원가입에 성공하였습니다.");
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -42,12 +40,56 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "로그인 성공"),
             @ApiResponse(responseCode = "400", description = "로그인 실패")
     })
-    public ResponseEntity<?> Login(@RequestBody  UserDTO.LoginRequest request){ // 추후 response type, cookie or session 추가
+    public ResponseEntity<?> login(@RequestBody UserDTO.LoginRequest request, HttpSession session) {
         try {
             User user = userService.logIn(request);
-            return ResponseEntity.ok().body(user.getUserNickname() + user.getUserEmail());
+            session.setAttribute("userId", user.getUserId());
+            log.info("{} 님 로그인, userId = {}", user.getUserNickname(), user.getUserId());
+            return ResponseEntity.ok().body(user.getUserNickname() + "님, 로그인 성공하셨습니다!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("로그인 실패: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/profile")
+    @Operation(summary = "프로필", description = "사용자의 프로필을 제공한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "프로필 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "프로필 조회 실패")
+    })
+    public ResponseEntity<?> profile(HttpSession session){
+        try {
+            Long userId = getUserIdFromSession(session);
+
+            return ResponseEntity.ok().body(userService.profile(userId));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/profile/update")
+    @Operation(summary = "프로필 업데이트", description = "사용자에게 체중, 신장을 받아 프로필 업데이트를 진행한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "업데이트 성공"),
+            @ApiResponse(responseCode = "400", description = "업데이트 실패")
+    })
+    public ResponseEntity<?> updateProfile(@RequestBody UserDTO.UpdateProfileRequest request, HttpSession session){ // 추후 response type, cookie or session 추가
+        try {
+            Long userId = getUserIdFromSession(session);
+            User user = userService.updateProfile(request, userId);
+            return ResponseEntity.ok().body(user.getUserNickname() + user.getUserWeight() + user.getUserHeight());
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    public Long getUserIdFromSession(HttpSession session) {
+        Object userId = session.getAttribute("userId");
+
+        if (userId != null) {
+            return (Long) userId;
+        } else {
+            return -1L;
         }
     }
 }
