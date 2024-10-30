@@ -40,6 +40,9 @@ public class Post {
     private User user;
 
     @OneToMany(mappedBy = "post")
+    private List<PostImage> postImageList;
+
+    @OneToMany(mappedBy = "post")
     private List<Comment> commentList;
 
     @OneToMany(mappedBy = "post")
