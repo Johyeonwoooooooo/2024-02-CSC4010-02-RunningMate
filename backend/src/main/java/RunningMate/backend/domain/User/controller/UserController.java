@@ -3,12 +3,14 @@ package RunningMate.backend.domain.User.controller;
 import RunningMate.backend.domain.User.dto.UserDTO;
 import RunningMate.backend.domain.User.entity.User;
 import RunningMate.backend.domain.User.service.UserService;
+import RunningMate.backend.domain.authorization.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/user")
 public class UserController {
     private final UserService userService;
+    private final SessionUtils sessionUtils;
 
     @PostMapping("/signUp")
     @Operation(summary = "회원가입", description = "사용자에게 nickname, email, password, weight, height를 받아 회원가입을 진행한다.")
@@ -59,7 +62,7 @@ public class UserController {
     })
     public ResponseEntity<?> profile(HttpSession session){
         try {
-            Long userId = getUserIdFromSession(session);
+            Long userId = sessionUtils.getUserIdFromSession(session);
 
             return ResponseEntity.ok().body(userService.profile(userId));
         }catch (Exception e){
@@ -75,21 +78,11 @@ public class UserController {
     })
     public ResponseEntity<?> updateProfile(@RequestBody UserDTO.UpdateProfileRequest request, HttpSession session){ // 추후 response type, cookie or session 추가
         try {
-            Long userId = getUserIdFromSession(session);
+            Long userId = sessionUtils.getUserIdFromSession(session);
             User user = userService.updateProfile(request, userId);
             return ResponseEntity.ok().body(user.getUserNickname() + user.getUserWeight() + user.getUserHeight());
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    public Long getUserIdFromSession(HttpSession session) {
-        Object userId = session.getAttribute("userId");
-
-        if (userId != null) {
-            return (Long) userId;
-        } else {
-            return -1L;
         }
     }
 }
