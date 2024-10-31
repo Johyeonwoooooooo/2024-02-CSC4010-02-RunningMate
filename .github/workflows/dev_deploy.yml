@@ -44,8 +44,8 @@ jobs:
           mkdir -p deploy
           cp backend/build/libs/*.jar deploy/application.jar
           cp Procfile deploy/Procfile
-          cp -r backend/.ebextensions-dev deploy/.ebextensions
-          cp -r backend/.platform deploy/.platform
+          cp -r .ebextensions-develop deploy/.ebextensions
+          cp -r .platform deploy/.platform
           cd deploy && zip -r deploy.zip .
 
       - name: Beanstalk Deploy
