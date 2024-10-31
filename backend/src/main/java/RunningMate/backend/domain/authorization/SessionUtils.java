@@ -1,17 +1,21 @@
 package RunningMate.backend.domain.authorization;
 
+import RunningMate.backend.domain.User.entity.User;
+import RunningMate.backend.domain.User.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component
-public class SessionUtils {
-    public Long getUserIdFromSession(HttpSession session) {
-        Object userId = session.getAttribute("userId");
+import java.util.Optional;
 
-        if (userId != null) {
-            return (Long) userId;
-        } else {
-            return -1L;
-        }
+@Component
+@RequiredArgsConstructor
+public class SessionUtils {
+    private final UserRepository userRepository;
+    public User getUserFromSession(HttpSession session) {
+        Object userId = session.getAttribute("userId");
+        Optional<User> user = userRepository.findUserByUserId((Long) userId);
+
+        return user.get();
     }
 }

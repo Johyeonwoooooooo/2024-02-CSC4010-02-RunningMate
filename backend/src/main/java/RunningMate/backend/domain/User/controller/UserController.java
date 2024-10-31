@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,7 +61,7 @@ public class UserController {
     })
     public ResponseEntity<?> profile(HttpSession session){
         try {
-            Long userId = sessionUtils.getUserIdFromSession(session);
+            Long userId = sessionUtils.getUserFromSession(session);
 
             return ResponseEntity.ok().body(userService.profile(userId));
         }catch (Exception e){
@@ -78,7 +77,7 @@ public class UserController {
     })
     public ResponseEntity<?> updateProfile(@RequestBody UserDTO.UpdateProfileRequest request, HttpSession session){ // 추후 response type, cookie or session 추가
         try {
-            Long userId = sessionUtils.getUserIdFromSession(session);
+            Long userId = sessionUtils.getUserFromSession(session);
             User user = userService.updateProfile(request, userId);
             return ResponseEntity.ok().body(user.getUserNickname() + user.getUserWeight() + user.getUserHeight());
         }catch (Exception e){
