@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @Slf4j
 @RequiredArgsConstructor
@@ -61,9 +63,9 @@ public class UserController {
     })
     public ResponseEntity<?> profile(HttpSession session){
         try {
-            Long userId = sessionUtils.getUserFromSession(session);
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
 
-            return ResponseEntity.ok().body(userService.profile(userId));
+            return ResponseEntity.ok().body(userService.profile(optionalUser));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -77,8 +79,8 @@ public class UserController {
     })
     public ResponseEntity<?> updateProfile(@RequestBody UserDTO.UpdateProfileRequest request, HttpSession session){ // 추후 response type, cookie or session 추가
         try {
-            Long userId = sessionUtils.getUserFromSession(session);
-            User user = userService.updateProfile(request, userId);
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            User user = userService.updateProfile(request, optionalUser);
             return ResponseEntity.ok().body(user.getUserNickname() + user.getUserWeight() + user.getUserHeight());
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
