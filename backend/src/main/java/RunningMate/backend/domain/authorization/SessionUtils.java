@@ -12,10 +12,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SessionUtils {
     private final UserRepository userRepository;
-    public User getUserFromSession(HttpSession session) {
+    public Optional<User> getUserFromSession(HttpSession session) {
         Object userId = session.getAttribute("userId");
         Optional<User> user = userRepository.findUserByUserId((Long) userId);
-
-        return user.get();
+        return user;
     }
 }
