@@ -54,7 +54,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* myPage page */}
+      {/* my page */}
       <Tabs.Screen
         name="mypage"
         options={{
