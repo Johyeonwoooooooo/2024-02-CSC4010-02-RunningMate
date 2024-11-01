@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,13 +10,47 @@ import {
 import { useRouter } from "expo-router";
 import CustomButton from "../components/CustomButton";
 import PasswordInput from "../components/PasswordInput";
+import AlertModal from "../components/modal/AlertModal";
 
 const LoginScreen = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // modal(alert) state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
   const router = useRouter();
 
   const handleLogin = () => {
     /* TODO: 로그인 처리 */
 
+    // log
+    console.log("Registering:", {
+      email,
+      password,
+    });
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 이메일 형식 정규식
+
+    // 입력값 검증
+    if (email === "" || password === "") {
+      setModalMessage("모든 항목을 입력해주세요.");
+      setModalVisible(true);
+      return;
+    }
+
+    // 이메일 형식 검증
+    if (!emailRegex.test(email)) {
+      setModalMessage("이메일 형식이 올바르지 않습니다.");
+      setModalVisible(true);
+      return;
+    }
+
+    // TODO : 로그인 API 요청
+    // const response = await fetch("API URL", { ~~~~~
+
+    // if (로그인 성공) {
     // router.replace("(tabs)"); // 이전 페이지로 이동 불가능
     router.navigate("(tabs)"); // 이전 페이지로 스와이프하여 이동 가능 (테스트 용이)
   };
@@ -40,10 +74,15 @@ const LoginScreen = () => {
           style={styles.input}
           placeholder="이메일"
           placeholderTextColor="#6e6e6e"
+          onChangeText={setEmail}
         />
 
         {/* 비밀번호 입력 필드 */}
-        <PasswordInput style={styles.passwordInput} />
+        <PasswordInput
+          style={styles.passwordInput}
+          placeholder="비밀번호"
+          onChangeText={setPassword}
+        />
 
         {/* 버튼 */}
         <CustomButton
@@ -53,9 +92,15 @@ const LoginScreen = () => {
         />
         <CustomButton
           title="회원가입"
-          onPress={() => router.navigate("RegisterScreen")}
+          onPress={() => router.navigate("/RegisterScreen")}
           buttonStyle="white"
           style={{ marginTop: 10 }}
+        />
+        {/* 알림창 (input error 등) */}
+        <AlertModal
+          visible={modalVisible}
+          message={modalMessage}
+          onClose={() => setModalVisible(false)}
         />
       </SafeAreaView>
     </View>

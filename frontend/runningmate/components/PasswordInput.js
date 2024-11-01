@@ -8,16 +8,17 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
-const PasswordInput = ({ style }) => {
+const PasswordInput = ({ style, placeholder, onChangeText }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   return (
     <View style={[styles.passwordContainer, style]}>
       <TextInput
         style={styles.input}
-        placeholder="비밀번호"
+        placeholder={placeholder}
         placeholderTextColor="#6e6e6e"
         secureTextEntry={!passwordVisible}
+        onChangeText={onChangeText}
       />
       <TouchableOpacity
         onPress={() => setPasswordVisible(!passwordVisible)}
