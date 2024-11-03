@@ -21,6 +21,7 @@ public class PostImage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="postId")
+    @Setter
     private Post post;
 
 }

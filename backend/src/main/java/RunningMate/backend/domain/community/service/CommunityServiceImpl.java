@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.swing.text.html.Option;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,7 +47,17 @@ public class CommunityServiceImpl implements CommunityService{
                 .likeCount(0L)
                 .commentCount(0L)
                 .build();
-        return post;
 
+        post = postRepository.save(post);
+
+        List<PostImage> updatedImages = new ArrayList<>();
+        for (PostImage postImage : postImages) {
+            postImage.setPost(post); // Post 참조 설정
+            updatedImages.add(postImageRepository.save(postImage)); // 수정된 이미지 추가
+        }
+
+        post.getPostImageList().addAll(updatedImages);
+
+        return postRepository.save(post);
     }
 }
