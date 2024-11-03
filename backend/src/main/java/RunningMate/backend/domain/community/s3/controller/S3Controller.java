@@ -13,16 +13,11 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("community/s3/test")
+@RequestMapping("/community/s3")
 public class S3Controller {
     private final S3Service s3Service;
     @PostMapping("/upload")
     public ResponseEntity<?> uploadImage(@RequestParam("image") List<MultipartFile> images){
         return ResponseEntity.ok().body(s3Service.uploadFile(images));
-    }
-
-    @GetMapping("/get/{key}")
-    public ResponseEntity<?> getImage(@PathVariable("key") String key) {
-        return ResponseEntity.ok().body(s3Service.getImageURL(key));
     }
 }

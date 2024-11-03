@@ -31,15 +31,14 @@ public class S3Service {
                 metadata.setContentType(image.getContentType());
                 metadata.setContentLength(image.getSize());
 
-                amazonS3.putObject(bucket, fileName, image.getInputStream(), metadata);
-
-                String key = fileName;
+                String key = (imageRepository.count()+1) + fileName; // id + file name을 키로 가짐 (file name 같은 경우 방지)
                 URL url = amazonS3.getUrl(bucket, key);
                 PostImage postImage = PostImage.builder()
                         .imageURL(url.toString())
                         .imageKey(key)
                         .build();
 
+                amazonS3.putObject(bucket, key, image.getInputStream(), metadata);
                 imageRepository.save(postImage);
                 postImages.add(postImage);
             }
@@ -49,9 +48,4 @@ public class S3Service {
             return null;
         }
     }
-
-    public String getImageURL(String key){
-        return amazonS3.getUrl(bucket, key).toString();
-    }
-
 }

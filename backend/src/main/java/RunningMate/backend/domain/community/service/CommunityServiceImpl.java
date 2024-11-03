@@ -12,8 +12,11 @@ import RunningMate.backend.domain.community.s3.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,15 +28,18 @@ public class CommunityServiceImpl implements CommunityService{
     private final PostLikeRepository likeRepository;
     private final S3Service s3Service;
     @Override
-    public Post uploadPost(CommunityDTO.PostUploadRequest request, User user) {
+    public Post uploadPost(CommunityDTO.PostUploadRequest request,
+                           List<MultipartFile> images, Optional<User> user) {
+        if(user.isEmpty())
+            return null;
 
         String postTitle = request.getPostTitle();
         String postContent = request.getPostContent();
-        List<PostImage> postImages = s3Service.uploadFile(request.getImages());
+        List<PostImage> postImages = s3Service.uploadFile(images);
         Boolean postTag = request.getPostTag();
 
         Post post = Post.builder().postTitle(postTitle)
-                .user(user)
+                .user(user.get())
                 .postContent(postContent)
                 .postImageList(postImages)
                 .postTag(postTag)

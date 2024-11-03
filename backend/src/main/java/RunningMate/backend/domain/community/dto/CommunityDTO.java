@@ -16,7 +16,6 @@ public class CommunityDTO {
     @AllArgsConstructor
     public static class PostUploadRequest{
         private String postTitle;
-        private List<MultipartFile> images;
         private Boolean postTag;
         private String postContent;
     }
