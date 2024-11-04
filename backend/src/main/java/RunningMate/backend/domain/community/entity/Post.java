@@ -24,7 +24,7 @@ public class Post {
     private String postTitle;
 
     @Column(nullable = false)
-    private boolean postTag;
+    private Boolean postTag;
 
     @Column(nullable = false)
     private Long likeCount;
@@ -39,12 +39,12 @@ public class Post {
     @JoinColumn(name="userId")
     private User user;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostImage> postImageList;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Comment> commentList;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostLike> postLikeList;
 }

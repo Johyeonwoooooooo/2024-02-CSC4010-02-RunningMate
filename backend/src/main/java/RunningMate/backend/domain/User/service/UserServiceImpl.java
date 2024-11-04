@@ -47,8 +47,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UserDTO.GetProfileResponse profile(Long userId) {
-        Optional<User> optionalUser = userRepository.findUserByUserId(userId);
+    public UserDTO.GetProfileResponse profile(Optional<User> optionalUser) {
         if(optionalUser.isEmpty())
             throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
 
@@ -61,15 +60,14 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public User updateProfile(UserDTO.UpdateProfileRequest request, Long userId) {
-        Optional<User> user_optional = userRepository.findUserByUserId(userId);
-        if (user_optional.isEmpty())
+    public User updateProfile(UserDTO.UpdateProfileRequest request, Optional<User> optionalUser) {
+        if (optionalUser.isEmpty())
             throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
 
         Long userHeight = request.getUserHeight();
         Long userWeight = request.getUserWeight();
 
-        User user = user_optional.get();
+        User user = optionalUser.get();
         user.updateProfile(userWeight, userHeight);
         return userRepository.save(user);
     }
