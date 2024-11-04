@@ -12,6 +12,7 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "app/LoginScreen.tjs",
-    "app/login.js"
+    "app/login.js",
+    "app/(tabs)/running.js"
   ]
 }
