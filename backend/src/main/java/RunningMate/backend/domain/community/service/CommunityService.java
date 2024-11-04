@@ -8,6 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 
-public interface CommunityService {
+public interface    CommunityService {
     Post uploadPost(CommunityDTO.PostUploadRequest request, List<MultipartFile> images, Optional<User> user);
+
+    List<CommunityDTO.PostViewRequest> viewPost();
 }

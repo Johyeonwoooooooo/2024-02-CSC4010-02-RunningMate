@@ -19,4 +19,20 @@ public class CommunityDTO {
         private Boolean postTag;
         private String postContent;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PostViewRequest{
+        private Long postId;
+        private String userNickname;
+        private Long userId;
+        private Long commentCount;
+        private Long likeCount;
+        private String postTitle;
+        private String postContent;
+        private Boolean postTag;
+        private List<String> postImages;
+    }
 }

@@ -11,6 +11,8 @@ import RunningMate.backend.domain.community.repository.PostRepository;
 import RunningMate.backend.domain.community.s3.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,12 +54,37 @@ public class CommunityServiceImpl implements CommunityService{
 
         List<PostImage> updatedImages = new ArrayList<>();
         for (PostImage postImage : postImages) {
-            postImage.setPost(post); // Post 참조 설정
-            updatedImages.add(postImageRepository.save(postImage)); // 수정된 이미지 추가
+            postImage.setPost(post);
+            updatedImages.add(postImageRepository.save(postImage));
         }
 
         post.getPostImageList().addAll(updatedImages);
 
         return postRepository.save(post);
+    }
+
+    @Override
+    public List<CommunityDTO.PostViewRequest> viewPost() {
+        Pageable pageable = PageRequest.of(0, 10); // 무작위로 10개의 게시글을 가져올 페이지 설정
+        List<Post> posts = postRepository.findRandomPosts(pageable);
+
+        return posts.stream().map(post -> {
+            List<String> postImages = post.getPostImageList()
+                    .stream()
+                    .map(PostImage::getImageURL)
+                    .toList();
+
+            return CommunityDTO.PostViewRequest.builder()
+                    .postId(post.getPostId())
+                    .userId(post.getUser().getUserId())
+                    .userNickname(post.getUser().getUserNickname())
+                    .postTag(post.getPostTag())
+                    .commentCount(post.getCommentCount())
+                    .likeCount(post.getLikeCount())
+                    .postContent(post.getPostContent())
+                    .postTitle(post.getPostTitle())
+                    .postImages(postImages)
+                    .build();
+        }).toList();
     }
 }

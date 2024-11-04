@@ -54,4 +54,19 @@ public class CommunityController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/post")
+    @Operation(summary = "커뮤니티 글 확인", description = "커뮤니티에 올라온 글을 확인한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+    })
+    public ResponseEntity<?> getPostDetails() {
+        try {
+            List<CommunityDTO.PostViewRequest> postResponse = communityService.viewPost();
+            return ResponseEntity.ok(postResponse);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 }
