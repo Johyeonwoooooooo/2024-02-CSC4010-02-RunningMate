@@ -4,6 +4,8 @@ import RunningMate.backend.domain.User.entity.User;
 import RunningMate.backend.domain.authorization.SessionUtils;
 import RunningMate.backend.domain.community.dto.CommunityDTO;
 import RunningMate.backend.domain.community.entity.Post;
+import RunningMate.backend.domain.community.entity.PostImage;
+import RunningMate.backend.domain.community.repository.PostRepository;
 import RunningMate.backend.domain.community.service.CommunityService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +31,6 @@ public class CommunityController {
     private final CommunityService communityService;
     private final SessionUtils sessionUtils;
     private final ObjectMapper objectMapper;
-
     @PostMapping(value = "/post/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "커뮤니티 글 작성", description = "사용자에게 postTitle, postTag, postContent를 받아 커뮤니티에 글을 등록한다.")
     @ApiResponses({
@@ -45,8 +46,9 @@ public class CommunityController {
 
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
             Post post = communityService.uploadPost(postUploadRequest, images, optionalUser);
+
             if (post == null) {
-                return ResponseEntity.badRequest().body("post가 비었습니다.");
+                return ResponseEntity.badRequest().body("글 등록에 실패하였습니다.");
             } else {
                 return ResponseEntity.ok("글 등록에 성공하였습니다.");
             }
@@ -55,7 +57,7 @@ public class CommunityController {
         }
     }
 
-    @GetMapping("/post")
+    @GetMapping("/post/get")
     @Operation(summary = "커뮤니티 글 확인", description = "커뮤니티에 올라온 글을 확인한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -63,7 +65,7 @@ public class CommunityController {
     })
     public ResponseEntity<?> getPostDetails() {
         try {
-            List<CommunityDTO.PostViewRequest> postResponse = communityService.viewPost();
+            List<CommunityDTO.PostViewResponse> postResponse = communityService.viewPost();
             return ResponseEntity.ok(postResponse);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

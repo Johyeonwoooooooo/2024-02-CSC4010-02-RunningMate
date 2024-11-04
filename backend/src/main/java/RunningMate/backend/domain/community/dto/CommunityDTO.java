@@ -1,11 +1,9 @@
 package RunningMate.backend.domain.community.dto;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,7 +22,7 @@ public class CommunityDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class PostViewRequest{
+    public static class PostViewResponse {
         private Long postId;
         private String userNickname;
         private Long userId;

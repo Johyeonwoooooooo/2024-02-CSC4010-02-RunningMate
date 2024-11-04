@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface    CommunityService {
     Post uploadPost(CommunityDTO.PostUploadRequest request, List<MultipartFile> images, Optional<User> user);
 
-    List<CommunityDTO.PostViewRequest> viewPost();
+    List<CommunityDTO.PostViewResponse> viewPost();
 }

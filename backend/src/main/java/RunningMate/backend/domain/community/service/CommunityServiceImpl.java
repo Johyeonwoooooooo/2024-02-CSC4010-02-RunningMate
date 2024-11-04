@@ -16,8 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,23 +50,15 @@ public class CommunityServiceImpl implements CommunityService{
                 .commentCount(0L)
                 .build();
 
-        post = postRepository.save(post);
-
-        List<PostImage> updatedImages = new ArrayList<>();
-        for (PostImage postImage : postImages) {
-            postImage.setPost(post);
-            updatedImages.add(postImageRepository.save(postImage));
-        }
-
-        post.getPostImageList().addAll(updatedImages);
-
+        postImages.forEach(postImage -> postImage.setPost(post));
         return postRepository.save(post);
     }
 
     @Override
-    public List<CommunityDTO.PostViewRequest> viewPost() {
-        Pageable pageable = PageRequest.of(0, 10); // 무작위로 10개의 게시글을 가져올 페이지 설정
-        List<Post> posts = postRepository.findRandomPosts(pageable);
+    public List<CommunityDTO.PostViewResponse> viewPost() {
+        List<Post> postList = postRepository.findAll();
+        Collections.shuffle(postList);
+        List<Post> posts = postList.subList(0, Math.min(15, postList.size()));
 
         return posts.stream().map(post -> {
             List<String> postImages = post.getPostImageList()
@@ -74,7 +66,7 @@ public class CommunityServiceImpl implements CommunityService{
                     .map(PostImage::getImageURL)
                     .toList();
 
-            return CommunityDTO.PostViewRequest.builder()
+            return CommunityDTO.PostViewResponse.builder()
                     .postId(post.getPostId())
                     .userId(post.getUser().getUserId())
                     .userNickname(post.getUser().getUserNickname())
