@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class CommunityDTO {
@@ -33,6 +34,7 @@ public class CommunityDTO {
         private String postContent;
         private Boolean postTag;
         private List<String> postImages;
+        private LocalDateTime postDate;
     }
 
     @Builder
@@ -41,16 +43,18 @@ public class CommunityDTO {
     @AllArgsConstructor
     public static class MainPagePostResponse {
         private Long postId;
-        private Long commentCount;
+        private String userNickname;
         private Long likeCount;
         private String postTitle;
         private Boolean postTag;
+        private LocalDateTime postDate;
 
         public MainPagePostResponse(Post post) {
             this.postId = post.getPostId();
             this.postTitle = post.getPostTitle();
             this.likeCount = post.getLikeCount();
-            this.commentCount = post.getCommentCount();
+            this.userNickname = post.getUser().getUserNickname();
+            this.postDate = post.getPostDate();
             this.postTag = post.getPostTag();
         }
     }
