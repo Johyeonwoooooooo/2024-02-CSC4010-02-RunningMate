@@ -3,6 +3,7 @@ package RunningMate.backend.domain.running.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -17,13 +18,13 @@ public class RunningGroup {
     private Long groupId;
 
     @Column(nullable = false)
-    private String title;
+    private String groupTitle;
 
     @Column(nullable = false)
-    private Date startTime;
+    private LocalDateTime startTime;
 
     @Column(nullable = false)
-    private Date endTime;
+    private LocalDateTime endTime;
 
     @Column(nullable = false)
     private Long targetDistance;
