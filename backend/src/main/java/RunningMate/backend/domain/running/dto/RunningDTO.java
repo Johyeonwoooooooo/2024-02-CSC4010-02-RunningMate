@@ -1,10 +1,12 @@
 package RunningMate.backend.domain.running.dto;
 
 import RunningMate.backend.domain.running.entity.GroupTag;
+import RunningMate.backend.domain.running.entity.RunningGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -20,5 +22,27 @@ public class RunningDTO {
         private LocalDateTime endTime;
         private Long targetDistance;
         private GroupTag groupTag;
+
+        public RunningGroupViewResponse(RunningGroup group){
+            this.groupId = group.getGroupId();
+            this.groupTitle = group.getGroupTitle();
+            this.startTime = group.getStartTime();
+            this.endTime = group.getEndTime();
+            this.targetDistance = group.getTargetDistance();
+            this.groupTag = group.getGroupTag();
+        }
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MakeRunningGroupRequest {
+        private String groupTitle;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private Long targetDistance;
+        private GroupTag groupTag;
+        private Integer maxParticipants;
     }
 }
