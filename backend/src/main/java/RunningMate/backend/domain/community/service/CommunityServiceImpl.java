@@ -2,6 +2,7 @@ package RunningMate.backend.domain.community.service;
 
 import RunningMate.backend.domain.User.entity.User;
 import RunningMate.backend.domain.community.dto.CommunityDTO;
+import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;
 import RunningMate.backend.domain.community.entity.PostImage;
 import RunningMate.backend.domain.community.repository.CommentRepository;
@@ -16,10 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -79,4 +77,32 @@ public class CommunityServiceImpl implements CommunityService{
                     .build();
         }).toList();
     }
+
+    @Override
+    public Comment viewComment(CommunityDTO.CommentViewResponse response, Optional<User> user) {
+        if (user.isEmpty())
+            return null;
+
+        // 게시글 찾기
+        Post post = postRepository.findById(response.getPostId())
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        // 댓글 생성
+        Comment comment = Comment.builder()
+                .post(post)
+                .user(user.get())
+                .commentContent(response.getCommentContent())
+                .commentWriteTime(new Date())
+                .build();
+
+        // 댓글 저장
+        Comment savedComment = commentRepository.save(comment);
+
+        // 게시글의 댓글 수 증가
+        post.setCommentCount(post.getCommentCount() + 1);
+        postRepository.save(post);
+
+        return savedComment;
+    }
+
 }

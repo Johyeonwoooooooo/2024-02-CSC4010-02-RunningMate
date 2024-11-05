@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 public class CommunityDTO {
@@ -32,5 +33,15 @@ public class CommunityDTO {
         private String postContent;
         private Boolean postTag;
         private List<String> postImages;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CommentViewResponse {
+        private Long postId;
+        private Long userId;
+        private String commentContent;
     }
 }

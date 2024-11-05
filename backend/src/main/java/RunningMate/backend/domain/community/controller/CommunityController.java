@@ -63,7 +63,7 @@ public class CommunityController {
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
-    public ResponseEntity<?> getPostDetails() {
+    public ResponseEntity<?> getPostViews() {
         try {
             List<CommunityDTO.PostViewResponse> postResponse = communityService.viewPost();
             return ResponseEntity.ok(postResponse);

@@ -30,6 +30,7 @@ public class Post {
     private Long likeCount;
 
     @Column(nullable = false)
+    @Setter
     private Long commentCount;
 
     @Column(nullable = false)
