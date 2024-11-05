@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-//https://github.com/Like-House/BE/blob/develop/src/main/java/backend/like_house/domain/user/dto/UserDTO.java 참고해서 만듦
 @AllArgsConstructor
 public class UserDTO {
 
