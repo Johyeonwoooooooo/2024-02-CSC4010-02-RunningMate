@@ -14,5 +14,9 @@ public interface CommunityService {
 
     List<CommunityDTO.PostViewResponse> viewPost();
 
-    Comment viewComment(CommunityDTO.CommentViewResponse response, Optional<User> user);
+    List<CommunityDTO.MainPagePostResponse> getMainPagePost();
+
+    Comment addComment(CommunityDTO.CommentAddRequest request, Optional<User> user);
+
+    List<CommunityDTO.CommentViewResponse> getComments(Long postId);
 }

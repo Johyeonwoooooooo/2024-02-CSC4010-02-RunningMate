@@ -3,6 +3,7 @@ package RunningMate.backend.domain.community.controller;
 import RunningMate.backend.domain.User.entity.User;
 import RunningMate.backend.domain.authorization.SessionUtils;
 import RunningMate.backend.domain.community.dto.CommunityDTO;
+import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;
 import RunningMate.backend.domain.community.entity.PostImage;
 import RunningMate.backend.domain.community.repository.PostRepository;
@@ -67,6 +68,50 @@ public class CommunityController {
         try {
             List<CommunityDTO.PostViewResponse> postResponse = communityService.viewPost();
             return ResponseEntity.ok(postResponse);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/post/{postId}/comment")
+    @Operation(summary = "커뮤니티 게시글 댓글 등록", description = "커뮤니티에 올라온 게시글에 댓글을 작성한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "댓글을 작성할 수 없음")
+    })
+    public ResponseEntity<?> addPostComments(@RequestBody CommunityDTO.CommentAddRequest request,
+                                             HttpSession session) {
+
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            Comment comment = communityService.addComment(request, optionalUser);
+
+            if (comment == null) {
+                return ResponseEntity.badRequest().body("댓글 등록에 실패하였습니다.");
+            } else {
+                return ResponseEntity.ok("댓글 등록에 성공하였습니다.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/post/{postId}/comment")
+    @Operation(summary = "커뮤니티 게시글 댓글 확인", description = "커뮤니티에 올라온 게시글의 댓글을 확인한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "204", description = "댓글이 없음"),
+            @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+    })
+    public ResponseEntity<?> getPostCommentViews(@PathVariable("postId") Long postId) {
+        try {
+            List<CommunityDTO.CommentViewResponse> comments = communityService.getComments(postId);
+            if (comments.isEmpty()) {
+                return ResponseEntity.noContent().build(); // 댓글 없을 때
+            } else {
+                return ResponseEntity.ok(comments);
+            }
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
