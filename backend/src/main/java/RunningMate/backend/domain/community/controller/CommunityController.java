@@ -6,6 +6,7 @@ import RunningMate.backend.domain.community.dto.CommunityDTO;
 import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;
 import RunningMate.backend.domain.community.entity.PostImage;
+import RunningMate.backend.domain.community.entity.PostLike;
 import RunningMate.backend.domain.community.repository.PostRepository;
 import RunningMate.backend.domain.community.service.CommunityService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -114,6 +115,25 @@ public class CommunityController {
             }
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/post/{postId}/like")
+    @Operation(summary = "커뮤니티 게시글 좋아요 등록", description = "커뮤니티에 올라온 게시글에 좋아요를 누른다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "좋아요 등록 성공"),
+            @ApiResponse(responseCode = "404", description = "좋아요를 등록할 수 없음")
+    })
+    public ResponseEntity<?> addPostLike(@PathVariable("postId") Long postId,
+                                             HttpSession session) {
+
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            PostLike like = communityService.addLike(postId, optionalUser);
+
+            return ResponseEntity.ok("좋아요 등록에 성공하였습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

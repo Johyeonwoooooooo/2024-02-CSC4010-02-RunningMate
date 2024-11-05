@@ -1,5 +1,6 @@
 package RunningMate.backend.domain.community.dto;
 
+import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -78,5 +79,20 @@ public class CommunityDTO {
         private String userNickname;
         private String commentContent;
         private Date commentWriteTime;
+
+        public CommentViewResponse(Comment comment) {
+            this.commentId = comment.getCommentId();
+            this.userNickname = comment.getUser().getUserNickname();
+            this.commentContent = comment.getCommentContent();
+            this.commentWriteTime = comment.getCommentWriteTime();
+        }
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PostLikeRequest {
+        private Long postId;
     }
 }

@@ -4,6 +4,7 @@ import RunningMate.backend.domain.User.entity.User;
 import RunningMate.backend.domain.community.dto.CommunityDTO;
 import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;
+import RunningMate.backend.domain.community.entity.PostLike;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface CommunityService {
     Comment addComment(CommunityDTO.CommentAddRequest request, Optional<User> user);
 
     List<CommunityDTO.CommentViewResponse> getComments(Long postId);
+
+    PostLike addLike(Long postId, Optional<User> user);
 }

@@ -30,6 +30,7 @@ public class Post {
     private Boolean postTag;
 
     @Column(nullable = false)
+    @Setter
     private Long likeCount;
 
     @Column(nullable = false)

@@ -5,6 +5,7 @@ import RunningMate.backend.domain.community.dto.CommunityDTO;
 import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;
 import RunningMate.backend.domain.community.entity.PostImage;
+import RunningMate.backend.domain.community.entity.PostLike;
 import RunningMate.backend.domain.community.repository.CommentRepository;
 import RunningMate.backend.domain.community.repository.PostImageRepository;
 import RunningMate.backend.domain.community.repository.PostLikeRepository;
@@ -123,4 +124,25 @@ public class CommunityServiceImpl implements CommunityService{
         ).toList();
     }
 
+    @Override
+    public PostLike addLike(Long postId, Optional<User> user) {
+        if(user.isEmpty())
+            return null;
+
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+        if (likeRepository.existsByUserAndPost(user.get(), post)) {
+            throw new IllegalArgumentException("이미 좋아요를 누른 게시글입니다.");
+        }
+
+        PostLike like = PostLike.builder()
+                .user(user.get())
+                .post(post)
+                .build();
+
+        post.setLikeCount(post.getLikeCount() + 1);
+        likeRepository.save(like);
+
+        return like;
+    }
 }
