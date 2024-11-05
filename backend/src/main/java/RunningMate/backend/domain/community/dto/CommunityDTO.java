@@ -1,5 +1,6 @@
 package RunningMate.backend.domain.community.dto;
 
+import RunningMate.backend.domain.community.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,5 +33,25 @@ public class CommunityDTO {
         private String postContent;
         private Boolean postTag;
         private List<String> postImages;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MainPagePostResponse {
+        private Long postId;
+        private Long commentCount;
+        private Long likeCount;
+        private String postTitle;
+        private Boolean postTag;
+
+        public MainPagePostResponse(Post post) {
+            this.postId = post.getPostId();
+            this.postTitle = post.getPostTitle();
+            this.likeCount = post.getLikeCount();
+            this.commentCount = post.getCommentCount();
+            this.postTag = post.getPostTag();
+        }
     }
 }

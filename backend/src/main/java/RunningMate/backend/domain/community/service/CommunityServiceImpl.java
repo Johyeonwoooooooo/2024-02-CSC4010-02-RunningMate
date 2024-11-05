@@ -16,10 +16,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.time.LocalTime.now;
 
 @Service
 @RequiredArgsConstructor
@@ -42,13 +45,14 @@ public class CommunityServiceImpl implements CommunityService{
         Boolean postTag = request.getPostTag();
 
         Post post = Post.builder().postTitle(postTitle)
-                .user(user.get())
-                .postContent(postContent)
-                .postImageList(postImages)
-                .postTag(postTag)
-                .likeCount(0L)
-                .commentCount(0L)
-                .build();
+                    .user(user.get())
+                    .postContent(postContent)
+                    .postImageList(postImages)
+                    .postTag(postTag)
+                    .likeCount(0L)
+                    .commentCount(0L)
+                    .postDate(LocalDateTime.now())
+                    .build();
 
         postImages.forEach(postImage -> postImage.setPost(post));
         return postRepository.save(post);
@@ -56,9 +60,7 @@ public class CommunityServiceImpl implements CommunityService{
 
     @Override
     public List<CommunityDTO.PostViewResponse> viewPost() {
-        List<Post> postList = postRepository.findAll();
-        Collections.shuffle(postList);
-        List<Post> posts = postList.subList(0, Math.min(15, postList.size()));
+        List<Post> posts= postRepository.findTop15ByOrderByPostDateDesc();
 
         return posts.stream().map(post -> {
             List<String> postImages = post.getPostImageList()
@@ -78,5 +80,15 @@ public class CommunityServiceImpl implements CommunityService{
                     .postImages(postImages)
                     .build();
         }).toList();
+    }
+
+    @Override
+    public List<CommunityDTO.MainPagePostResponse> getMainPagePost() {
+        List<Post> runningSpotPosts = postRepository.findTop2ByPostTagTrueOrderByLikeCount();
+        List<Post> runningCertificationPosts = postRepository.findTop2ByPostTagFalseOrderByLikeCount();
+
+        return Stream.concat(runningSpotPosts.stream(), runningCertificationPosts.stream())
+                .map(CommunityDTO.MainPagePostResponse::new)
+                .toList();
     }
 }

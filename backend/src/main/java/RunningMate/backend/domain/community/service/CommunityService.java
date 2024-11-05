@@ -12,4 +12,6 @@ public interface    CommunityService {
     Post uploadPost(CommunityDTO.PostUploadRequest request, List<MultipartFile> images, Optional<User> user);
 
     List<CommunityDTO.PostViewResponse> viewPost();
+
+    List<CommunityDTO.MainPagePostResponse> getMainPagePost();
 }
