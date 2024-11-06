@@ -17,6 +17,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useRouter } from 'expo-router';
 import { Stack } from 'expo-router';
+import AlertModal from '../../components/modal/AlertModal'
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MODAL_HEIGHT = SCREEN_HEIGHT * 0.5;
@@ -121,17 +122,34 @@ const FloatingActionButton = () => {
 // PostCard 컴포넌트
 const PostCard = () => {
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // 삭제 모달 상태 추가
+  // 삭제 처리 함수
+  const handleDelete = () => {
+    // 삭제 로직 구현
+    setIsDeleteModalVisible(false);
+  };
 
   return (
     <ThemedView style={styles.postCard}>
+      
       <ThemedView style={styles.postHeader}>
         <ThemedView style={styles.userInfo}>
           <ThemedView style={styles.profileCircle} />
           <ThemedText style={styles.userName}>공유 레츠고</ThemedText>
         </ThemedView>
-        <TouchableOpacity>
-          <Ionicons name="trash-outline" size={20} color="#808080" />
+        <TouchableOpacity onPress={() => setIsDeleteModalVisible(true)}>
+          <Ionicons 
+            name="trash-outline" size={20} color="#808080" 
+          />
         </TouchableOpacity>
+        {/* 삭제 확인 모달 */}
+        <AlertModal 
+          visible={isDeleteModalVisible}
+          onClose={() => setIsDeleteModalVisible(false)}
+          onConfirm={handleDelete}
+          title="글을 삭제하시겠습니까?"
+          message="삭제된 글은 복구가 어렵습니다."
+        />
       </ThemedView>
       <ThemedView style={styles.grayArea} />
       <ThemedView style={styles.postActions}>
@@ -150,7 +168,6 @@ const PostCard = () => {
         </ThemedView>
       </ThemedView>
       <ThemedText style={styles.caption}>오늘의 러닝!</ThemedText>
-
       <CommentsModal 
         visible={isCommentsModalVisible}
         onClose={() => setIsCommentsModalVisible(false)}
