@@ -11,10 +11,13 @@ import { useRouter } from "expo-router";
 import CustomButton from "../components/CustomButton";
 import PasswordInput from "../components/PasswordInput";
 import AlertModal from "../components/modal/AlertModal";
+import { useAuth } from "../context/AuthContext";
 
 const LoginScreen = () => {
+  // 계정
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useAuth();
 
   // modal(alert) state
   const [modalVisible, setModalVisible] = useState(false);
@@ -22,24 +25,18 @@ const LoginScreen = () => {
 
   const router = useRouter();
 
-  const handleLogin = () => {
-    /* TODO: 로그인 처리 */
-
+  const handleLogin = async () => {
     // log
-    console.log("Registering:", {
-      email,
-      password,
-    });
+    console.log("login input:", { email, password });
 
+    /* input error 검증 */
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 이메일 형식 정규식
-
     // 입력값 검증
     if (email === "" || password === "") {
       setModalMessage("모든 항목을 입력해주세요.");
       setModalVisible(true);
       return;
     }
-
     // 이메일 형식 검증
     if (!emailRegex.test(email)) {
       setModalMessage("이메일 형식이 올바르지 않습니다.");
@@ -47,12 +44,28 @@ const LoginScreen = () => {
       return;
     }
 
-    // TODO : 로그인 API 요청
-    // const response = await fetch("API URL", { ~~~~~
+    /* 서버에 로그인 요청 */
+    try {
+      const response = await fetch("http://192.168.45.114:3001/User"); // TODO : Json 서버 주소 package.json에서 삭제후 다시 넣어줘야함
+      console.log("response status:", response.status);
+      const users = await response.json();
+      //console.log("users:", users);
+      const user = users.find(
+        (u) => u.userEmail === email && u.userPassword === password
+      );
 
-    // if (로그인 성공) {
-    // router.replace("(tabs)"); // 이전 페이지로 이동 불가능
-    router.navigate("(tabs)"); // 이전 페이지로 스와이프하여 이동 가능 (테스트 용이)
+      if (user) {
+        login(user);
+        router.replace("(tabs)");
+      } else {
+        setModalMessage("이메일 또는 비밀번호가 올바르지 않습니다.");
+        setModalVisible(true);
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      setModalMessage("로그인 중 통신 오류가 발생했습니다.");
+      setModalVisible(true);
+    }
   };
 
   return (

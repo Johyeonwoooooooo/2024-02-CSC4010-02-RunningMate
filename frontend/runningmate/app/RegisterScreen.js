@@ -3,9 +3,10 @@ import { View, Text, TextInput, StyleSheet } from "react-native";
 import CustomButton from "../components/CustomButton";
 import PasswordInput from "../components/PasswordInput";
 import AlertModal from "../components/modal/AlertModal";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 
 const RegisterScreen = () => {
+  // 회원가입 정보
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,16 +14,25 @@ const RegisterScreen = () => {
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
 
+  const router = useRouter();
+
   // modal(alert) state
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+  const [navigateToLogin, setNavigateToLogin] = useState(false);
+
+  // modal(alert) 닫을 때 로그인 스크린으로 이동
+  const handleModalClose = () => {
+    setModalVisible(false);
+    if (navigateToLogin) {
+      router.navigate("LoginScreen");
+    }
+  };
 
   // 오류 검사 및 회원가입 API 요청
-  const handleRegister = () => {
-    // TODO : 회원가입 API 처리 및 회원가입 성공/실패시 알림 처리
-
+  const handleRegister = async () => {
     // log
-    console.log("Registering:", {
+    console.log("register input:", {
       username,
       email,
       password,
@@ -31,6 +41,7 @@ const RegisterScreen = () => {
       weight,
     });
 
+    /* input error 검증 */
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 이메일 형식 정규식
     const heightInt = parseInt(height, 10); // parse Integer
     const weightInt = parseInt(weight, 10); // parse Integer
@@ -64,7 +75,6 @@ const RegisterScreen = () => {
     }
 
     // 신장, 체중 검증
-
     if (
       isNaN(heightInt) ||
       isNaN(weightInt) ||
@@ -78,13 +88,46 @@ const RegisterScreen = () => {
       return;
     }
 
-    // TODO : 회원가입 API 요청
-    // const response = await fetch("API URL", { ~~~~~
-    setModalMessage(
-      "회원가입이 완료되었습니다. \n이전 화면에서 로그인해주세요."
-    );
-    setModalVisible(true);
-    router.navigate("LoginScreen");
+    /* 서버에 회원가입 요청 */
+    try {
+      // 현재 사용자 목록을 가져와서 userid를 자동 증가시키기 위한 로직. 실제 서버랑 연결 시 삭제
+      const usersResponse = await fetch("http://192.168.45.114:3001/User");
+      const users = await usersResponse.json();
+      const newUserId =
+        users.length > 0 ? users[users.length - 1].userid + 1 : 1;
+
+      // TODO : Json 서버 주소 package.json에서 삭제후 다시 넣어줘야함
+      const response = await fetch("http://192.168.45.114:3001/User", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userid: newUserId, // 추후 서버 연결할 때 삭제
+          userEmail: email,
+          userPassword: password,
+          userNickname: username,
+          userWeight: weightInt,
+          userHeight: heightInt,
+        }),
+      });
+
+      console.log("response status:", response.status);
+      if (response.ok) {
+        setModalMessage(
+          "회원가입이 완료되었습니다. \n이전 화면에서 로그인해주세요."
+        );
+        setModalVisible(true);
+        setNavigateToLogin(true);
+      } else {
+        setModalMessage("회원가입 중 통신 오류가 발생했습니다.");
+        setModalVisible(true);
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      setModalMessage("회원가입 중 통신 오류가 발생했습니다.");
+      setModalVisible(true);
+    }
   };
 
   return (
@@ -138,7 +181,7 @@ const RegisterScreen = () => {
       <AlertModal
         visible={modalVisible}
         message={modalMessage}
-        onClose={() => setModalVisible(false)}
+        onClose={handleModalClose}
       />
     </View>
   );

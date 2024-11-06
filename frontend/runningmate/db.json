@@ -1,0 +1,31 @@
+{
+  "User": [
+    {
+      "id": "7a51",
+      "userid": 1,
+      "userEmail": "test@example.com",
+      "userPassword": "password123",
+      "userNickname": "test",
+      "userWeight": 70,
+      "userHeight": 180
+    },
+    {
+      "id": "2372",
+      "userid": 2,
+      "userEmail": "Qwer@aaa.com",
+      "userPassword": "1234",
+      "userNickname": "Qwer",
+      "userWeight": 100,
+      "userHeight": 100
+    },
+    {
+      "id": "e292",
+      "userid": 3,
+      "userEmail": "Al@aa.aa",
+      "userPassword": "fibGin-5finno-canroh",
+      "userNickname": "Apql",
+      "userWeight": 30,
+      "userHeight": 150
+    }
+  ]
+}

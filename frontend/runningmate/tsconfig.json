@@ -13,6 +13,7 @@
     "expo-env.d.ts",
     "app/LoginScreen.tjs",
     "app/login.js",
-    "app/(tabs)/running.js"
+    "app/(tabs)/running.js",
+    "app/(tabs)/mypage/index.js"
   ]
 }
