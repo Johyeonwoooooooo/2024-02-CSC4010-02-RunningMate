@@ -9,7 +9,8 @@ import {
   View,
   Modal,
   Dimensions,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  TextInput // TextInput import 추가
 } from "react-native";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { ThemedText } from "@/components/ThemedText";
@@ -20,7 +21,17 @@ import { Stack } from 'expo-router';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MODAL_HEIGHT = SCREEN_HEIGHT * 0.5;
 
+// CommentsModal 컴포넌트 수정
 const CommentsModal = ({ visible, onClose }) => {
+  const [comment, setComment] = useState('');
+
+  const handleSubmitComment = () => {
+    if (comment.trim()) {
+      console.log('댓글 작성:', comment);
+      setComment('');
+    }
+  };
+
   return (
     <Modal
       animationType="slide"
@@ -39,44 +50,50 @@ const CommentsModal = ({ visible, onClose }) => {
                 </TouchableOpacity>
               </View>
 
-              <ScrollView style={styles.commentsList}>
-                <View style={styles.commentItem}>
-                  <View style={styles.commentHeader}>
-                    <View style={styles.smallProfileCircle} />
-                    <View>
-                      <ThemedText style={styles.commentUserName}>User 1</ThemedText>
-                      <ThemedText style={styles.commentTime}>2시간 전</ThemedText>
+              <ScrollView 
+                style={styles.commentsList}
+                showsVerticalScrollIndicator={false}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((index) => (
+                  <View key={index} style={styles.commentItem}>
+                    <View style={styles.commentHeader}>
+                      <View style={styles.smallProfileCircle} />
+                      <View>
+                        <ThemedText style={styles.commentUserName}>
+                          User {index}
+                        </ThemedText>
+                        <ThemedText style={styles.commentTime}>
+                          {index}시간 전
+                        </ThemedText>
+                      </View>
                     </View>
+                    <ThemedText style={styles.commentText}>
+                      댓글 내용 {index}
+                    </ThemedText>
                   </View>
-                  <ThemedText style={styles.commentText}>멋진 러닝이네요!</ThemedText>
-                </View>
-
-                <View style={styles.commentItem}>
-                  <View style={styles.commentHeader}>
-                    <View style={styles.smallProfileCircle} />
-                    <View>
-                      <ThemedText style={styles.commentUserName}>User 2</ThemedText>
-                      <ThemedText style={styles.commentTime}>1시간 전</ThemedText>
-                    </View>
-                  </View>
-                  <ThemedText style={styles.commentText}>저도 오늘 러닝했어요!</ThemedText>
-                </View>
-
-                <View style={styles.commentItem}>
-                  <View style={styles.commentHeader}>
-                    <View style={styles.smallProfileCircle} />
-                    <View>
-                      <ThemedText style={styles.commentUserName}>User 2</ThemedText>
-                      <ThemedText style={styles.commentTime}>1시간 전</ThemedText>
-                    </View>
-                  </View>
-                  <ThemedText style={styles.commentText}>저도 오늘 러닝했어요!</ThemedText>
-                </View>
+                ))}
               </ScrollView>
 
               <View style={styles.commentInputContainer}>
-                <View style={styles.commentInput}>
-                  <ThemedText style={styles.placeholder}>댓글을 입력하세요...</ThemedText>
+                <View style={styles.smallProfileCircle} />
+                <View style={styles.commentInputWrapper}>
+                  <TextInput
+                    style={styles.commentInput}
+                    value={comment}
+                    onChangeText={setComment}
+                    placeholder="댓글을 입력하세요..."
+                    placeholderTextColor="#666"
+                    multiline
+                    maxLength={1000}
+                  />
+                  {comment.trim().length > 0 && (
+                    <TouchableOpacity 
+                      style={styles.sendButton}
+                      onPress={handleSubmitComment}
+                    >
+                      <Ionicons name="send" size={24} color="tomato" />
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             </View>
@@ -87,7 +104,7 @@ const CommentsModal = ({ visible, onClose }) => {
   );
 };
 
-// 플로팅 버튼
+// FloatingActionButton 컴포넌트
 const FloatingActionButton = () => {
   const router = useRouter();
 
@@ -101,6 +118,7 @@ const FloatingActionButton = () => {
   );
 };
 
+// PostCard 컴포넌트
 const PostCard = () => {
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
 
@@ -141,6 +159,7 @@ const PostCard = () => {
   );
 };
 
+// Tab Navigation 컴포넌트들
 const CommunityScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -338,41 +357,34 @@ const styles = StyleSheet.create({
   },
   commentInputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     paddingTop: 10,
     paddingBottom: Platform.OS === 'ios' ? 20 : 10,
     borderTopWidth: 1,
     borderTopColor: '#eee',
     backgroundColor: 'white',
   },
-  commentInput: {
+  commentInputWrapper: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     marginLeft: 10,
-    padding: 10,
     backgroundColor: '#f0f0f0',
     borderRadius: 20,
-    minHeight: 40,
-    justifyContent: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: Platform.OS === 'ios' ? 8 : 4,
+    maxHeight: 100,
   },
-  placeholder: {
-    color: '#666',
+  commentInput: {
+    flex: 1,
     fontSize: 14,
+    color: '#000',
+    maxHeight: 80,
+    paddingTop: Platform.OS === 'ios' ? 8 : 4,
+    paddingBottom: Platform.OS === 'ios' ? 8 : 4,
   },
-  // 탭 네비게이션 스타일
-  tabBar: {
-    backgroundColor: '#fff',
-    elevation: 0,
-    shadowOpacity: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  tabLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    textTransform: 'none',
-  },
-  tabIndicator: {
-    backgroundColor: 'tomato',
-    height: 2,
+  sendButton: {
+    paddingLeft: 10,
+    paddingBottom: Platform.OS === 'ios' ? 6 : 4,
   },
 });
