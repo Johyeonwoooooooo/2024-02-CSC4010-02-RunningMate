@@ -33,18 +33,23 @@ public class CommunityController {
     private final CommunityService communityService;
     private final SessionUtils sessionUtils;
     private final ObjectMapper objectMapper;
+
     @PostMapping(value = "/post/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "커뮤니티 글 작성", description = "사용자에게 postTitle, postTag, postContent를 받아 커뮤니티에 글을 등록한다.")
+    @Operation(summary = "커뮤니티 게시글 작성", description = "{\n" +
+            "    \"postTitle\": \"테스트 제목\",\n" +
+            "    \"postTag\": true,\n" +
+            "    \"postContent\": \"테스트 내용입니다.\"\n" +
+            "}")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "글 등록 성공"),
             @ApiResponse(responseCode = "400", description = "글 등록 실패")
     })
     public ResponseEntity<?> uploadPost(@RequestParam("request") String request,
                                         @RequestParam("image") List<MultipartFile> images,
-                                        HttpSession session){
+                                        HttpSession session) {
         try {
             // JSON 문자열을 DTO 객체로 변환
-            CommunityDTO.PostUploadRequest postUploadRequest  = objectMapper.readValue(request, CommunityDTO.PostUploadRequest.class);
+            CommunityDTO.PostUploadRequest postUploadRequest = objectMapper.readValue(request, CommunityDTO.PostUploadRequest.class);
 
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
             Post post = communityService.uploadPost(postUploadRequest, images, optionalUser);
@@ -125,7 +130,7 @@ public class CommunityController {
             @ApiResponse(responseCode = "404", description = "좋아요를 등록할 수 없음")
     })
     public ResponseEntity<?> addPostLike(@PathVariable("postId") Long postId,
-                                             HttpSession session) {
+                                         HttpSession session) {
 
         try {
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
@@ -134,6 +139,27 @@ public class CommunityController {
             return ResponseEntity.ok("좋아요 등록에 성공하였습니다.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/post/{postId}/delete")
+    @Operation(summary = "커뮤니티 게시글 삭제", description = "커뮤니티에 등록한 게시글을 삭제한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "삭제 성공"),
+            @ApiResponse(responseCode = "403", description = "삭제 권한이 없음"),
+            @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+    })
+    public ResponseEntity<?> deletePost (@PathVariable("postId") Long postId,
+                                        HttpSession session) {
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            communityService.deletePost(postId, optionalUser);
+
+            return ResponseEntity.ok("게시글 삭제에 성공하였습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage()); // 권한 없을 때 403
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()); // 게시글 없을 때 404
         }
     }
 }

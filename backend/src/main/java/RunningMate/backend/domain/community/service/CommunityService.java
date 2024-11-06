@@ -22,4 +22,6 @@ public interface CommunityService {
     List<CommunityDTO.CommentViewResponse> getComments(Long postId);
 
     PostLike addLike(Long postId, Optional<User> user);
+
+    Post deletePost(Long postId, Optional<User> user);
 }

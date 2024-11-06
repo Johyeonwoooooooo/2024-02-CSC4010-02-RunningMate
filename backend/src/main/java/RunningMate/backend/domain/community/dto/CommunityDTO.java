@@ -95,4 +95,13 @@ public class CommunityDTO {
     public static class PostLikeRequest {
         private Long postId;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PostDeleteRequest {
+        private Long postId;
+        private Long userId;
+    }
 }

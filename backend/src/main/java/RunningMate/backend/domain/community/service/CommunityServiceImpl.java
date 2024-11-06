@@ -145,4 +145,20 @@ public class CommunityServiceImpl implements CommunityService{
 
         return like;
     }
+
+    @Override
+    public Post deletePost(Long postId, Optional<User> user) {
+        if(user.isEmpty())
+            return null;
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+        if (!post.getUser().getUserId().equals(user.get().getUserId())) {
+            throw new IllegalArgumentException("게시글을 삭제할 권한이 없습니다.");
+        }
+
+        postRepository.delete(post);
+        return post;
+    }
 }
