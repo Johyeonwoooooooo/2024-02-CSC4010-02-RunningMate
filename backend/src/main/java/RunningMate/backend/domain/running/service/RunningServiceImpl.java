@@ -65,11 +65,17 @@ public class RunningServiceImpl implements RunningService {
     }
 
     @Override
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 5000) // 5초마다 반복. 60000 = 1분
     public void deleteRunningGroup() {
         List<RunningGroup> runningGroups = groupRepository.findAllByEndTimeBefore(LocalDateTime.now());
         for (RunningGroup runningGroup : runningGroups) {
             log.info("RunningGroupID : {}, endTime : {}", runningGroup.getGroupId(), runningGroup.getEndTime());
         }
+    }
+
+    @Override
+    public List<RunningDTO.MainPageGroupResponse> mainPageGroups() {
+        List<RunningGroup> groupList = groupRepository.findAllByStartTimeAfter(LocalDateTime.now());
+        return groupList.stream().limit(6).map(RunningDTO.MainPageGroupResponse::new).toList();
     }
 }

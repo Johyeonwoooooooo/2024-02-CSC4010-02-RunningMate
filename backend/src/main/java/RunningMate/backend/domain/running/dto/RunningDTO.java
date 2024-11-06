@@ -64,4 +64,26 @@ public class RunningDTO {
             this.calories = record.getCalories();
         }
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MainPageGroupResponse {
+        private Long groupId;
+        private String groupTitle;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private Long targetDistance;
+        private GroupTag groupTag;
+
+        public MainPageGroupResponse(RunningGroup group){
+            this.groupId = group.getGroupId();
+            this.groupTitle = group.getGroupTitle();
+            this.startTime = group.getStartTime();
+            this.endTime = group.getEndTime();
+            this.targetDistance = group.getTargetDistance();
+            this.groupTag = group.getGroupTag();
+        }
+    }
 }
