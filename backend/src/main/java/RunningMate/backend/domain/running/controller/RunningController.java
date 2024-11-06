@@ -65,7 +65,7 @@ public class RunningController {
             @ApiResponse(responseCode = "204", description = "생성된 러닝방이 없는 경우")
     })
     @GetMapping("")
-    public ResponseEntity<?> getTest(){
+    public ResponseEntity<?> viewRunningGroup(){
         List<RunningDTO.RunningGroupViewResponse> runningGroupViewResponses = runningService.viewRunningGroups();
         if (runningGroupViewResponses.isEmpty())
             return ResponseEntity.noContent().build();
