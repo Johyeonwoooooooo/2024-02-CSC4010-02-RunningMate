@@ -10,6 +10,7 @@ import RunningMate.backend.domain.running.repository.RecordRepository;
 import RunningMate.backend.domain.running.repository.RunningGroupRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -61,5 +62,14 @@ public class RunningServiceImpl implements RunningService {
     public List<RunningDTO.RunningGroupViewResponse> viewRunningGroups() {
         List<RunningGroup> groupList = groupRepository.findAllByStartTimeAfter(LocalDateTime.now());
         return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
+    }
+
+    @Override
+    @Scheduled(fixedRate = 5000)
+    public void deleteRunningGroup() {
+        List<RunningGroup> runningGroups = groupRepository.findAllByEndTimeBefore(LocalDateTime.now());
+        for (RunningGroup runningGroup : runningGroups) {
+            log.info("RunningGroupID : {}, endTime : {}", runningGroup.getGroupId(), runningGroup.getEndTime());
+        }
     }
 }

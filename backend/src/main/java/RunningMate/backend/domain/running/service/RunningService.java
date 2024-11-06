@@ -13,4 +13,5 @@ public interface RunningService {
     List<RunningDTO.RunningGroupViewResponse> viewRunningGroups();
     RunningDTO.ParticipateGroupResponse participateGroup(Long groupId, Optional<User> optionalUser);
 
+    void deleteRunningGroup();
 }
