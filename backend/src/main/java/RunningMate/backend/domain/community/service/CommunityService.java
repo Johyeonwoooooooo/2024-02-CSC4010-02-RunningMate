@@ -23,5 +23,5 @@ public interface CommunityService {
 
     PostLike addLike(Long postId, Optional<User> user);
 
-    Post deletePost(Long postId, Optional<User> user);
+    void deletePost(Long postId, Optional<User> user);
 }

@@ -147,7 +147,7 @@ public class CommunityServiceImpl implements CommunityService{
     }
 
     @Override
-    public Post deletePost(Long postId, Optional<User> user) {
+    public void deletePost(Long postId, Optional<User> user) {
         if(user.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
@@ -159,6 +159,5 @@ public class CommunityServiceImpl implements CommunityService{
         }
 
         postRepository.delete(post);
-        return post;
     }
 }
