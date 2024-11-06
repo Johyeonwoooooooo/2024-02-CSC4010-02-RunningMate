@@ -20,18 +20,11 @@ import { Stack } from 'expo-router';
 import AlertModal from '../../components/modal/AlertModal'
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const MODAL_HEIGHT = SCREEN_HEIGHT * 0.5;
+const MODAL_HEIGHT = SCREEN_HEIGHT * 0.6;
 
 // CommentsModal 컴포넌트 수정
 const CommentsModal = ({ visible, onClose }) => {
   const [comment, setComment] = useState('');
-
-  const handleSubmitComment = () => {
-    if (comment.trim()) {
-      console.log('댓글 작성:', comment);
-      setComment('');
-    }
-  };
 
   return (
     <Modal
@@ -44,6 +37,7 @@ const CommentsModal = ({ visible, onClose }) => {
         <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback>
             <View style={styles.modalContent}>
+              {/* 헤더 */}
               <View style={styles.modalHeader}>
                 <ThemedText style={styles.modalTitle}>댓글</ThemedText>
                 <TouchableOpacity onPress={onClose}>
@@ -51,32 +45,32 @@ const CommentsModal = ({ visible, onClose }) => {
                 </TouchableOpacity>
               </View>
 
-              <ScrollView 
-                style={styles.commentsList}
-                showsVerticalScrollIndicator={false}
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((index) => (
-                  <View key={index} style={styles.commentItem}>
-                    <View style={styles.commentHeader}>
-                      <View style={styles.smallProfileCircle} />
-                      <View>
-                        <ThemedText style={styles.commentUserName}>
-                          User {index}
-                        </ThemedText>
-                        <ThemedText style={styles.commentTime}>
-                          {index}시간 전
-                        </ThemedText>
+              {/* 댓글 목록 */}
+              <View style={styles.commentsContainer}>
+                <ScrollView>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((index) => (
+                    <View key={index} style={styles.commentItem}>
+                      <View style={styles.commentHeader}>
+                        <View style={styles.smallProfileCircle} />
+                        <View>
+                          <ThemedText style={styles.commentUserName}>
+                            User {index}
+                          </ThemedText>
+                          <ThemedText style={styles.commentTime}>
+                            {index}시간 전
+                          </ThemedText>
+                        </View>
                       </View>
+                      <ThemedText style={styles.commentText}>
+                        댓글 내용 {index}
+                      </ThemedText>
                     </View>
-                    <ThemedText style={styles.commentText}>
-                      댓글 내용 {index}
-                    </ThemedText>
-                  </View>
-                ))}
-              </ScrollView>
+                  ))}
+                </ScrollView>
+              </View>
 
+              {/* 입력창 */}
               <View style={styles.commentInputContainer}>
-                <View style={styles.smallProfileCircle} />
                 <View style={styles.commentInputWrapper}>
                   <TextInput
                     style={styles.commentInput}
@@ -85,16 +79,10 @@ const CommentsModal = ({ visible, onClose }) => {
                     placeholder="댓글을 입력하세요..."
                     placeholderTextColor="#666"
                     multiline
-                    maxLength={1000}
                   />
-                  {comment.trim().length > 0 && (
-                    <TouchableOpacity 
-                      style={styles.sendButton}
-                      onPress={handleSubmitComment}
-                    >
-                      <Ionicons name="send" size={24} color="tomato" />
-                    </TouchableOpacity>
-                  )}
+                  <TouchableOpacity style={styles.sendButton}>
+                    <Ionicons name="send" size={24} color="black" />
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -215,6 +203,7 @@ const ExerciseScreen = () => {
 
 const Tab = createMaterialTopTabNavigator();
 
+// tab 이동
 export default function CommunityTabs() {
   return (
     <View style={styles.container}>
@@ -343,23 +332,31 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
+    padding: 16,
+    display: 'flex',
+    flexDirection: 'column',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
-    paddingHorizontal: 5,
+    paddingBottom: 15,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
   },
   commentsList: {
-    flex: 1,
+    flex: 1,  // 중요: 남은 공간을 모두 차지
     marginVertical: 10,
+    maxHeight: MODAL_HEIGHT - 130, // 헤더와 입력창 높이를 고려한 값
+  },
+  commentsListContent: {
+    flexGrow: 1,          // 내용이 적어도 스크롤 가능하게
+  },
+  commentsContainer: {
+    flex: 1,
+    marginBottom: 10,
   },
   commentItem: {
     marginBottom: 15,
@@ -391,24 +388,18 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   commentInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
     borderTopWidth: 1,
     borderTopColor: '#eee',
-    backgroundColor: 'white',
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
   },
   commentInputWrapper: {
-    flex: 1,
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginLeft: 10,
+    alignItems: 'center',
     backgroundColor: '#f0f0f0',
     borderRadius: 20,
     paddingHorizontal: 15,
-    paddingVertical: Platform.OS === 'ios' ? 8 : 4,
-    maxHeight: 100,
+    paddingVertical: 8,
   },
   commentInput: {
     flex: 1,

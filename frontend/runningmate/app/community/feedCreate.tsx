@@ -15,33 +15,34 @@ import { ThemedView } from "@/components/ThemedView";
 import { Stack } from 'expo-router';
 
 export default function FeedCreateScreen() {
+  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [selectedTag, setSelectedTag] = useState(''); // 선택된 태그 상태 관리
   const router = useRouter();
 
   // 태그 선택 핸들러
-  const handleTagSelect = (tag: string) => {
+  const handleTagSelect = (tag) => {
     setSelectedTag(tag === selectedTag ? '' : tag);
   };
 
-  // 태그 버튼 렌더링 함수
-  const TagButton = ({ tag, icon }: { tag: string; icon: string }) => (
+  // 태그 버튼 컴포넌트
+  const TagButton = ({ tag, icon }) => (
     <TouchableOpacity 
       style={[
         styles.tagButton,
-        selectedTag === tag && styles.tagButtonActive // 선택된 태그에 대한 스타일
+        selectedTag === tag && styles.tagButtonActive
       ]}
       onPress={() => handleTagSelect(tag)}
     >
       <Ionicons 
         name={icon} 
         size={20} 
-        color={selectedTag === tag ? '#fff' : '#000'} // 아이콘 색상도 변경
+        color={selectedTag === tag ? '#fff' : '#000'}
       />
       <ThemedText 
         style={[
           styles.tagText,
-          selectedTag === tag && styles.tagTextActive // 텍스트 색상도 변경
+          selectedTag === tag && styles.tagTextActive
         ]}
       >
         {tag}
@@ -58,7 +59,14 @@ export default function FeedCreateScreen() {
       />
       
       <ScrollView style={styles.scrollView}>
-        <ThemedText style={styles.title}>글 제목을 작성해주세요</ThemedText>
+        <TextInput
+          style={styles.titleInput}
+          value={title}
+          onChangeText={setTitle}
+          placeholder="글 제목을 작성해주세요"
+          placeholderTextColor="#999"
+          maxLength={50}
+        />
 
         {/* 이미지 업로드 섹션 */}
         <ThemedView style={styles.section}>
@@ -102,7 +110,13 @@ export default function FeedCreateScreen() {
           >
             <ThemedText style={styles.buttonText}>취소</ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.submitButton}>
+          <TouchableOpacity 
+            style={styles.submitButton}
+            onPress={() => {
+              // 여기에 게시 로직 추가
+              router.back();
+            }}
+          >
             <ThemedText style={styles.submitButtonText}>게시하기</ThemedText>
           </TouchableOpacity>
         </ThemedView>
@@ -120,10 +134,16 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  title: {
+  titleInput: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 30,
+    marginTop: 10,
+    paddingHorizontal: 0,
+    color: '#000',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 10,
   },
   section: {
     marginBottom: 30,
@@ -177,7 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   tagButtonActive: {
-    backgroundColor: '#36A3FD', // 선택된 태그 배경색
+    backgroundColor: '#36A3FD',
     borderColor: '#ADD8E6',
   },
   tagText: {
@@ -186,7 +206,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   tagTextActive: {
-    color: '#fff', // 선택된 태그 텍스트 색상
+    color: '#fff',
   },
   buttonContainer: {
     flexDirection: 'row',
