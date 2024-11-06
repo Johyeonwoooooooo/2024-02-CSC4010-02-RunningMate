@@ -1,6 +1,7 @@
 package RunningMate.backend.domain.running.dto;
 
 import RunningMate.backend.domain.running.entity.GroupTag;
+import RunningMate.backend.domain.running.entity.Record;
 import RunningMate.backend.domain.running.entity.RunningGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,5 +45,23 @@ public class RunningDTO {
         private Long targetDistance;
         private GroupTag groupTag;
         private Integer maxParticipants;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ParticipateGroupResponse {
+        private Long recordId;
+        private Long distance;
+        private Long runningTime;
+        private Long calories;
+
+        public ParticipateGroupResponse(Record record){
+            this.recordId = record.getRecordId();
+            this.distance = record.getDistance();
+            this.runningTime = record.getRunningTime();
+            this.calories = record.getCalories();
+        }
     }
 }

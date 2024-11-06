@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface RunningGroupRepository extends JpaRepository<RunningGroup, Long> {
     List<RunningGroup> findAllByStartTimeAfter(LocalDateTime now);
+    RunningGroup findByGroupId(Long groupId);
 }

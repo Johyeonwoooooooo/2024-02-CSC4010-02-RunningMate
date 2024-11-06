@@ -26,24 +26,35 @@ public class RunningServiceImpl implements RunningService {
     @Override
     public RunningGroup makeRunningGroup(RunningDTO.MakeRunningGroupRequest request, Optional<User> optionalUser) {
         if(optionalUser.isEmpty())
-            return null;
-        Record newRecord = Record.builder().user(optionalUser.get()).runningTime(0L).calories(0L).distance(0L).build();
-        Record record = recordRepository.save(newRecord);
+            throw new IllegalArgumentException("로그인되지 않아 불가합니다.");
 
-        RunningGroup newGroup = RunningGroup.builder().groupTitle(request.getGroupTitle())
-                                                        .groupTag(request.getGroupTag())
-                                                        .startTime(request.getStartTime())
-                                                        .endTime(request.getEndTime())
-                                                        .currentParticipants(0)
-                                                        .maxParticipants(request.getMaxParticipants())
-                                                        .targetDistance(request.getTargetDistance())
-                                                        .build();
+        return groupRepository.save(RunningGroup.builder().groupTitle(request.getGroupTitle())
+                .groupTag(request.getGroupTag())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .currentParticipants(0)
+                .maxParticipants(request.getMaxParticipants())
+                .targetDistance(request.getTargetDistance())
+                .build());
+    }
 
-        RunningGroup group = groupRepository.save(newGroup);
+    @Override
+    public RunningDTO.ParticipateGroupResponse participateGroup(Long groupId, Optional<User> optionalUser) {
+        if(optionalUser.isEmpty())
+            throw new IllegalArgumentException("로그인 되지 않아 불가능합니다.");
 
+        RunningGroup group = groupRepository.findByGroupId(groupId);
+        if(group == null)
+            throw new IllegalArgumentException("해당 러닝방을 찾을 수 없습니다.");
+
+        group.participateGroup();
+        groupRepository.save(group);
+        Record record = recordRepository.save(Record.builder().user(optionalUser.get())
+                                                                        .runningTime(0L).calories(0L).distance(0L).build());
         LeaderBoard build = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
         leaderBoardRepository.save(build);
-        return group;
+
+        return new RunningDTO.ParticipateGroupResponse(record);
     }
 
     @Override
