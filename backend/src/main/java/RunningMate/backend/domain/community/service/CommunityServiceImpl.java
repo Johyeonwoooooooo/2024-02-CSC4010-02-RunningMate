@@ -33,7 +33,7 @@ public class CommunityServiceImpl implements CommunityService{
     public Post uploadPost(CommunityDTO.PostUploadRequest request,
                            List<MultipartFile> images, Optional<User> user) {
         if(user.isEmpty())
-            return null;
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
         String postTitle = request.getPostTitle();
         String postContent = request.getPostContent();
@@ -91,7 +91,7 @@ public class CommunityServiceImpl implements CommunityService{
     @Override
     public Comment addComment(CommunityDTO.CommentAddRequest request, Optional<User> user) {
         if(user.isEmpty())
-            return null;
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
         Post post = postRepository.findById(request.getPostId()).orElse(null);
         if (post == null) {
@@ -127,7 +127,7 @@ public class CommunityServiceImpl implements CommunityService{
     @Override
     public PostLike addLike(Long postId, Optional<User> user) {
         if(user.isEmpty())
-            return null;
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
@@ -149,7 +149,7 @@ public class CommunityServiceImpl implements CommunityService{
     @Override
     public Post deletePost(Long postId, Optional<User> user) {
         if(user.isEmpty())
-            return null;
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
