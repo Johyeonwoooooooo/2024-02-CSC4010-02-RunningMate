@@ -123,11 +123,17 @@ const FloatingActionButton = () => {
 const PostCard = () => {
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // 삭제 모달 상태 추가
+  const [isLove, setIsLove] = useState(false); // 좋아요
+
   // 삭제 처리 함수
   const handleDelete = () => {
     // 삭제 로직 구현
     setIsDeleteModalVisible(false);
   };
+  const handleLove = () => {
+    setIsLove(false);
+
+  }
 
   return (
     <ThemedView style={styles.postCard}>
@@ -154,8 +160,12 @@ const PostCard = () => {
       <ThemedView style={styles.grayArea} />
       <ThemedView style={styles.postActions}>
         <ThemedView style={styles.likeComment}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="heart-outline" size={24} color="#808080" />
+          <TouchableOpacity style={styles.actionButton} onPress={() => setIsLove(true)}>
+            <Ionicons 
+              name={isLove ? "heart" : "heart-outline"} // 상태에 따라 아이콘 변경
+              size={24} 
+              color={isLove ? "#FF69B4" : "#808080"} // 상태에 따라 색상 변경
+            />
             <ThemedText style={styles.actionCount}>12</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -218,8 +228,8 @@ export default function CommunityTabs() {
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarLabelStyle: { fontSize: 14 },
-          tabBarIndicatorStyle: { backgroundColor: 'tomato' },
-          tabBarActiveTintColor: 'tomato',
+          tabBarIndicatorStyle: { backgroundColor: 'black' },
+          tabBarActiveTintColor: 'black',
           tabBarInactiveTintColor: 'gray',
           tabBarStyle: { marginTop: Platform.OS === 'ios' ? 47 : 0 },
         })}
@@ -245,29 +255,32 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   postCard: {
-    marginBottom: 10,
+    marginBottom: 8,          // 간격 조정
     backgroundColor: '#fff',
-    marginHorizontal: 10,
+    borderTopWidth: 1,       // 상단 구분선 추가
+    borderBottomWidth: 1,    // 하단 구분선 추가
+    borderColor: '#DBDBDB',  // 인스타그램 스타일 구분선 색상
   },
   postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 10,
+    padding: 12,             // 패딩 살짝 증가
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   profileCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,              // 프로필 이미지 크기 조정
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#E0E0E0',
     marginRight: 10,
   },
   userName: {
-    fontWeight: 'bold',
+    fontWeight: '600',      // 폰트 무게 조정
+    fontSize: 14,           // 폰트 크기 조정
   },
   grayArea: {
     width: '100%',
@@ -275,7 +288,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
   },
   postActions: {
-    padding: 10,
+    paddingHorizontal: 12,  // 패딩 조정
+    paddingVertical: 8,     // 패딩 조정
   },
   likeComment: {
     flexDirection: 'row',
@@ -284,14 +298,18 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 20,
+    marginRight: 16,        // 간격 조정
   },
   actionCount: {
-    marginLeft: 5,
-    color: '#808080',
+    marginLeft: 6,
+    color: '#262626',       // 텍스트 색상 조정
+    fontSize: 13,           // 폰트 크기 조정
   },
   caption: {
-    padding: 10,
+    paddingHorizontal: 12,  // 패딩 조정
+    paddingBottom: 12,      // 패딩 조정
+    fontSize: 14,           // 폰트 크기 조정
+    color: '#262626',       // 텍스트 색상 조정
   },
   fab: {
     position: 'absolute',
