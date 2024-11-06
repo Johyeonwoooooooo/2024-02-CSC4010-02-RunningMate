@@ -1,11 +1,21 @@
+import React from 'react';
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { StyleSheet, Image, Platform, TouchableOpacity, ScrollView, SafeAreaView, Dimensions } from "react-native";
+import { StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform, View } from "react-native";
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 
+// 플로팅 버튼
 const FloatingActionButton = () => {
+  const router = useRouter();
+
   return (
-    <TouchableOpacity style={styles.fab}>
+    <TouchableOpacity 
+      style={styles.fab}
+      onPress={() => router.push('/community/create')} // 새 게시물 작성 페이지로 이동
+    >
       <Ionicons name="add" size={24} color="#000000" />
     </TouchableOpacity>
   );
@@ -14,22 +24,16 @@ const FloatingActionButton = () => {
 const PostCard = () => {
   return (
     <ThemedView style={styles.postCard}>
-      {/* 게시물 헤더: 프로필과 사용자 이름, 삭제 버튼 */}
       <ThemedView style={styles.postHeader}>
         <ThemedView style={styles.userInfo}>
-          {/* 프로필 이미지 대신 회색 원 */}
           <ThemedView style={styles.profileCircle} />
-          <ThemedText style={styles.userName}>러닝 스팟 공유</ThemedText>
+          <ThemedText style={styles.userName}>공유 레츠고</ThemedText>
         </ThemedView>
         <TouchableOpacity>
           <Ionicons name="trash-outline" size={20} color="#808080" />
         </TouchableOpacity>
       </ThemedView>
-
-      {/* 이미지 대신 회색 영역 */}
       <ThemedView style={styles.grayArea} />
-
-      {/* 좋아요, 댓글 버튼 영역 */}
       <ThemedView style={styles.postActions}>
         <ThemedView style={styles.likeComment}>
           <TouchableOpacity style={styles.actionButton}>
@@ -42,32 +46,64 @@ const PostCard = () => {
           </TouchableOpacity>
         </ThemedView>
       </ThemedView>
-
-      {/* 게시물 설명 텍스트 */}
       <ThemedText style={styles.caption}>오늘의 러닝!</ThemedText>
     </ThemedView>
   );
 };
 
-export default function CommunityScreen() {
-  const bottomNavHeight = 60;
-
+const CommunityScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView 
         style={styles.container} 
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: bottomNavHeight + 20 }
-        ]}
+        contentContainerStyle={styles.scrollContent}
       >
-        <PostCard />
         <PostCard />
         <PostCard />
         <PostCard />
       </ScrollView>
       <FloatingActionButton />
     </SafeAreaView>
+  );
+};
+
+const ExerciseScreen = () => {
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container}>
+        <PostCard />
+        <PostCard />
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const Tab = createMaterialTopTabNavigator();
+
+export default function CommunityTabs() {
+  return (
+    <View style={styles.container}>
+      {/* Stack 설정으로 상단 겹침 해결 */}
+      <Stack.Screen 
+        options={{
+          headerShown: false,
+          contentStyle: { backgroundColor: 'white' }
+        }} 
+      />
+      
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarLabelStyle: { fontSize: 14 },
+          tabBarIndicatorStyle: { backgroundColor: 'tomato' },
+          tabBarActiveTintColor: 'tomato',
+          tabBarInactiveTintColor: 'gray',
+          tabBarStyle: { marginTop: Platform.OS === 'ios' ? 47 : 0 }, // iOS에서 상단 여백 추가
+        })}
+      >
+        <Tab.Screen name="러닝 스팟 공유" component={CommunityScreen} />
+        <Tab.Screen name="운동 인증" component={ExerciseScreen} />
+      </Tab.Navigator>
+    </View>
   );
 }
 
@@ -86,6 +122,7 @@ const styles = StyleSheet.create({
   postCard: {
     marginBottom: 10,
     backgroundColor: '#fff',
+    marginHorizontal: 10,
   },
   postHeader: {
     flexDirection: 'row',
@@ -97,7 +134,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  // 프로필 이미지 대신 회색 원
   profileCircle: {
     width: 40,
     height: 40,
@@ -108,7 +144,6 @@ const styles = StyleSheet.create({
   userName: {
     fontWeight: 'bold',
   },
-  // 이미지 영역 대신 회색 영역
   grayArea: {
     width: '100%',
     height: 300,
