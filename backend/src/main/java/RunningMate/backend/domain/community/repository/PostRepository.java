@@ -1,5 +1,6 @@
 package RunningMate.backend.domain.community.repository;
 
+import RunningMate.backend.domain.User.entity.User;
 import RunningMate.backend.domain.community.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

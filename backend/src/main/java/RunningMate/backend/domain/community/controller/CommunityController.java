@@ -149,7 +149,7 @@ public class CommunityController {
             @ApiResponse(responseCode = "403", description = "삭제 권한이 없음"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
-    public ResponseEntity<?> deletePost (@PathVariable("postId") Long postId,
+    public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId,
                                         HttpSession session) {
         try {
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);

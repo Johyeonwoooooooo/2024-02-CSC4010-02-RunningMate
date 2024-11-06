@@ -104,4 +104,5 @@ public class CommunityDTO {
         private Long postId;
         private Long userId;
     }
+
 }

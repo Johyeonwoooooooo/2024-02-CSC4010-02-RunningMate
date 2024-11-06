@@ -4,15 +4,18 @@ import RunningMate.backend.domain.User.dto.UserDTO;
 import RunningMate.backend.domain.User.entity.User;
 import RunningMate.backend.domain.User.service.UserService;
 import RunningMate.backend.domain.authorization.SessionUtils;
+import RunningMate.backend.domain.community.dto.CommunityDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -84,6 +87,23 @@ public class UserController {
             return ResponseEntity.ok().body(user.getUserNickname() + user.getUserWeight() + user.getUserHeight());
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/posts")
+    @Operation(summary = "사용자가 작성한 글 확인", description = "커뮤니티에 등록한 게시글을 확인한다")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 완료"),
+            @ApiResponse(responseCode = "403", description = "조회 권한이 없음")
+    })
+    public ResponseEntity<?> viewMyPosts(HttpSession session) {
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            List<UserDTO.MyPostResponse> myPosts = userService.viewMyPost(optionalUser);
+
+            return ResponseEntity.ok(myPosts);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 }
