@@ -8,22 +8,32 @@ import RunningMate.backend.domain.running.entity.RunningGroup;
 import RunningMate.backend.domain.running.repository.LeaderBoardRepository;
 import RunningMate.backend.domain.running.repository.RunningGroupRepository;
 import RunningMate.backend.domain.running.service.RunningService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/Running")
+@RequestMapping("/running")
 public class RunningController {
     private final RunningService runningService;
     private final SessionUtils sessionUtils;
-    @PostMapping("/createGroup")
+    @PostMapping("/create")
+    @Operation(summary = "러닝방 생성하기", description = "사용자에게 제목, 태그, 시작,종료시간, 참가수, 목표러닝거리를 받아 러닝방을 생성한다." +
+                                                        "\n 사용자는 러닝 방 생성 동시에 러닝방에 참가하게 되고 record에 대한 정보를 리턴한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "러닝 방 생성 완료"),
+            @ApiResponse(responseCode = "400", description = "러닝 방 생성 실패")
+    })
     public ResponseEntity<?> createGroup(@RequestBody RunningDTO.MakeRunningGroupRequest request, HttpSession session){
         try {
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
@@ -34,6 +44,12 @@ public class RunningController {
         }
     }
 
+    @Operation(summary = "러닝방 참가하기", description = "사용자에게 참가하고 싶은 groupId를 받아 러닝방에 참가시킨다."+
+                                                         "\n 사용자는 러닝방에 참가시키고 record 정보를 리턴한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "러닝 방 참가 성공"),
+            @ApiResponse(responseCode = "400", description = "러닝 방 참가 실패")
+    })
     @PostMapping("/participate/{groupId}")
     public ResponseEntity<?> participateGroup(@PathVariable Long groupId, HttpSession session){
         try{
@@ -43,9 +59,18 @@ public class RunningController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @GetMapping("/")
+    @Operation(summary = "러닝방 조회하기", description = "사용자에게 러닝방 목록을 보여준다")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "러닝 방 조회 성공"),
+            @ApiResponse(responseCode = "204", description = "생성된 러닝방이 없는 경우")
+    })
+    @GetMapping("")
     public ResponseEntity<?> getTest(){
-        return ResponseEntity.ok(runningService.viewRunningGroups());
+        List<RunningDTO.RunningGroupViewResponse> runningGroupViewResponses = runningService.viewRunningGroups();
+        if (runningGroupViewResponses.isEmpty())
+            return ResponseEntity.noContent().build();
+        else
+            return ResponseEntity.ok().body(runningGroupViewResponses);
     }
 
 
