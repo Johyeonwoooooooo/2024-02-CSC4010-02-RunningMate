@@ -27,7 +27,7 @@ public class RunningServiceImpl implements RunningService {
     @Override
     public RunningGroup makeRunningGroup(RunningDTO.MakeRunningGroupRequest request, Optional<User> optionalUser) {
         if(optionalUser.isEmpty())
-            throw new IllegalArgumentException("로그인되지 않아 불가합니다.");
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
         return groupRepository.save(RunningGroup.builder().groupTitle(request.getGroupTitle())
                 .groupTag(request.getGroupTag())
@@ -42,7 +42,7 @@ public class RunningServiceImpl implements RunningService {
     @Override
     public RunningDTO.ParticipateGroupResponse participateGroup(Long groupId, Optional<User> optionalUser) {
         if(optionalUser.isEmpty())
-            throw new IllegalArgumentException("로그인 되지 않아 불가능합니다.");
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
         RunningGroup group = groupRepository.findByGroupId(groupId);
         if(group == null)
