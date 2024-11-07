@@ -65,7 +65,7 @@ public class CommunityController {
     }
 
     @GetMapping("/post/get/{postId}/running-spot")
-    @Operation(summary = "커뮤니티 글 확인", description = "메인 페이지를 통해 러닝 스팟 공유 게시글을 확인한다.")
+    @Operation(summary = "메인 페이지를 통한 러닝 스팟 게시글 확인", description = "메인 페이지를 통해 러닝 스팟 공유 게시글을 확인한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
@@ -80,7 +80,7 @@ public class CommunityController {
     }
 
     @GetMapping("/post/get/{postId}/exercise-proof")
-    @Operation(summary = "커뮤니티 글 확인", description = "메인 페이지를 통해 운동 인증 게시글을 확인한다.")
+    @Operation(summary = "메인 페이지를 통한 운도 인증 게시글 확인", description = "메인 페이지를 통해 운동 인증 게시글을 확인한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
@@ -125,7 +125,7 @@ public class CommunityController {
     }
 
     @PostMapping("/post/{postId}/comment")
-    @Operation(summary = "커뮤니티 게시글 댓글 등록", description = "커뮤니티에 올라온 게시글에 댓글을 작성한다.")
+    @Operation(summary = "게시글 댓글 등록", description = "커뮤니티에 올라온 게시글에 댓글을 작성한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "댓글을 작성할 수 없음")
@@ -147,7 +147,7 @@ public class CommunityController {
         }
     }
 
-    @GetMapping("/post/{postId}/comment")
+    @GetMapping("/post/{postId}/comments")
     @Operation(summary = "커뮤니티 게시글 댓글 확인", description = "커뮤니티에 올라온 게시글의 댓글을 확인한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
