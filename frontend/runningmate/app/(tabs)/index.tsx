@@ -171,7 +171,7 @@ const HomeScreen = () => {
   const renderCourseItem = ({ item }) => (
     <TouchableOpacity 
       style={styles.courseItemContainer}
-      onPress={() => navigation.navigate('CourseDetail', { courseId: item.id })}
+      // onPress={() => navigation.navigate('CourseDetail', { courseId: item.id })}
     >
       <Image
         source={{ uri: item.image }}
@@ -192,7 +192,7 @@ const HomeScreen = () => {
   const renderSpotPost = ({ item }) => (
     <TouchableOpacity 
       style={styles.spotContainer}
-      onPress={() => navigation.navigate('SpotDetail', { spotId: item.id })}
+      onPress={() => navigation.navigate('community', { spotId: item.id })}
     >
       <View style={styles.spotHeader}>
         <View style={styles.userInfo}>
@@ -218,7 +218,7 @@ const HomeScreen = () => {
   const renderExercisePost = ({ item }) => (
     <TouchableOpacity 
       style={styles.spotContainer}
-      onPress={() => navigation.navigate('SpotDetail', { spotId: item.id })}
+      onPress={() => navigation.navigate('community', { spotId: item.id })}
     >
       <View style={styles.spotHeader}>
         <View style={styles.userInfo}>
@@ -245,7 +245,7 @@ const HomeScreen = () => {
   const renderGroup = ({ item }) => (
     <TouchableOpacity 
       style={styles.groupContainer}
-      onPress={() => navigation.navigate('GroupDetail', { groupId: item.id })}
+      onPress={() => navigation.navigate('community', { groupId: item.id })}
     >
       <View style={styles.groupHeader}>
         <Text style={styles.groupTitle}>{item.title}</Text>
