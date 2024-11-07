@@ -21,8 +21,12 @@ export default function TabLayout() {
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "home" : "home-outline"}
-              color={color}
+              source={
+                focused
+                  ? require("../../assets/icons/home.png")
+                  : require("../../assets/icons/home_color.png")
+              }
+              style={{ tintColor: color }}
             />
           ),
         }}
@@ -34,8 +38,12 @@ export default function TabLayout() {
           title: "Running",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "code-slash" : "code-slash-outline"}
-              color={color}
+              source={
+                focused
+                  ? require("../../assets/icons/running.png")
+                  : require("../../assets/icons/running_color.png")
+              }
+              style={{ tintColor: color }}
             />
           ),
         }}
@@ -47,8 +55,12 @@ export default function TabLayout() {
           title: "Community",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "home" : "home-outline"}
-              color={color}
+              source={
+                focused
+                  ? require("../../assets/icons/community.png")
+                  : require("../../assets/icons/community_color.png")
+              }
+              style={{ tintColor: color }}
             />
           ),
         }}
@@ -60,8 +72,12 @@ export default function TabLayout() {
           title: "My Page",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "home" : "home-outline"}
-              color={color}
+              source={
+                focused
+                  ? require("../../assets/icons/mypage.png")
+                  : require("../../assets/icons/mypage_color.png")
+              }
+              style={{ tintColor: color }}
             />
           ),
         }}
