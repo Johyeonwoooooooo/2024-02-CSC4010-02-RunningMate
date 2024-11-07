@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   scrollContent: {
-    paddingTop: 20,
+    // paddingTop: 20,
   },
   postCard: {
     marginBottom: 8,          // 간격 조정
