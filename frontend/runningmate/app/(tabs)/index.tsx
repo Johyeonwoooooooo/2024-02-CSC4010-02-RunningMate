@@ -3,7 +3,7 @@ import { StyleSheet, View, Image, ScrollView, TouchableOpacity, Dimensions, Flat
 import { useNavigation } from '@react-navigation/native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const COURSE_ITEM_WIDTH = SCREEN_WIDTH - 60;
+const COURSE_ITEM_WIDTH = SCREEN_WIDTH - 50;
 
 // 더미 데이터 정의
 const DUMMY_COURSES = [
@@ -39,12 +39,20 @@ const DUMMY_COURSES = [
     image: 'https://i.imgur.com/Q9JqXpi.jpeg',
     estimatedTime: '25분',
   },
+  {
+    id: 5,
+    name: '한강 산책',
+    distance: '2km',
+    difficulty: '초급',
+    image: 'https://i.imgur.com/Q9JqXpi.jpeg',
+    estimatedTime: '250분',
+  },
 ];
 
 const DUMMY_SPOTS = [
   {
     id: 1,
-    user: '러너 김철수',
+    user: '러너 김철수1',
     date: '2024.02.15',
     spotName: '여의도 한강공원',
     spotDescription: '새벽 러닝하기 좋아요! 러닝 메이트 구합니다 👋',
@@ -53,21 +61,12 @@ const DUMMY_SPOTS = [
   },
   {
     id: 2,
-    user: '마라토너 이영희',
+    user: '마라토너 이영',
     date: '2024.02.14',
     spotName: '올림픽공원',
     spotDescription: '저녁에 사람 적고 공기 좋아요~ 코스도 잘 되어있습니다!',
     likes: 18,
     images: ['https://i.imgur.com/BHPqxdw.jpeg']
-  },
-  {
-    id: 3,
-    user: '러닝왕 박지성',
-    date: '2024.02.13',
-    spotName: '남산 둘레길',
-    spotDescription: '경사가 있어서 운동 효과 최고입니다. 주말 아침이 가장 좋아요',
-    likes: 35,
-    images: ['https://i.imgur.com/2dXRRmp.jpeg']
   }
 ];
 
@@ -120,48 +119,22 @@ const DUMMY_GROUPS = [
 
 const DUMMY_EXERCISE = [
   {
-    id: 1,
-    title: '아침을 여는 러너들',
-    startTime: '06:00',
-    endTime: '07:00',
-    distance: '5km',
-    currentMembers: 3,
-    maxMembers: 6,
-    level: '초급',
-    location: '여의도 한강공원'
+    id: 10,
+    user: '러너 김철수123',
+    date: '2024.02.15',
+    spotName: '여의도 한강공원',
+    spotDescription: '새벽 러닝하기 좋아요! 러닝 메이트 구합니다 👋',
+    likes: 24,
+    images: ['https://i.imgur.com/Q9JqXpi.jpeg']
   },
   {
-    id: 2,
-    title: '퇴근 후 스트레스 해소',
-    startTime: '19:00',
-    endTime: '20:00',
-    distance: '7km',
-    currentMembers: 4,
-    maxMembers: 8,
-    level: '중급',
-    location: '올림픽공원'
-  },
-  {
-    id: 3,
-    title: '주말 마라톤 준비',
-    startTime: '08:00',
-    endTime: '09:30',
-    distance: '10km',
-    currentMembers: 5,
-    maxMembers: 10,
-    level: '고급',
-    location: '남산 둘레길'
-  },
-  {
-    id: 4,
-    title: '초보자 환영 러닝',
-    startTime: '07:00',
-    endTime: '08:00',
-    distance: '3km',
-    currentMembers: 2,
-    maxMembers: 6,
-    level: '초급',
-    location: '청계천'
+    id: 11,
+    user: '러너 손흥민',
+    date: '2024.02.15',
+    spotName: '여의도 한강공원',
+    spotDescription: '새벽 러닝하기 좋아요! 러닝 메이트 구합니다 👋',
+    likes: 24,
+    images: ['https://i.imgur.com/Q9JqXpi.jpeg']
   },
 ];
 
@@ -174,25 +147,25 @@ const HomeScreen = () => {
   // 코스 자동 스크롤
   useEffect(() => {
     let scrollInterval;
-    
-    const startAutoScroll = () => {
-      let currentIndex = 0;
-      scrollInterval = setInterval(() => {
-        currentIndex = (currentIndex + 1) % DUMMY_COURSES.length;
-        courseListRef.current?.scrollToIndex({
-          index: currentIndex,
-          animated: true,
-        });
-      }, 3000);
-    };
+    // 자동스크롤 필요하면 사용
+    // const startAutoScroll = () => {
+    //   let currentIndex = 0;
+    //   scrollInterval = setInterval(() => {
+    //     currentIndex = (currentIndex + 1) % DUMMY_COURSES.length;
+    //     courseListRef.current?.scrollToIndex({
+    //       index: currentIndex,
+    //       animated: true,
+    //     });
+    //   }, 3000);
+    // };
 
-    startAutoScroll();
+    // startAutoScroll();
 
-    return () => {
-      if (scrollInterval) {
-        clearInterval(scrollInterval);
-      }
-    };
+    // return () => {
+    //   if (scrollInterval) {
+    //     clearInterval(scrollInterval);
+    //   }
+    // };
   }, []);
 
   const renderCourseItem = ({ item }) => (
@@ -228,12 +201,32 @@ const HomeScreen = () => {
         </View>
         <TouchableOpacity 
           style={styles.likeButton}
-          onPress={() => {
-            setLiked(prev => ({
-              ...prev,
-              [item.id]: !prev[item.id]
-            }));
-          }}
+        >
+          <Text style={styles.heartIcon}>{liked[item.id] ? '❤️' : '🤍'}</Text>
+          <Text style={styles.likeCount}>
+            {liked[item.id] ? item.likes + 1 : item.likes}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.spotName}>{item.spotName}</Text>
+      <Text style={styles.spotDescription} numberOfLines={2}>
+        {item.spotDescription}
+      </Text>
+      
+    </TouchableOpacity>
+  );
+  const renderExercisePost = ({ item }) => (
+    <TouchableOpacity 
+      style={styles.spotContainer}
+      onPress={() => navigation.navigate('SpotDetail', { spotId: item.id })}
+    >
+      <View style={styles.spotHeader}>
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>{item.user}</Text>
+          <Text style={styles.date}>{item.date}</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.likeButton}
         >
           <Text style={styles.heartIcon}>{liked[item.id] ? '❤️' : '🤍'}</Text>
           <Text style={styles.likeCount}>
@@ -346,8 +339,8 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </View>
         <FlatList
-          data={DUMMY_SPOTS}
-          renderItem={renderSpotPost}
+          data={DUMMY_EXERCISE}
+          renderItem={renderExercisePost}
           keyExtractor={item => item.id.toString()}
           scrollEnabled={false}
         />
@@ -358,7 +351,7 @@ const HomeScreen = () => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>현재 이런 방이 생성되어 있어요!</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('RunningGroups')}>
+          <TouchableOpacity onPress={() => navigation.navigate('running')}>
             <Text style={styles.moreButton}>더보기 ≫</Text>
           </TouchableOpacity>
         </View>
@@ -417,7 +410,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   courseListContainer: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 0,
   },
   courseItemContainer: {
     width: COURSE_ITEM_WIDTH,
