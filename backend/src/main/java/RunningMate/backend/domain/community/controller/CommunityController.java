@@ -57,7 +57,7 @@ public class CommunityController {
             if (post == null) {
                 return ResponseEntity.badRequest().body("글 등록에 실패하였습니다.");
             } else {
-                return ResponseEntity.ok("글 등록에 성공하였습니다.");
+                return ResponseEntity.ok(post.getPostId() + post.getPostTitle() + post.getPostContent() + post.getPostImageList() + post.getUser());
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -95,13 +95,12 @@ public class CommunityController {
             if (comment == null) {
                 return ResponseEntity.badRequest().body("댓글 등록에 실패하였습니다.");
             } else {
-                return ResponseEntity.ok("댓글 등록에 성공하였습니다.");
+                return ResponseEntity.ok(comment.getCommentId() + comment.getCommentContent() + comment.getCommentWriteTime() + comment.getUser());
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
 
     @GetMapping("/post/{postId}/comment")
     @Operation(summary = "커뮤니티 게시글 댓글 확인", description = "커뮤니티에 올라온 게시글의 댓글을 확인한다.")
