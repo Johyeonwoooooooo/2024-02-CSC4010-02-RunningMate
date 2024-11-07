@@ -23,8 +23,8 @@ export default function TabLayout() {
             <TabBarIcon
               source={
                 focused
-                  ? require("../../assets/icons/home.png")
-                  : require("../../assets/icons/home_color.png")
+                  ? require("../../assets/icons/home_color.png")
+                  : require("../../assets/icons/home.png")
               }
               style={{ tintColor: color }}
             />
@@ -40,8 +40,8 @@ export default function TabLayout() {
             <TabBarIcon
               source={
                 focused
-                  ? require("../../assets/icons/running.png")
-                  : require("../../assets/icons/running_color.png")
+                  ? require("../../assets/icons/running_color.png")
+                  : require("../../assets/icons/running.png")
               }
               style={{ tintColor: color }}
             />
@@ -57,8 +57,8 @@ export default function TabLayout() {
             <TabBarIcon
               source={
                 focused
-                  ? require("../../assets/icons/community.png")
-                  : require("../../assets/icons/community_color.png")
+                  ? require("../../assets/icons/community_color.png")
+                  : require("../../assets/icons/community.png")
               }
               style={{ tintColor: color }}
             />
@@ -74,8 +74,8 @@ export default function TabLayout() {
             <TabBarIcon
               source={
                 focused
-                  ? require("../../assets/icons/mypage.png")
-                  : require("../../assets/icons/mypage_color.png")
+                  ? require("../../assets/icons/mypage_color.png")
+                  : require("../../assets/icons/mypage.png")
               }
               style={{ tintColor: color }}
             />
