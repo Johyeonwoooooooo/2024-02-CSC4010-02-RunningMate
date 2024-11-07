@@ -64,18 +64,63 @@ public class CommunityController {
         }
     }
 
-    @GetMapping("/post/get")
-    @Operation(summary = "커뮤니티 글 확인", description = "커뮤니티에 올라온 글을 확인한다.")
+    @GetMapping("/post/get/{postId}/running-spot")
+    @Operation(summary = "커뮤니티 글 확인", description = "메인 페이지를 통해 러닝 스팟 공유 게시글을 확인한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
-    public ResponseEntity<?> getPostViews() {
+    public ResponseEntity<?> getClickedRunningSpotPosts(@PathVariable("postId") Long postId) {
         try {
-            List<CommunityDTO.PostViewResponse> postResponse = communityService.viewPost();
+            List<CommunityDTO.PostViewResponse> postResponse = communityService.viewRunningSpotPost(postId);
             return ResponseEntity.ok(postResponse);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/post/get/{postId}/exercise-proof")
+    @Operation(summary = "커뮤니티 글 확인", description = "메인 페이지를 통해 운동 인증 게시글을 확인한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+    })
+    public ResponseEntity<?> getClickedExerciseProofPosts(@PathVariable("postId") Long postId) {
+        try {
+            List<CommunityDTO.PostViewResponse> postResponse = communityService.viewExerciseProofPost(postId);
+            return ResponseEntity.ok(postResponse);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/post/get/running-spot")
+    @Operation(summary = "러닝 스팟 공유 게시글 확인", description = "커뮤니티 탭에서 러닝 스팟 공유 게시글을 확인한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+    })
+    public ResponseEntity<?> getRunningSpotPosts() {
+        List<CommunityDTO.PostViewResponse> posts = communityService.viewRunningSpotPost();
+        if (posts.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(posts);
+        }
+    }
+
+    @GetMapping("/post/get/exercise-proof")
+    @Operation(summary = "운동 인증 게시글 확인", description = "커뮤니티 탭에서 운동 인증 게시글을 확인한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+    })
+    public ResponseEntity<?> getExerciseProofPosts() {
+        List<CommunityDTO.PostViewResponse> posts = communityService.viewExerciseProofPost();
+        if (posts.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(posts);
         }
     }
 

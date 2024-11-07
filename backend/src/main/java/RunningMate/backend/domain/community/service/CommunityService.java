@@ -13,7 +13,12 @@ import java.util.Optional;
 public interface CommunityService {
     Post uploadPost(CommunityDTO.PostUploadRequest request, List<MultipartFile> images, Optional<User> user);
 
-    List<CommunityDTO.PostViewResponse> viewPost();
+    List<CommunityDTO.PostViewResponse> viewRunningSpotPost(Long postId);
+    List<CommunityDTO.PostViewResponse> viewExerciseProofPost(Long postId);
+
+    List<CommunityDTO.PostViewResponse> viewRunningSpotPost();
+
+    List<CommunityDTO.PostViewResponse> viewExerciseProofPost();
 
     List<CommunityDTO.MainPagePostResponse> getMainPagePost();
 

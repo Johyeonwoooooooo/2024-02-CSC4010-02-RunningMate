@@ -35,8 +35,8 @@ public class CommunityDTO {
         private String postTitle;
         private String postContent;
         private Boolean postTag;
-        private List<String> postImages;
         private LocalDateTime postDate;
+        private List<String> postImages;
     }
 
     @Builder

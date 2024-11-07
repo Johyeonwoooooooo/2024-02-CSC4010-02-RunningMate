@@ -55,28 +55,55 @@ public class CommunityServiceImpl implements CommunityService{
     }
 
     @Override
-    public List<CommunityDTO.PostViewResponse> viewPost() {
-        List<Post> posts= postRepository.findTop15ByOrderByPostDateDesc();
+    public List<CommunityDTO.PostViewResponse> viewRunningSpotPost(Long postId) { // 메인페이지 -> 커뮤니티 넘어가는 경우
+        List<CommunityDTO.PostViewResponse> postViewResponses = new ArrayList<>();
+        postRepository.findById(postId).ifPresent(post -> postViewResponses.add(convertToDTO(post)));
 
-        return posts.stream().map(post -> {
-            List<String> postImages = post.getPostImageList()
-                    .stream()
-                    .map(PostImage::getImageURL)
-                    .toList();
+        List<Post> posts = postRepository.findTop14ByPostTagTrueOrderByLikeCountDesc();
 
-            return CommunityDTO.PostViewResponse.builder()
-                    .postId(post.getPostId())
-                    .userId(post.getUser().getUserId())
-                    .userNickname(post.getUser().getUserNickname())
-                    .postTag(post.getPostTag())
-                    .commentCount(post.getCommentCount())
-                    .likeCount(post.getLikeCount())
-                    .postContent(post.getPostContent())
-                    .postTitle(post.getPostTitle())
-                    .postDate(post.getPostDate())
-                    .postImages(postImages)
-                    .build();
-        }).toList();
+        posts.stream()
+                .filter(post -> !post.getPostId().equals(postId))
+                .map(this::convertToDTO)
+                .forEach(postViewResponses::add);
+
+        return postViewResponses;
+    }
+
+    @Override
+    public List<CommunityDTO.PostViewResponse> viewExerciseProofPost(Long postId) {
+        List<CommunityDTO.PostViewResponse> postViewResponses = new ArrayList<>();
+        postRepository.findById(postId).ifPresent(post -> postViewResponses.add(convertToDTO(post)));
+
+        List<Post> posts = postRepository.findTop14ByPostTagFalseOrderByLikeCountDesc();
+
+        posts.stream()
+                .filter(post -> !post.getPostId().equals(postId))
+                .map(this::convertToDTO)
+                .forEach(postViewResponses::add);
+
+        return postViewResponses;
+    }
+
+    @Override
+    public List<CommunityDTO.PostViewResponse> viewRunningSpotPost() {
+        List<Post> posts = postRepository.findTop15ByPostTagTrueOrderByPostDate();
+
+        List<CommunityDTO.PostViewResponse> postViewResponses = new ArrayList<>();
+
+        return posts.stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    @Override
+    public List<CommunityDTO.PostViewResponse> viewExerciseProofPost() {
+        List<Post> posts = postRepository.findTop15ByPostTagFalseOrderByPostDate();
+
+        List<CommunityDTO.PostViewResponse> postViewResponses = new ArrayList<>();
+
+        return posts.stream()
+                .map(this::convertToDTO)
+                .toList();
     }
 
     public List<CommunityDTO.MainPagePostResponse> getMainPagePost() {
@@ -129,7 +156,8 @@ public class CommunityServiceImpl implements CommunityService{
         if(user.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+        Post post = postRepository.findById(postId).orElseThrow(()
+                -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
         if (likeRepository.existsByUserAndPost(user.get(), post)) {
             throw new IllegalArgumentException("이미 좋아요를 누른 게시글입니다.");
@@ -143,7 +171,7 @@ public class CommunityServiceImpl implements CommunityService{
         post.setLikeCount(post.getLikeCount() + 1);
         likeRepository.save(like);
 
-        return like;
+        return likeRepository.save(like);
     }
 
     @Override
@@ -164,5 +192,24 @@ public class CommunityServiceImpl implements CommunityService{
         }
 
         postRepository.delete(post);
+    }
+
+    private CommunityDTO.PostViewResponse convertToDTO(Post post) {
+        List<String> postImages = post.getPostImageList()
+                .stream()
+                .map(PostImage::getImageURL)
+                .toList();
+
+        return CommunityDTO.PostViewResponse.builder()
+                .postId(post.getPostId())
+                .userId(post.getUser().getUserId())
+                .userNickname(post.getUser().getUserNickname())
+                .commentCount(post.getCommentCount())
+                .likeCount(post.getLikeCount())
+                .postContent(post.getPostContent())
+                .postTitle(post.getPostTitle())
+                .postDate(post.getPostDate())
+                .postImages(postImages)
+                .build();
     }
 }
