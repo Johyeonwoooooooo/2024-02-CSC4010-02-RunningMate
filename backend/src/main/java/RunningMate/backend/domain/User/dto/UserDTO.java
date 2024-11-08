@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 public class UserDTO {
@@ -46,6 +47,17 @@ public class UserDTO {
     public static class UpdateProfileRequest {
         private Long userWeight;
         private Long userHeight;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MyPostResponse {
+        private Long postId;
+        private String postTitle;
+        private String postContent;
+        private LocalDateTime postDate;
     }
 
 }
