@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -12,22 +12,26 @@ import { useAuth } from "@/context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+//import { Tabs } from "expo-router";
+
 export default function MyPageScreen() {
   const { user } = useAuth();
   const navigation = useNavigation();
 
-  if (!user) {
-    // 로그인 오류
-    return (
-      <View style={styles.container}>
-        <Text style={styles.message}>로그인이 필요합니다.</Text>
-      </View>
-    );
-  }
+  const [selectedTab, setSelectedTab] = useState("runningStats");
+  // if (!user) {
+  //   // 로그인 오류
+  //   return (
+  //     <SafeAreaView style={styles.safeArea}>
+  //       <Text style={styles.message}>로그인이 필요합니다.</Text>
+  //     </SafeAreaView>
+  //   );
+  // }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* 개인 프로필 */}
         <View style={styles.profileContainer}>
           <Image
             source={{ uri: "https://example.com/profile-icon.png" }} // replace with your profile image URL
@@ -54,22 +58,66 @@ export default function MyPageScreen() {
           </View>
         </View>
 
+        {/* 상단 탭 */}
+        {/* Tab Navigation */}
         <View style={styles.tabContainer}>
-          <Text style={styles.tab}>달리기 통계 확인</Text>
-          <Text style={styles.selectedTab}>작성한 글 확인</Text>
+          <TouchableOpacity
+            onPress={() => setSelectedTab("runningStats")}
+            style={[
+              styles.tab,
+              selectedTab === "runningStats" && styles.selectedTab,
+            ]}
+          >
+            <Text
+              style={
+                selectedTab === "runningStats"
+                  ? styles.selectedTabText
+                  : styles.tabText
+              }
+            >
+              달리기 통계 확인
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setSelectedTab("writtenPosts")}
+            style={[
+              styles.tab,
+              selectedTab === "writtenPosts" && styles.selectedTab,
+            ]}
+          >
+            <Text
+              style={
+                selectedTab === "writtenPosts"
+                  ? styles.selectedTabText
+                  : styles.tabText
+              }
+            >
+              작성한 글 확인
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.postContainer}>
-          <Text style={styles.postTitle}>제목</Text>
-          <Text style={styles.postDate}>2024/10/13</Text>
-          <View style={styles.postBodyPlaceholder}></View>
-        </View>
-
-        <View style={styles.postContainer}>
-          <Text style={styles.postTitle}>제목</Text>
-          <Text style={styles.postDate}>2024/10/8</Text>
-          <View style={styles.postBodyPlaceholder}></View>
-        </View>
+        {/* Tab Content */}
+        {selectedTab === "runningStats" ? (
+          <View style={styles.contentContainer}>
+            <Text style={styles.contentText}>
+              달리기 통계 내용이 여기에 표시됩니다.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.contentContainer}>
+            <View style={styles.postContainer}>
+              <Text style={styles.postTitle}>제목</Text>
+              <Text style={styles.postDate}>2024/10/13</Text>
+              <View style={styles.postBodyPlaceholder}></View>
+            </View>
+            <View style={styles.postContainer}>
+              <Text style={styles.postTitle}>제목</Text>
+              <Text style={styles.postDate}>2024/10/8</Text>
+              <View style={styles.postBodyPlaceholder}></View>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
