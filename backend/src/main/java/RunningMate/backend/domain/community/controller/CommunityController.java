@@ -80,7 +80,7 @@ public class CommunityController {
     }
 
     @GetMapping("/post/get/{postId}/exercise-proof")
-    @Operation(summary = "메인 페이지를 통한 운도 인증 게시글 확인", description = "메인 페이지를 통해 운동 인증 게시글을 확인한다.")
+    @Operation(summary = "메인 페이지를 통한 운동 인증 게시글 확인", description = "메인 페이지를 통해 운동 인증 게시글을 확인한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
