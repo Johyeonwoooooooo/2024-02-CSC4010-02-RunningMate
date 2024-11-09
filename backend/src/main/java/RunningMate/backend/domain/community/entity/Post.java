@@ -6,6 +6,9 @@ import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -27,13 +30,18 @@ public class Post {
     private Boolean postTag;
 
     @Column(nullable = false)
+    @Setter
     private Long likeCount;
 
     @Column(nullable = false)
+    @Setter
     private Long commentCount;
 
     @Column(nullable = false)
     private String postContent;
+
+    @Column(nullable = false)
+    private LocalDateTime postDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="userId")

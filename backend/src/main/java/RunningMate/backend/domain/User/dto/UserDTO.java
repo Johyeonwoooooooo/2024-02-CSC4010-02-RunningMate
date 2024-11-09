@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 //https://github.com/Like-House/BE/blob/develop/src/main/java/backend/like_house/domain/user/dto/UserDTO.java 참고해서 만듦
 @AllArgsConstructor
 public class UserDTO {
@@ -47,6 +49,17 @@ public class UserDTO {
     public static class UpdateProfileRequest {
         private Long userWeight;
         private Long userHeight;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MyPostResponse {
+        private Long postId;
+        private String postTitle;
+        private String postContent;
+        private LocalDateTime postDate;
     }
 
 }
