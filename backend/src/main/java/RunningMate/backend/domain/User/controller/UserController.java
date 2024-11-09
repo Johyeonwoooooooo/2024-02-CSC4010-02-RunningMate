@@ -94,6 +94,7 @@ public class UserController {
     @Operation(summary = "사용자가 작성한 글 확인", description = "커뮤니티에 등록한 게시글을 확인한다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 완료"),
+            @ApiResponse(responseCode = "204", description = "작성한 게시글이 없음"),
             @ApiResponse(responseCode = "403", description = "조회 권한이 없음")
     })
     public ResponseEntity<?> viewMyPosts(HttpSession session) {
@@ -101,7 +102,11 @@ public class UserController {
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
             List<UserDTO.MyPostResponse> myPosts = userService.viewMyPost(optionalUser);
 
-            return ResponseEntity.ok(myPosts);
+            if (myPosts.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            } else{
+                return ResponseEntity.ok(myPosts);
+            }
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
