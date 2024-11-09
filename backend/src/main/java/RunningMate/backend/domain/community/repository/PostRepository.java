@@ -12,6 +12,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findTop14ByPostTagFalseOrderByLikeCountDesc();
     List<Post> findTop2ByPostTagTrueOrderByLikeCount();
     List<Post> findTop2ByPostTagFalseOrderByLikeCount();
-    List<Post> findTop15ByPostTagTrueOrderByPostDate();
-    List<Post> findTop15ByPostTagFalseOrderByPostDate();
+    List<Post> findTop15ByPostTagTrueOrderByPostDateDesc();
+    List<Post> findTop15ByPostTagFalseOrderByPostDateDesc();
 }

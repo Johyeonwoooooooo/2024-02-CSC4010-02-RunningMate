@@ -86,9 +86,7 @@ public class CommunityServiceImpl implements CommunityService{
 
     @Override
     public List<CommunityDTO.PostViewResponse> viewRunningSpotPost() {
-        List<Post> posts = postRepository.findTop15ByPostTagTrueOrderByPostDate();
-
-        List<CommunityDTO.PostViewResponse> postViewResponses = new ArrayList<>();
+        List<Post> posts = postRepository.findTop15ByPostTagTrueOrderByPostDateDesc();
 
         return posts.stream()
                 .map(this::convertToDTO)
@@ -97,9 +95,7 @@ public class CommunityServiceImpl implements CommunityService{
 
     @Override
     public List<CommunityDTO.PostViewResponse> viewExerciseProofPost() {
-        List<Post> posts = postRepository.findTop15ByPostTagFalseOrderByPostDate();
-
-        List<CommunityDTO.PostViewResponse> postViewResponses = new ArrayList<>();
+        List<Post> posts = postRepository.findTop15ByPostTagFalseOrderByPostDateDesc();
 
         return posts.stream()
                 .map(this::convertToDTO)
