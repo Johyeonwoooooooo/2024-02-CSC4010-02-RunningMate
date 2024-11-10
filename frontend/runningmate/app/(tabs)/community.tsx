@@ -93,7 +93,7 @@ const CommentsModal = ({ visible, onClose }) => {
   );
 };
 
-// FloatingActionButton 컴포넌트
+// + 버튼 글 쓰기
 const FloatingActionButton = () => {
   const router = useRouter();
 
@@ -190,6 +190,7 @@ const CommunityScreen = () => {
   );
 };
 
+// 운동인증 
 const ExerciseScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -226,6 +227,7 @@ export default function CommunityTabs() {
         <Tab.Screen name="러닝 스팟 공유" component={CommunityScreen} />
         <Tab.Screen name="운동 인증" component={ExerciseScreen} />
       </Tab.Navigator>
+      {/* 글 쓰기 + 버튼 */}
       <FloatingActionButton />
     </View>
   );

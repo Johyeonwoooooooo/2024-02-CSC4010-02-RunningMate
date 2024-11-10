@@ -10,8 +10,11 @@ import {
   Text,
   Modal
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
 
 const DIFFICULTY_LEVELS = [
   { id: 'beginner', label: '초보' },
@@ -39,7 +42,7 @@ export default function RunningMateSearch() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [selectedTimeText, setSelectedTimeText] = useState('러닝 시작 시간 입력');
-
+  const navigation = useNavigation();
   const formatTime = (date) => {
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -54,6 +57,8 @@ export default function RunningMateSearch() {
     }
   };
 
+
+  const router = useRouter();
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.searchContainer}>
@@ -135,7 +140,9 @@ export default function RunningMateSearch() {
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={() => {
+          router.push('/participation/participationMain');
+        }}>
           <Text style={styles.buttonText}>러닝 방 생성</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.button, styles.joinButton]}>
