@@ -40,4 +40,22 @@ public class RunningGroup {
 
     @OneToMany(mappedBy = "group")
     private List<LeaderBoard> leaderBoardList;
+
+    public boolean participateGroup(){
+        if(this.currentParticipants >= this.maxParticipants)
+            return false;
+        else {
+            this.currentParticipants += 1;
+            return true;
+        }
+    }
+
+    public boolean LeaveGroup(){
+        if(this.currentParticipants <= 0)
+            return false;
+        else{
+            this.currentParticipants -= 1;
+            return true;
+        }
+    }
 }
