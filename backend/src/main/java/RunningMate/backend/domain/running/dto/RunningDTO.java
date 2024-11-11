@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class RunningDTO {
     public static class ParticipateGroupResponse {
         private Long recordId;
         private Long distance;
-        private Long runningTime;
+        private Duration runningTime;
         private Long calories;
 
         public ParticipateGroupResponse(Record record){
