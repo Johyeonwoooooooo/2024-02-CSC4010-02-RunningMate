@@ -50,7 +50,7 @@ public class RunningController {
             @ApiResponse(responseCode = "200", description = "러닝 방 참가 성공"),
             @ApiResponse(responseCode = "400", description = "러닝 방 참가 실패")
     })
-    @PostMapping("/participate/{groupId}")
+    @PostMapping("/{groupId}/participate")
     public ResponseEntity<?> participateGroup(@PathVariable Long groupId, HttpSession session){
         try{
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
