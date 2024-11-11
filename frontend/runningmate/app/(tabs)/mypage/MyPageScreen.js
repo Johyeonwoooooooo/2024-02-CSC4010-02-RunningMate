@@ -34,7 +34,9 @@ export default function MyPageScreen() {
         {/* 개인 프로필 */}
         <View style={styles.profileContainer}>
           <Image
-            source={{ uri: "https://example.com/profile-icon.png" }} // replace with your profile image URL
+            source={{
+              uri: "https://cdn-icons-png.flaticon.com/512/8847/8847419.png",
+            }} // replace with your profile image URL
             style={styles.profileImage}
           />
           <View style={styles.profileInfo}>
@@ -59,8 +61,8 @@ export default function MyPageScreen() {
         </View>
 
         {/* 상단 탭 */}
-        {/* Tab Navigation */}
         <View style={styles.tabContainer}>
+          {/* 달리기 통계 확인 탭 */}
           <TouchableOpacity
             onPress={() => setSelectedTab("runningStats")}
             style={[
@@ -78,6 +80,8 @@ export default function MyPageScreen() {
               달리기 통계 확인
             </Text>
           </TouchableOpacity>
+
+          {/* 작성한 글 확인 탭 */}
           <TouchableOpacity
             onPress={() => setSelectedTab("writtenPosts")}
             style={[
@@ -99,12 +103,14 @@ export default function MyPageScreen() {
 
         {/* Tab Content */}
         {selectedTab === "runningStats" ? (
+          // 달리기 통계 내용
           <View style={styles.contentContainer}>
             <Text style={styles.contentText}>
               달리기 통계 내용이 여기에 표시됩니다.
             </Text>
           </View>
         ) : (
+          // 작성한 글 내용
           <View style={styles.contentContainer}>
             <View style={styles.postContainer}>
               <Text style={styles.postTitle}>제목</Text>
@@ -146,7 +152,7 @@ const styles = StyleSheet.create({
     width: 75,
     height: 75,
     borderRadius: 50,
-    backgroundColor: "#ccc",
+    backgroundColor: "#fff",
     marginRight: 16,
   },
   profileInfo: {
@@ -185,6 +191,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: "#000",
     paddingHorizontal: 8,
+  },
+  selectedTabText: {
+    fontWeight: "bold",
+    color: "#000",
   },
   postContainer: {
     marginBottom: 16,
