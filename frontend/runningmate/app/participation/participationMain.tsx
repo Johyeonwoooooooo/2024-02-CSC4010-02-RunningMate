@@ -118,8 +118,18 @@ const CreateRunningRoom = ({ navigation }) => {
       alert(Object.values(timeErrors).join('\n'));
       return;
     }
-    // 방 생성 로직 진행 지금은 러닝으로 보내지만 생성된 방으로 보내야함.
-    router.push('../(tabs)/running');
+    // 생성된 방으로 보내기 .
+    router.push({
+      pathname: './waitingRoom',
+      params: {
+        roomTitle: roomTitle,
+        startTime: startTime.toISOString(), // Date 객체를 문자열로 변환
+        endTime: endTime.toISOString(),
+        targetDistance: targetDistance,
+        maxParticipants: maxParticipants,
+        selectedType: selectedType
+      }
+    });
   };
 
   return (
@@ -244,7 +254,7 @@ const CreateRunningRoom = ({ navigation }) => {
           style={styles.createButton}
           onPress={handleCreateRoom}
         >
-          <Text style={styles.createButtonText}>라이브 방 생성</Text>
+          <Text style={styles.createButtonText}>러닝 방 생성</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
