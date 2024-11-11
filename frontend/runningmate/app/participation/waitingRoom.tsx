@@ -31,6 +31,7 @@ const RunningWaitingRoom = ({ route, navigation }) => {
     console.log('Received params:', params);  // 파라미터 확인용 로그
     
     const [timeLeft, setTimeLeft] = useState('');
+    const [isActive, setIsActive] = useState(true); // 타이머 활성화 상태 추가
     const [participants, setParticipants] = useState([
       { id: 1, name: '방장' },
       { id: 2, name: '참가자1'},
@@ -39,6 +40,7 @@ const RunningWaitingRoom = ({ route, navigation }) => {
 
   // 남은 시간 계산 함수
   const calculateTimeLeft = () => {
+    if (!isActive) return; // 타이머가 비활성화되면 계산하지 않음
     const now = new Date();
     const start = new Date(startTime);
     const diff = start - now;
@@ -68,7 +70,10 @@ const RunningWaitingRoom = ({ route, navigation }) => {
         },
         { 
           text: "나가기", 
-          onPress: () => router.push('../(tabs)/running'),
+          onPress: () => {
+            setIsActive(false); // 타이머 중지
+            router.push('../(tabs)/running');
+          },
           style: "destructive"
         }
       ]
@@ -76,12 +81,20 @@ const RunningWaitingRoom = ({ route, navigation }) => {
   };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
+    let timer;
+    if (isActive) {
+      timer = setInterval(() => {
+        setTimeLeft(calculateTimeLeft());
+      }, 1000);
+    }
 
-    return () => clearInterval(timer);
-  }, [startTime]);
+    // cleanup 함수
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [isActive, params.startTime]); // isActive를 의존성 배열에 추가
 
   return (
     <SafeAreaView style={styles.container}>
