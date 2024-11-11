@@ -8,12 +8,16 @@ import RunningMate.backend.domain.running.entity.RunningGroup;
 import RunningMate.backend.domain.running.repository.LeaderBoardRepository;
 import RunningMate.backend.domain.running.repository.RecordRepository;
 import RunningMate.backend.domain.running.repository.RunningGroupRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,12 +52,13 @@ public class RunningServiceImpl implements RunningService {
         if(group == null)
             throw new IllegalArgumentException("해당 러닝방을 찾을 수 없습니다.");
 
-        group.participateGroup();
+        if(!group.participateGroup())
+            throw new IllegalArgumentException("최대 참가자를 달성하여 참가할 수 없습니다.");
         groupRepository.save(group);
         Record record = recordRepository.save(Record.builder().user(optionalUser.get())
-                                                                        .runningTime(0L).calories(0L).distance(0L).build());
-        LeaderBoard build = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
-        leaderBoardRepository.save(build);
+                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
+        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
+        leaderBoardRepository.save(leaderBoard);
 
         return new RunningDTO.ParticipateGroupResponse(record);
     }
@@ -62,6 +67,40 @@ public class RunningServiceImpl implements RunningService {
     public List<RunningDTO.RunningGroupViewResponse> viewRunningGroups() {
         List<RunningGroup> groupList = groupRepository.findAllByStartTimeAfter(LocalDateTime.now());
         return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
+    }
+
+    @Override
+    public RunningDTO.groupParticipantResponse groupParticipants(Long groupId) {
+        RunningGroup group = groupRepository.findByGroupId(groupId);
+        if(group == null)
+            throw new IllegalArgumentException("해당 러닝방이 존재하지 않습니다.");
+
+        List<LeaderBoard> groups = leaderBoardRepository.findAllByGroup(group);
+        List<String> participants = new ArrayList<>();
+        for (LeaderBoard leaderBoard : groups) {
+            participants.add(leaderBoard.getRecord().getUser().getUserNickname());
+        }
+
+        return RunningDTO.groupParticipantResponse.builder().groupTitle(group.getGroupTitle())
+                .groupTag(group.getGroupTag()).endTime(group.getEndTime()).startTime(group.getStartTime())
+                .currentParticipants(group.getCurrentParticipants()).maxParticipants(group.getMaxParticipants())
+                .participants(participants).targetDistance(group.getTargetDistance()).build();
+    }
+
+    @Override
+    @Transactional
+    public void cancelParticipation(RunningDTO.CancelParticipationRequest request) {
+        RunningGroup group = groupRepository.findByGroupId(request.getGroupId());
+        if(group == null)
+            throw new IllegalArgumentException("해당 러닝방이 존재하지 않습니다.");
+        Record record = recordRepository.findRecordByRecordId(request.getRecordId());
+        if(group == null)
+            throw new IllegalArgumentException("해당 기록이 존재하지 않습니다.");
+
+        if(!group.leaveGroup())
+            throw new IllegalArgumentException("이미 참가자가 없습니다.");
+        leaderBoardRepository.deleteLeaderBoardByGroupAndRecord(group, record);
+        recordRepository.deleteRecordByRecordId(request.getRecordId());
     }
 
     @Override

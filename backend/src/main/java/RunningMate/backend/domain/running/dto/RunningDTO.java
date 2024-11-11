@@ -9,7 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class RunningDTO {
     @Builder
@@ -54,7 +56,7 @@ public class RunningDTO {
     public static class ParticipateGroupResponse {
         private Long recordId;
         private Long distance;
-        private Long runningTime;
+        private Duration runningTime;
         private Long calories;
 
         public ParticipateGroupResponse(Record record){
@@ -63,6 +65,30 @@ public class RunningDTO {
             this.runningTime = record.getRunningTime();
             this.calories = record.getCalories();
         }
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class groupParticipantResponse{
+        private String groupTitle;
+        private GroupTag groupTag;
+        private Long targetDistance;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private Integer maxParticipants;
+        private Integer currentParticipants;
+        private List<String> participants;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CancelParticipationRequest{
+        private Long groupId;
+        private Long recordId;
     }
 
     @Builder

@@ -50,7 +50,7 @@ public class RunningGroup {
         }
     }
 
-    public boolean LeaveGroup(){
+    public boolean leaveGroup(){
         if(this.currentParticipants <= 0)
             return false;
         else{

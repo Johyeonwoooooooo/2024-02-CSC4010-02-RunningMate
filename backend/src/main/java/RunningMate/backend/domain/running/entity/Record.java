@@ -6,6 +6,9 @@ import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.time.Duration;
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @DynamicInsert
@@ -22,7 +25,10 @@ public class Record {
     private Long distance;
 
     @Column(nullable = false)
-    private Long runningTime;
+    private LocalDate runningStartTime;
+
+    @Column(nullable = false)
+    private Duration runningTime;
 
     @Column(nullable = false)
     private Long calories;
@@ -34,18 +40,10 @@ public class Record {
     @OneToOne(mappedBy = "record")
     private LeaderBoard leaderBoard;
 
-    public void updateRecord(Long distance, Long runningTime){
+    public void updateRecord(Long distance, Duration runningTime, Long calories){
         this.distance = distance;
         this.runningTime = runningTime;
-        this.calories = calcCalorie();
+        this.calories = calories;
     }
 
-    /**
-     * MET 계수 (running pace)에 따라 달라짐
-     * calories = MET * weight * time
-     * @return calories
-     */
-    private Long calcCalorie(){
-        return 0L;
-    }
 }

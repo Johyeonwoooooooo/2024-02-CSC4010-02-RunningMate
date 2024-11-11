@@ -50,7 +50,7 @@ public class RunningController {
             @ApiResponse(responseCode = "200", description = "러닝 방 참가 성공"),
             @ApiResponse(responseCode = "400", description = "러닝 방 참가 실패")
     })
-    @PostMapping("/participate/{groupId}")
+    @PostMapping("/{groupId}/participate")
     public ResponseEntity<?> participateGroup(@PathVariable Long groupId, HttpSession session){
         try{
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
@@ -59,7 +59,7 @@ public class RunningController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @Operation(summary = "러닝방 조회하기", description = "사용자에게 러닝방 목록을 보여준다")
+    @Operation(summary = "러닝방 목록 조회하기", description = "사용자에게 러닝방 목록을 보여준다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "러닝 방 조회 성공"),
             @ApiResponse(responseCode = "204", description = "생성된 러닝방이 없는 경우")
@@ -73,5 +73,32 @@ public class RunningController {
             return ResponseEntity.ok().body(runningGroupViewResponses);
     }
 
+    @Operation(summary = "러닝방 참가자 조회 하기", description = "러닝방에 참가 중인 유저들을 보여준다")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "참가자 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "생성된 러닝방이 없는 경우")
+    })
+    @GetMapping("/{groupId}/participants")
+    public ResponseEntity<?> viewParticipants(@PathVariable Long groupId){
+        try{
+            return ResponseEntity.ok().body(runningService.groupParticipants(groupId));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
+    @Operation(summary = "러닝 참가 취소", description = "recordId, groupId를 보내 러닝 참가를 취소 한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "참가 취소 성공"),
+            @ApiResponse(responseCode = "400", description = "참가 취소 실패")
+    })
+    @DeleteMapping("/{groupId}/participants")
+    public ResponseEntity<?> cancelParticipation(@RequestBody RunningDTO.CancelParticipationRequest request){
+        try{
+            runningService.cancelParticipation(request);
+            return ResponseEntity.ok().body("정상적으로 참가취소되었습니다.");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
