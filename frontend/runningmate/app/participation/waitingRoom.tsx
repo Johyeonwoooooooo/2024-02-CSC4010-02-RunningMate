@@ -98,54 +98,55 @@ const RunningWaitingRoom = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{roomTitle}</Text>
-      </View>
-
-      <View style={styles.infoContainer}>
-        <View style={styles.timeContainer}>
+      <View style={styles.content}>
+        <Text style={styles.title}>{params.roomTitle}</Text>
+        
+        <View style={styles.timeSection}>
           <Text style={styles.timeLabel}>러닝 시작까지</Text>
           <Text style={styles.timeLeft}>{timeLeft}</Text>
         </View>
 
-        <View style={styles.runningInfo}>
+        <View style={styles.infoSection}>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>목표 거리</Text>
-            <Text style={styles.infoValue}>{targetDistance}km</Text>
+            <Text style={styles.infoValue}>{params.targetDistance}km</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>러닝 시간</Text>
             <Text style={styles.infoValue}>
-              {new Date(startTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} ~ 
-              {new Date(endTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+              오후 {new Date(params.startTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} ~
+              오후 {new Date(params.endTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
             </Text>
           </View>
         </View>
-      </View>
 
-      <View style={styles.participantsContainer}>
-        <Text style={styles.sectionTitle}>
-          참가자 ({participants.length}/{maxParticipants})
-        </Text>
+        <View style={styles.participantsHeader}>
+          <Text style={styles.participantsTitle}>
+            참가자 ({participants.length}/{params.maxParticipants})
+          </Text>
+          <View style={[styles.levelBadge, styles[`level${params.selectedType}`]]}>
+            <Text style={styles.levelBadgeText}>{params.selectedType}</Text>
+          </View>
+        </View>
+
         <ScrollView style={styles.participantsList}>
           {participants.map(participant => (
-            <ParticipantCard 
-              key={participant.id}
-              name={participant.name}
-            />
+            <View key={participant.id} style={styles.participantItem}>
+              <View style={styles.participantInfo}>
+                <Ionicons name="person-circle-outline" size={24} color="#666" />
+                <Text style={styles.participantName}>{participant.name}</Text>
+              </View>
+            </View>
           ))}
         </ScrollView>
       </View>
 
-      {/* 하단 나가기 버튼 */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.leaveButton}
-          onPress={handleLeaveRoom}
-        >
-          <Text style={styles.leaveButtonText}>러닝방 나가기</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity 
+        style={styles.leaveButton}
+        onPress={handleLeaveRoom}
+      >
+        <Text style={styles.leaveButtonText}>러닝방 나가기</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -155,56 +156,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-  header: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+  content: {
+    flex: 1,
+    padding: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '600',
     textAlign: 'center',
+    marginBottom: 30,
   },
-  // 버튼 컨테이너 스타일 수정
-  buttonContainer: {
-    padding: 16,
-    paddingBottom: 34, // Safe area 고려
-  },
-  // 나가기 버튼 스타일 수정
-  leaveButton: {
-    backgroundColor: '#FF4444',
-    borderRadius: 8,
-    padding: 12,
+  timeSection: {
     alignItems: 'center',
-    width: '100%',
-  },
-  leaveButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  infoContainer: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  timeContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   timeLabel: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   timeLeft: {
-    fontSize: 36,
+    fontSize: 48,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#0066FF',
   },
-  runningInfo: {
+  infoSection: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    marginBottom: 30,
+    paddingHorizontal: 10,
   },
   infoItem: {
     alignItems: 'center',
@@ -212,62 +192,75 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 4,
+    marginBottom: 5,
   },
   infoValue: {
     fontSize: 16,
     fontWeight: '600',
   },
-  participantsContainer: {
-    flex: 1,
-    padding: 16,
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  participantsList: {
-    flex: 1,
-  },
-  participantCard: {
+  participantsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-    marginBottom: 8,
+    marginBottom: 15,
+  },
+  participantsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  levelBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 15,
+  },
+  levelBadgeText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  level초보: {
+    backgroundColor: '#E3F2FD',
+  },
+  level중수: {
+    backgroundColor: '#E8F5E9',
+  },
+  level고수: {
+    backgroundColor: '#FFF3E0',
+  },
+  level선수: {
+    backgroundColor: '#FCE4EC',
+  },
+  participantsList: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+  },
+  participantItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   participantInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   participantName: {
-    marginLeft: 8,
+    marginLeft: 10,
     fontSize: 16,
   },
-  levelBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 12,
+  leaveButton: {
+    backgroundColor: '#FF4444',
+    padding: 18,
+    marginHorizontal: 20,
+    marginBottom: 30,
     borderRadius: 12,
   },
-  level초보: {
-    backgroundColor: '#e3f2fd',
-  },
-  level중수: {
-    backgroundColor: '#e8f5e9',
-  },
-  level고수: {
-    backgroundColor: '#fff3e0',
-  },
-  level선수: {
-    backgroundColor: '#fce4ec',
-  },
-  levelText: {
-    fontSize: 14,
-    fontWeight: '500',
+  leaveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 
