@@ -6,6 +6,9 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
+  // API 주소를 전역 변수로 설정
+  const API_URL = "http://192.168.121.1:3001";
+
   const login = (userData) => {
     setIsLoggedIn(true);
     setUser(userData);
@@ -17,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, API_URL }}>
       {children}
     </AuthContext.Provider>
   );

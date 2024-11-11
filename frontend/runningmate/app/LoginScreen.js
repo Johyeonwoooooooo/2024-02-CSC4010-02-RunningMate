@@ -18,6 +18,7 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useAuth();
+  const { API_URL } = useAuth();
 
   // modal(alert) state
   const [modalVisible, setModalVisible] = useState(false);
@@ -50,7 +51,8 @@ const LoginScreen = () => {
 
     /* 서버에 로그인 요청 */
     try {
-      const response = await fetch("http://192.168.121.1:3001/User"); // TODO : Json 서버 주소 package.json에서 삭제후 다시 넣어줘야함
+      const response = await fetch(`${API_URL}/User`); // TODO : Json 서버 주소 package.json에서 삭제후 다시 넣어줘야함
+
       console.log("response status:", response.status);
       const users = await response.json();
       //console.log("users:", users);
