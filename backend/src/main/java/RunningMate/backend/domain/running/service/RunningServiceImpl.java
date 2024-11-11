@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,9 +56,9 @@ public class RunningServiceImpl implements RunningService {
             throw new IllegalArgumentException("최대 참가자를 달성하여 참가할 수 없습니다.");
         groupRepository.save(group);
         Record record = recordRepository.save(Record.builder().user(optionalUser.get())
-                                                                        .runningTime(0L).calories(0L).distance(0L).build());
-        LeaderBoard build = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
-        leaderBoardRepository.save(build);
+                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
+        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
+        leaderBoardRepository.save(leaderBoard);
 
         return new RunningDTO.ParticipateGroupResponse(record);
     }
