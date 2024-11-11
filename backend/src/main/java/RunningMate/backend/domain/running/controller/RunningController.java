@@ -59,7 +59,7 @@ public class RunningController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @Operation(summary = "러닝방 조회하기", description = "사용자에게 러닝방 목록을 보여준다")
+    @Operation(summary = "러닝방 목록 조회하기", description = "사용자에게 러닝방 목록을 보여준다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "러닝 방 조회 성공"),
             @ApiResponse(responseCode = "204", description = "생성된 러닝방이 없는 경우")
@@ -73,5 +73,17 @@ public class RunningController {
             return ResponseEntity.ok().body(runningGroupViewResponses);
     }
 
-
+    @Operation(summary = "러닝방 참가자 조회 하기", description = "러닝방에 참가 중인 유저들을 보여준다")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "참가자 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "생성된 러닝방이 없는 경우")
+    })
+    @GetMapping("/{groupId}/participants")
+    public ResponseEntity<?> viewParticipants(@PathVariable Long groupId){
+        try{
+            return ResponseEntity.ok().body(runningService.groupParticipants(groupId));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,6 +63,24 @@ public class RunningServiceImpl implements RunningService {
     public List<RunningDTO.RunningGroupViewResponse> viewRunningGroups() {
         List<RunningGroup> groupList = groupRepository.findAllByStartTimeAfter(LocalDateTime.now());
         return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
+    }
+
+    @Override
+    public RunningDTO.groupParticipantResponse groupParticipants(Long groupId) {
+        RunningGroup group = groupRepository.findByGroupId(groupId);
+        if(group == null)
+            throw new IllegalArgumentException("해당 러닝방이 존재하지 않습니다.");
+
+        List<LeaderBoard> groups = leaderBoardRepository.findAllByGroup(group);
+        List<String> participants = new ArrayList<>();
+        for (LeaderBoard leaderBoard : groups) {
+            participants.add(leaderBoard.getRecord().getUser().getUserNickname());
+        }
+
+        return RunningDTO.groupParticipantResponse.builder().groupTitle(group.getGroupTitle())
+                .groupTag(group.getGroupTag()).endTime(group.getEndTime()).startTime(group.getStartTime())
+                .currentParticipants(group.getCurrentParticipants()).maxParticipants(group.getMaxParticipants())
+                .participants(participants).targetDistance(group.getTargetDistance()).build();
     }
 
     @Override

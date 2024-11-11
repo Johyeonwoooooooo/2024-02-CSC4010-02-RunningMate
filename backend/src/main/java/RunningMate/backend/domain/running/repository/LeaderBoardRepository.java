@@ -1,8 +1,11 @@
 package RunningMate.backend.domain.running.repository;
 
 import RunningMate.backend.domain.running.entity.LeaderBoard;
+import RunningMate.backend.domain.running.entity.RunningGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface LeaderBoardRepository extends JpaRepository<LeaderBoard, Long> {
+import java.util.List;
 
+public interface LeaderBoardRepository extends JpaRepository<LeaderBoard, Long> {
+    List<LeaderBoard> findAllByGroup(RunningGroup group);
 }
