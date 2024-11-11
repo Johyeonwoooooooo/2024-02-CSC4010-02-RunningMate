@@ -85,6 +85,15 @@ public class RunningDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class CancelParticipationRequest{
+        private Long groupId;
+        private Long recordId;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class MainPageGroupResponse {
         private Long groupId;
         private String groupTitle;

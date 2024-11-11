@@ -86,4 +86,19 @@ public class RunningController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @Operation(summary = "러닝 참가 취소", description = "recordId, groupId를 보내 러닝 참가를 취소 한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "참가 취소 성공"),
+            @ApiResponse(responseCode = "400", description = "참가 취소 실패")
+    })
+    @DeleteMapping("/{groupId}/participants")
+    public ResponseEntity<?> cancelParticipation(@RequestBody RunningDTO.CancelParticipationRequest request){
+        try{
+            runningService.cancelParticipation(request);
+            return ResponseEntity.ok().body("정상적으로 참가취소되었습니다.");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

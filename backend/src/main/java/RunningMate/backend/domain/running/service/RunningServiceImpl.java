@@ -8,6 +8,7 @@ import RunningMate.backend.domain.running.entity.RunningGroup;
 import RunningMate.backend.domain.running.repository.LeaderBoardRepository;
 import RunningMate.backend.domain.running.repository.RecordRepository;
 import RunningMate.backend.domain.running.repository.RunningGroupRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -49,7 +50,8 @@ public class RunningServiceImpl implements RunningService {
         if(group == null)
             throw new IllegalArgumentException("해당 러닝방을 찾을 수 없습니다.");
 
-        group.participateGroup();
+        if(!group.participateGroup())
+            throw new IllegalArgumentException("최대 참가자를 달성하여 참가할 수 없습니다.");
         groupRepository.save(group);
         Record record = recordRepository.save(Record.builder().user(optionalUser.get())
                                                                         .runningTime(0L).calories(0L).distance(0L).build());
@@ -81,6 +83,22 @@ public class RunningServiceImpl implements RunningService {
                 .groupTag(group.getGroupTag()).endTime(group.getEndTime()).startTime(group.getStartTime())
                 .currentParticipants(group.getCurrentParticipants()).maxParticipants(group.getMaxParticipants())
                 .participants(participants).targetDistance(group.getTargetDistance()).build();
+    }
+
+    @Override
+    @Transactional
+    public void cancelParticipation(RunningDTO.CancelParticipationRequest request) {
+        RunningGroup group = groupRepository.findByGroupId(request.getGroupId());
+        if(group == null)
+            throw new IllegalArgumentException("해당 러닝방이 존재하지 않습니다.");
+        Record record = recordRepository.findRecordByRecordId(request.getRecordId());
+        if(group == null)
+            throw new IllegalArgumentException("해당 기록이 존재하지 않습니다.");
+
+        if(!group.leaveGroup())
+            throw new IllegalArgumentException("이미 참가자가 없습니다.");
+        leaderBoardRepository.deleteLeaderBoardByGroupAndRecord(group, record);
+        recordRepository.deleteRecordByRecordId(request.getRecordId());
     }
 
     @Override
