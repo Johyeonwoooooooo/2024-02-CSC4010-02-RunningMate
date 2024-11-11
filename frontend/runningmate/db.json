@@ -27,5 +27,36 @@
       "userWeight": 30,
       "userHeight": 150
     }
+  ],
+
+  "Record": [
+    {
+      "recordId": 1,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2023-11-11T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 2,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2023-11-12T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 3,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2023-11-13T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 4,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2023-11-14T09:00:00Z",
+      "calories": 200
+    }
   ]
 }

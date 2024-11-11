@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -7,18 +7,25 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { LineChart } from "react-native-chart-kit";
+import WeeklyStatsChart from "./WeeklyStatsChart";
 //import { Tabs } from "expo-router";
 
 export default function MyPageScreen() {
-  const { user } = useAuth();
+  const { user, API_URL } = useAuth();
   const navigation = useNavigation();
 
   const [selectedTab, setSelectedTab] = useState("runningStats");
+  const [weeklyStats, setWeeklyStats] = useState({
+    labels: [],
+    distances: [],
+    calories: [],
+  });
   // if (!user) {
   //   // 로그인 오류
   //   return (
@@ -27,6 +34,45 @@ export default function MyPageScreen() {
   //     </SafeAreaView>
   //   );
   // }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/Record`);
+        const records = await response.json();
+        const userRecords = records.filter(
+          (record) => record.userId === user.userid
+        );
+        const processedData = processData(userRecords);
+        setWeeklyStats(processedData);
+      } catch (error) {
+        console.error("Error fetching records:", error);
+      }
+    };
+
+    fetchData();
+  }, [user, API_URL]);
+
+  const processData = (data) => {
+    const weeklyData = data.reduce((acc, record) => {
+      const date = new Date(record.runningTime);
+      const week = `${date.getFullYear()}-${
+        date.getMonth() + 1
+      }-${date.getDate()}`;
+      if (!acc[week]) {
+        acc[week] = { distance: 0, calories: 0 };
+      }
+      acc[week].distance += record.distance;
+      acc[week].calories += record.calories;
+      return acc;
+    }, {});
+
+    const labels = Object.keys(weeklyData);
+    const distances = labels.map((label) => weeklyData[label].distance);
+    const calories = labels.map((label) => weeklyData[label].calories);
+
+    return { labels, distances, calories };
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -104,11 +150,7 @@ export default function MyPageScreen() {
         {/* Tab Content */}
         {selectedTab === "runningStats" ? (
           // 달리기 통계 내용
-          <View style={styles.contentContainer}>
-            <Text style={styles.contentText}>
-              달리기 통계 내용이 여기에 표시됩니다.
-            </Text>
-          </View>
+          <WeeklyStatsChart weeklyStats={weeklyStats} />
         ) : (
           // 작성한 글 내용
           <View style={styles.contentContainer}>
