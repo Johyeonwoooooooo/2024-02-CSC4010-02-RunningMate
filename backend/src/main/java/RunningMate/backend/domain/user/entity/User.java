@@ -1,4 +1,4 @@
-package RunningMate.backend.domain.User.entity;
+package RunningMate.backend.domain.user.entity;
 
 import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;

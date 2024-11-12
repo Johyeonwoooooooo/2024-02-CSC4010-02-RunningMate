@@ -1,13 +1,11 @@
 package RunningMate.backend.domain.community.controller;
 
-import RunningMate.backend.domain.User.entity.User;
+import RunningMate.backend.domain.user.entity.User;
 import RunningMate.backend.domain.authorization.SessionUtils;
 import RunningMate.backend.domain.community.dto.CommunityDTO;
 import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;
-import RunningMate.backend.domain.community.entity.PostImage;
 import RunningMate.backend.domain.community.entity.PostLike;
-import RunningMate.backend.domain.community.repository.PostRepository;
 import RunningMate.backend.domain.community.service.CommunityService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;

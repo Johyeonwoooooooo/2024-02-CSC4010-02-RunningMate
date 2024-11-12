@@ -1,8 +1,7 @@
-package RunningMate.backend.domain.User.service;
+package RunningMate.backend.domain.user.service;
 
-import RunningMate.backend.domain.User.dto.UserDTO;
-import RunningMate.backend.domain.User.entity.User;
-import RunningMate.backend.domain.community.dto.CommunityDTO;
+import RunningMate.backend.domain.user.dto.UserDTO;
+import RunningMate.backend.domain.user.entity.User;
 
 import java.util.List;
 import java.util.Optional;

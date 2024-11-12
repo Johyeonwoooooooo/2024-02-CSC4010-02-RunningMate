@@ -1,7 +1,6 @@
 package RunningMate.backend.domain.community.entity;
 
-import RunningMate.backend.domain.User.entity.User;
-import RunningMate.backend.domain.community.entity.Post;
+import RunningMate.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

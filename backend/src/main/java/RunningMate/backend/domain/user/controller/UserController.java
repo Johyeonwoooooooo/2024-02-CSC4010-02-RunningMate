@@ -1,10 +1,9 @@
-package RunningMate.backend.domain.User.controller;
+package RunningMate.backend.domain.user.controller;
 
-import RunningMate.backend.domain.User.dto.UserDTO;
-import RunningMate.backend.domain.User.entity.User;
-import RunningMate.backend.domain.User.service.UserService;
+import RunningMate.backend.domain.user.dto.UserDTO;
+import RunningMate.backend.domain.user.entity.User;
+import RunningMate.backend.domain.user.service.UserService;
 import RunningMate.backend.domain.authorization.SessionUtils;
-import RunningMate.backend.domain.community.dto.CommunityDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

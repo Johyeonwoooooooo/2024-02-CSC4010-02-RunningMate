@@ -1,6 +1,6 @@
-package RunningMate.backend.domain.User.repository;
+package RunningMate.backend.domain.user.repository;
 
-import RunningMate.backend.domain.User.entity.User;
+import RunningMate.backend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
