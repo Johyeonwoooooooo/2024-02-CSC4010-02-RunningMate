@@ -47,6 +47,7 @@ public class UserDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UpdateProfileRequest {
+        private String userNickname;
         private Long userWeight;
         private Long userHeight;
     }

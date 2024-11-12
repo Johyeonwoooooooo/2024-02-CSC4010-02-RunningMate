@@ -67,11 +67,12 @@ public class UserServiceImpl implements UserService{
         if (optionalUser.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
+        String userNickname = request.getUserNickname();
         Long userHeight = request.getUserHeight();
         Long userWeight = request.getUserWeight();
 
         User user = optionalUser.get();
-        user.updateProfile(userWeight, userHeight);
+        user.updateProfile(userNickname, userWeight, userHeight);
         return userRepository.save(user);
     }
 
