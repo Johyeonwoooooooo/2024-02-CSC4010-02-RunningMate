@@ -12,7 +12,6 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LineChart } from "react-native-chart-kit";
 import WeeklyStatsChart from "./WeeklyStatsChart";
 //import { Tabs } from "expo-router";
 
@@ -54,20 +53,34 @@ export default function MyPageScreen() {
   }, [user, API_URL]);
 
   const processData = (data) => {
-    const weeklyData = data.reduce((acc, record) => {
-      const date = new Date(record.runningTime);
-      const week = `${date.getFullYear()}-${
+    const today = new Date();
+    const weekAgo = new Date(today);
+    weekAgo.setDate(today.getDate() - 6);
+
+    const weeklyData = {};
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateString = `${date.getFullYear()}-${
         date.getMonth() + 1
       }-${date.getDate()}`;
-      if (!acc[week]) {
-        acc[week] = { distance: 0, calories: 0 };
-      }
-      acc[week].distance += record.distance;
-      acc[week].calories += record.calories;
-      return acc;
-    }, {});
+      weeklyData[dateString] = { distance: 0, calories: 0 };
+    }
 
-    const labels = Object.keys(weeklyData);
+    data.forEach((record) => {
+      const date = new Date(record.runningTime);
+      const dateString = `${date.getFullYear()}-${
+        date.getMonth() + 1
+      }-${date.getDate()}`;
+      if (weeklyData[dateString]) {
+        weeklyData[dateString].distance += record.distance;
+        weeklyData[dateString].calories += record.calories;
+      }
+    });
+
+    const labels = Object.keys(weeklyData).sort(
+      (a, b) => new Date(a) - new Date(b)
+    );
     const distances = labels.map((label) => weeklyData[label].distance);
     const calories = labels.map((label) => weeklyData[label].calories);
 
