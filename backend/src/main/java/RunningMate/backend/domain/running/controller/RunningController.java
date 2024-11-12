@@ -3,6 +3,7 @@ package RunningMate.backend.domain.running.controller;
 import RunningMate.backend.domain.User.entity.User;
 import RunningMate.backend.domain.authorization.SessionUtils;
 import RunningMate.backend.domain.running.dto.RunningDTO;
+import RunningMate.backend.domain.running.entity.GroupTag;
 import RunningMate.backend.domain.running.entity.LeaderBoard;
 import RunningMate.backend.domain.running.entity.RunningGroup;
 import RunningMate.backend.domain.running.repository.LeaderBoardRepository;
@@ -67,6 +68,22 @@ public class RunningController {
     @GetMapping("")
     public ResponseEntity<?> viewRunningGroup(){
         List<RunningDTO.RunningGroupViewResponse> runningGroupViewResponses = runningService.viewRunningGroups();
+        if (runningGroupViewResponses.isEmpty())
+            return ResponseEntity.noContent().build();
+        else
+            return ResponseEntity.ok().body(runningGroupViewResponses);
+    }
+
+    @Operation(summary = "러닝방 목록 필터링하여 조회 하기", description = "사용자에게 groupTag, 검색어를 입력받아 필터링 후 결과를 반환한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "러닝 방 조회 성공"),
+            @ApiResponse(responseCode = "204", description = "생성된 러닝방이 없는 경우")
+    })
+
+    @GetMapping("/filtering")
+    public ResponseEntity<?> filteringRunningGroup(@RequestParam(required = false)GroupTag groupTag,
+                                                   @RequestParam(defaultValue = "") String searchWord){
+        List<RunningDTO.RunningGroupViewResponse> runningGroupViewResponses = runningService.filteringGroup(groupTag, searchWord);
         if (runningGroupViewResponses.isEmpty())
             return ResponseEntity.noContent().build();
         else

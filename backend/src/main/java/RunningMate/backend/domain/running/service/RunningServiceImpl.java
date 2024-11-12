@@ -2,6 +2,7 @@ package RunningMate.backend.domain.running.service;
 
 import RunningMate.backend.domain.User.entity.User;
 import RunningMate.backend.domain.running.dto.RunningDTO;
+import RunningMate.backend.domain.running.entity.GroupTag;
 import RunningMate.backend.domain.running.entity.LeaderBoard;
 import RunningMate.backend.domain.running.entity.Record;
 import RunningMate.backend.domain.running.entity.RunningGroup;
@@ -66,6 +67,19 @@ public class RunningServiceImpl implements RunningService {
     @Override
     public List<RunningDTO.RunningGroupViewResponse> viewRunningGroups() {
         List<RunningGroup> groupList = groupRepository.findAllByStartTimeAfter(LocalDateTime.now());
+        return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
+    }
+
+    @Override
+    public List<RunningDTO.RunningGroupViewResponse> filteringGroup(GroupTag groupTag, String searchWord) {
+        List<RunningGroup> groupList;
+        if(groupTag == null){
+            groupList = groupRepository.findAllByGroupTitleContains(searchWord);
+        }
+        else {
+            groupList = groupRepository.findAllByGroupTagAndGroupTitleContains(groupTag, searchWord);
+        }
+
         return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
     }
 

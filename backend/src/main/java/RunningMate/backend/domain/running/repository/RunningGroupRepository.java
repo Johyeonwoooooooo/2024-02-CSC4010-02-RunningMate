@@ -1,5 +1,6 @@
 package RunningMate.backend.domain.running.repository;
 
+import RunningMate.backend.domain.running.entity.GroupTag;
 import RunningMate.backend.domain.running.entity.RunningGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,4 +12,6 @@ public interface RunningGroupRepository extends JpaRepository<RunningGroup, Long
     RunningGroup findByGroupId(Long groupId);
     void deleteAllByEndTimeBefore(LocalDateTime now);
     List<RunningGroup> findAllByEndTimeBefore(LocalDateTime now);
+    List<RunningGroup> findAllByGroupTagAndGroupTitleContains(GroupTag groupTag, String search);
+    List<RunningGroup> findAllByGroupTitleContains(String search);
 }
