@@ -12,7 +12,7 @@
     {
       "id": "2372",
       "userid": 2,
-      "userEmail": "Qwer@aaa.com",
+      "userEmail": "qwer@a.a",
       "userPassword": "1234",
       "userNickname": "Qwer",
       "userWeight": 100,
@@ -26,6 +26,37 @@
       "userNickname": "Apql",
       "userWeight": 30,
       "userHeight": 150
+    }
+  ],
+
+  "Record": [
+    {
+      "recordId": 1,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2023-11-11T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 2,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2023-11-12T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 3,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2023-11-13T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 4,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2023-11-14T09:00:00Z",
+      "calories": 200
     }
   ]
 }

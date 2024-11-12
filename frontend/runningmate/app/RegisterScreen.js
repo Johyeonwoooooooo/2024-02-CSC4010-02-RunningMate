@@ -4,6 +4,7 @@ import CustomButton from "../components/CustomButton";
 import PasswordInput from "../components/PasswordInput";
 import AlertModal from "../components/modal/AlertModal";
 import { useRouter } from "expo-router";
+import { useAuth } from "../context/AuthContext";
 
 const RegisterScreen = () => {
   // 회원가입 정보
@@ -15,6 +16,7 @@ const RegisterScreen = () => {
   const [weight, setWeight] = useState("");
 
   const router = useRouter();
+  const { API_URL } = useAuth();
 
   // modal(alert) state
   const [modalVisible, setModalVisible] = useState(false);
@@ -91,13 +93,13 @@ const RegisterScreen = () => {
     /* 서버에 회원가입 요청 */
     try {
       // 현재 사용자 목록을 가져와서 userid를 자동 증가시키기 위한 로직. 실제 서버랑 연결 시 삭제
-      const usersResponse = await fetch("http://192.168.45.114:3001/User");
+      const usersResponse = await fetch(`${API_URL}/User`);
       const users = await usersResponse.json();
       const newUserId =
         users.length > 0 ? users[users.length - 1].userid + 1 : 1;
 
       // TODO : Json 서버 주소 package.json에서 삭제후 다시 넣어줘야함
-      const response = await fetch("http://192.168.45.114:3001/User", {
+      const response = await fetch(`${API_URL}/User`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

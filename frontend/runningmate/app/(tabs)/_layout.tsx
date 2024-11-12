@@ -2,11 +2,8 @@ import { Tabs } from "expo-router";
 import React from "react";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
@@ -18,7 +15,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "홈",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               source={
@@ -35,7 +32,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="running"
         options={{
-          title: "Running",
+          title: "러닝",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               source={
@@ -52,7 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="community"
         options={{
-          title: "Community",
+          title: "커뮤니티",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               source={
@@ -69,7 +66,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="mypage"
         options={{
-          title: "My Page",
+          title: "마이페이지",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               source={
