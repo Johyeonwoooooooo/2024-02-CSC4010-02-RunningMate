@@ -34,6 +34,9 @@ public class RunningServiceImpl implements RunningService {
         if(optionalUser.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
+        if(request.getMaxParticipants().equals(0))
+            throw new IllegalArgumentException("최대 참가자는 1명 이상 이어야 합니다.");
+
         return groupRepository.save(RunningGroup.builder().groupTitle(request.getGroupTitle())
                 .groupTag(request.getGroupTag())
                 .startTime(request.getStartTime())
