@@ -73,7 +73,7 @@ public class RunningController {
             return ResponseEntity.ok().body(runningGroupViewResponses);
     }
 
-    @Operation(summary = "러닝방 참가자 조회 하기", description = "러닝방에 참가 중인 유저들을 보여준다")
+    @Operation(summary = "러닝방 참가자 조회 하기", description = "groupID를 보내 해당 러닝방에 참가 중인 유저들을 보여준다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "참가자 조회 성공"),
             @ApiResponse(responseCode = "400", description = "생성된 러닝방이 없는 경우")
@@ -92,7 +92,7 @@ public class RunningController {
             @ApiResponse(responseCode = "200", description = "참가 취소 성공"),
             @ApiResponse(responseCode = "400", description = "참가 취소 실패")
     })
-    @DeleteMapping("/{groupId}/participants")
+    @DeleteMapping("/cancel")
     public ResponseEntity<?> cancelParticipation(@RequestBody RunningDTO.CancelParticipationRequest request){
         try{
             runningService.cancelParticipation(request);

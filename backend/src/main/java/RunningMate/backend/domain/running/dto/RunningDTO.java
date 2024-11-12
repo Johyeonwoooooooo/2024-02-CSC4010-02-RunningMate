@@ -55,13 +55,13 @@ public class RunningDTO {
     @AllArgsConstructor
     public static class ParticipateGroupResponse {
         private Long recordId;
-        private Long distance;
+        private Long targetDistance;
         private Duration runningTime;
         private Long calories;
 
         public ParticipateGroupResponse(Record record){
             this.recordId = record.getRecordId();
-            this.distance = record.getDistance();
+            this.targetDistance = record.getDistance();
             this.runningTime = record.getRunningTime();
             this.calories = record.getCalories();
         }
