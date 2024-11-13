@@ -66,6 +66,9 @@ public class UserServiceImpl implements UserService{
         if (optionalUser.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
+        if (userRepository.findUserByUserNickname(request.getUserNickname()).isPresent())
+            throw new IllegalArgumentException("중복된 닉네임입니다.");
+
         String userNickname = request.getUserNickname();
         Long userHeight = request.getUserHeight();
         Long userWeight = request.getUserWeight();
