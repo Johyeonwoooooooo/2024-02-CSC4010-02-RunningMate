@@ -1,6 +1,6 @@
 package RunningMate.backend.domain.running.service;
 
-import RunningMate.backend.domain.User.entity.User;
+import RunningMate.backend.domain.user.entity.User;
 import RunningMate.backend.domain.running.dto.RunningDTO;
 import RunningMate.backend.domain.running.entity.GroupTag;
 import RunningMate.backend.domain.running.entity.Record;
