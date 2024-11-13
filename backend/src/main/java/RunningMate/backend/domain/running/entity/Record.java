@@ -1,6 +1,6 @@
 package RunningMate.backend.domain.running.entity;
 
-import RunningMate.backend.domain.User.entity.User;
+import RunningMate.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
