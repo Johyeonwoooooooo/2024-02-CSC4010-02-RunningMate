@@ -32,6 +32,6 @@ public class MainPageController {
     public ResponseEntity<?> getMainPage(){
         List<CommunityDTO.MainPagePostResponse> mainPagePost = communityService.getMainPagePost();
         List<RunningDTO.MainPageGroupResponse> mainPageGroupResponses = runningService.mainPageGroups();
-        return ResponseEntity.ok().body(MainPageDTO.builder().mainPageGroupList(mainPageGroupResponses).mainPagePostList(mainPagePost).build());
+        return ResponseEntity.ok().body(new MainPageDTO(mainPagePost, mainPageGroupResponses));
     }
 }
