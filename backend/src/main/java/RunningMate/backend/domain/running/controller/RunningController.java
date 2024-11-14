@@ -52,7 +52,7 @@ public class RunningController {
             @ApiResponse(responseCode = "400", description = "러닝 방 참가 실패")
     })
     @PostMapping("/{groupId}/participate")
-    public ResponseEntity<?> participateGroup(@PathVariable Long groupId, HttpSession session){
+    public ResponseEntity<?> participateGroup(@PathVariable("groupId") Long groupId, HttpSession session){
         try{
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
             return ResponseEntity.ok(runningService.participateGroup(groupId, optionalUser));
@@ -81,8 +81,8 @@ public class RunningController {
     })
 
     @GetMapping("/filtering")
-    public ResponseEntity<?> filteringRunningGroup(@RequestParam(required = false)GroupTag groupTag,
-                                                   @RequestParam(defaultValue = "") String searchWord){
+    public ResponseEntity<?> filteringRunningGroup(@RequestParam(name="groupTag", required = false)GroupTag groupTag,
+                                                   @RequestParam(name="searchWord", defaultValue = "") String searchWord){
         List<RunningDTO.RunningGroupViewResponse> runningGroupViewResponses = runningService.filteringGroup(groupTag, searchWord);
         if (runningGroupViewResponses.isEmpty())
             return ResponseEntity.noContent().build();
@@ -96,7 +96,7 @@ public class RunningController {
             @ApiResponse(responseCode = "400", description = "생성된 러닝방이 없는 경우")
     })
     @GetMapping("/{groupId}/participants")
-    public ResponseEntity<?> viewParticipants(@PathVariable Long groupId){
+    public ResponseEntity<?> viewParticipants(@PathVariable("groupId") Long groupId){
         try{
             return ResponseEntity.ok().body(runningService.groupParticipants(groupId));
         }catch (Exception e){
