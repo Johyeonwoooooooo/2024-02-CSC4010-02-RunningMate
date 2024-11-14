@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { 
   StyleSheet, 
@@ -10,21 +10,63 @@ import {
   Modal,
   Dimensions,
   TouchableWithoutFeedback,
-  TextInput // TextInput import 추가
+  TextInput,
+  ActivityIndicator,
+  Image
 } from "react-native";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useRouter } from 'expo-router';
 import { Stack } from 'expo-router';
-import AlertModal from '../../components/modal/AlertModal'
+import AlertModal from '../../components/modal/AlertModal';
+import { useWindowDimensions } from 'react-native';
+const API_URL = 'http://43.200.193.236:8080';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const MODAL_HEIGHT = SCREEN_HEIGHT * 0.6;
 
 // CommentsModal 컴포넌트 수정
-const CommentsModal = ({ visible, onClose }) => {
+const CommentsModal = ({ visible, onClose, postId }) => {
   const [comment, setComment] = useState('');
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { height: SCREEN_HEIGHT } = useWindowDimensions();
+
+  // 댓글 목록 가져오기
+  useEffect(() => {
+    const fetchComments = async () => {
+      if (!visible || !postId) return;
+      
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_URL}/community/post/${postId}/comments`);
+        if (!response.ok) {
+          throw new Error('댓글을 불러오는데 실패했습니다.');
+        }
+        const data = await response.json();
+        setComments(data);
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchComments();
+  }, [visible, postId]);
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    
+    if (diffHours < 24) {
+      return `${diffHours}시간 전`;
+    }
+    return date.toLocaleDateString('ko-KR');
+  };
 
   return (
     <Modal
@@ -47,26 +89,34 @@ const CommentsModal = ({ visible, onClose }) => {
 
               {/* 댓글 목록 */}
               <View style={styles.commentsContainer}>
-                <ScrollView>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((index) => (
-                    <View key={index} style={styles.commentItem}>
-                      <View style={styles.commentHeader}>
-                        <View style={styles.smallProfileCircle} />
-                        <View>
-                          <ThemedText style={styles.commentUserName}>
-                            User {index}
-                          </ThemedText>
-                          <ThemedText style={styles.commentTime}>
-                            {index}시간 전
-                          </ThemedText>
+                {loading ? (
+                  <ActivityIndicator size="large" color="#0000ff" />
+                ) : error ? (
+                  <ThemedText style={styles.errorText}>{error}</ThemedText>
+                ) : comments.length === 0 ? (
+                  <ThemedText style={styles.emptyText}>댓글이 없습니다.</ThemedText>
+                ) : (
+                  <ScrollView>
+                    {comments.map((item) => (
+                      <View key={item.commentId} style={styles.commentItem}>
+                        <View style={styles.commentHeader}>
+                          <View style={styles.smallProfileCircle} />
+                          <View>
+                            <ThemedText style={styles.commentUserName}>
+                              {item.userNickname}
+                            </ThemedText>
+                            <ThemedText style={styles.commentTime}>
+                              {formatDate(item.commentWriteTime)}
+                            </ThemedText>
+                          </View>
                         </View>
+                        <ThemedText style={styles.commentText}>
+                          {item.commentContent}
+                        </ThemedText>
                       </View>
-                      <ThemedText style={styles.commentText}>
-                        댓글 내용 {index}
-                      </ThemedText>
-                    </View>
-                  ))}
-                </ScrollView>
+                    ))}
+                  </ScrollView>
+                )}
               </View>
 
               {/* 입력창 */}
@@ -108,35 +158,31 @@ const FloatingActionButton = () => {
 };
 
 // PostCard 컴포넌트
-const PostCard = () => {
+const PostCard = ({ post }) => {
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // 삭제 모달 상태 추가
-  const [isLove, setIsLove] = useState(false); // 좋아요
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isLove, setIsLove] = useState(false);
 
-  // 삭제 처리 함수
   const handleDelete = () => {
-    // 삭제 로직 구현
     setIsDeleteModalVisible(false);
   };
-  const handleLove = () => {
-    setIsLove(false);
 
-  }
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR');
+  };
 
   return (
     <ThemedView style={styles.postCard}>
-      
       <ThemedView style={styles.postHeader}>
         <ThemedView style={styles.userInfo}>
           <ThemedView style={styles.profileCircle} />
-          <ThemedText style={styles.userName}>공유 레츠고</ThemedText>
+          <ThemedText style={styles.userName}>{post.userNickname}</ThemedText>
         </ThemedView>
+        {/* userID가 일치할 때만 삭제 버튼 표시 */}
         <TouchableOpacity onPress={() => setIsDeleteModalVisible(true)}>
-          <Ionicons 
-            name="trash-outline" size={20} color="#808080" 
-          />
+          <Ionicons name="trash-outline" size={20} color="#808080" />
         </TouchableOpacity>
-        {/* 삭제 확인 모달 */}
         <AlertModal 
           visible={isDeleteModalVisible}
           onClose={() => setIsDeleteModalVisible(false)}
@@ -145,58 +191,154 @@ const PostCard = () => {
           message="삭제된 글은 복구가 어렵습니다."
         />
       </ThemedView>
-      <ThemedView style={styles.grayArea} />
+      {post.postImages && post.postImages.length > 0 && (
+        <Image 
+          source={{ uri: post.postImages[0] }} 
+          style={styles.grayArea}
+          resizeMode="cover"
+        />
+      )}
       <ThemedView style={styles.postActions}>
         <ThemedView style={styles.likeComment}>
-          <TouchableOpacity style={styles.actionButton} onPress={() => setIsLove(true)}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => setIsLove(!isLove)}>
             <Ionicons 
-              name={isLove ? "heart" : "heart-outline"} // 상태에 따라 아이콘 변경
+              name={isLove ? "heart" : "heart-outline"}
               size={24} 
-              color={isLove ? "#FF69B4" : "#808080"} // 상태에 따라 색상 변경
+              color={isLove ? "#FF69B4" : "#808080"}
             />
-            <ThemedText style={styles.actionCount}>12</ThemedText>
+            <ThemedText style={styles.actionCount}>{post.likeCount}</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.actionButton}
             onPress={() => setIsCommentsModalVisible(true)}
           >
             <Ionicons name="chatbubble-outline" size={24} color="#808080" />
-            <ThemedText style={styles.actionCount}>3</ThemedText>
+            <ThemedText style={styles.actionCount}>{post.commentCount}</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </ThemedView>
-      <ThemedText style={styles.caption}>오늘의 러닝!</ThemedText>
+      <ThemedText style={styles.caption}>{post.postTitle}</ThemedText>
+      <ThemedText style={styles.content}>{post.postContent}</ThemedText>
+      <ThemedText style={styles.date}>{formatDate(post.postDate)}</ThemedText>
       <CommentsModal 
         visible={isCommentsModalVisible}
         onClose={() => setIsCommentsModalVisible(false)}
+        postId={post.postId}  // postId 전달
       />
     </ThemedView>
   );
 };
+// 게시글이 없을 때 보여줄 컴포넌트
+const EmptyPostsView = () => (
+  <View style={styles.emptyContainer}>
+    <ThemedText style={styles.emptyText}>게시글이 존재하지 않습니다.</ThemedText>
+  </View>
+);
 
 // Tab Navigation 컴포넌트들
 const CommunityScreen = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/community/post/get/running-spot`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setPosts(data);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView 
-        style={styles.container} 
-        contentContainerStyle={styles.scrollContent}
-      >
-        <PostCard />
-        <PostCard />
-        <PostCard />
+      <ScrollView style={styles.container}>
+        {posts.length > 0 ? (
+          posts.map(post => <PostCard key={post.postId} post={post} />)
+        ) : (
+          <EmptyPostsView />
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-// 운동인증 
 const ExerciseScreen = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/community/post/get/exercise-proof`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setPosts(data);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
-        <PostCard />
-        <PostCard />
+        {posts.length > 0 ? (
+          posts.map(post => <PostCard key={post.postId} post={post} />)
+        ) : (
+          <EmptyPostsView />
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -234,6 +376,43 @@ export default function CommunityTabs() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  content: {
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    fontSize: 14,
+    color: '#262626',
+  },
+  date: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    fontSize: 12,
+    color: '#8e8e8e',
+  },
   safeArea: {
     flex: 1,
     backgroundColor: '#fff',
@@ -330,7 +509,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    height: MODAL_HEIGHT,
+    height: '60%', // MODAL_HEIGHT 대신 비율 사용
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -349,9 +528,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   commentsList: {
-    flex: 1,  // 중요: 남은 공간을 모두 차지
+    flex: 1,
     marginVertical: 10,
-    maxHeight: MODAL_HEIGHT - 130, // 헤더와 입력창 높이를 고려한 값
   },
   commentsListContent: {
     flexGrow: 1,          // 내용이 적어도 스크롤 가능하게
