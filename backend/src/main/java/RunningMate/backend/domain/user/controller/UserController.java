@@ -40,7 +40,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     @Operation(summary = "로그인", description = "사용자에게 email, password를 받아 로그인을 진행한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공"),
