@@ -51,9 +51,9 @@ const LoginScreen = () => {
 
     /* 서버에 로그인 요청 */
     try {
-      const response = await fetch(`${API_URL}/User`); // TODO : Json 서버 주소 package.json에서 삭제후 다시 넣어줘야함
+      const response = await fetch(`${API_URL}/user/logIn`); // TODO : Json 서버 주소 package.json에서 삭제후 다시 넣어줘야함
 
-      console.log("response status:", response.status);
+      console.log("response status:", response);
       const users = await response.json();
       //console.log("users:", users);
       const user = users.find(

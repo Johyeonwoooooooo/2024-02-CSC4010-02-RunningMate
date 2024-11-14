@@ -93,19 +93,18 @@ const RegisterScreen = () => {
     /* 서버에 회원가입 요청 */
     try {
       // 현재 사용자 목록을 가져와서 userid를 자동 증가시키기 위한 로직. 실제 서버랑 연결 시 삭제
-      const usersResponse = await fetch(`${API_URL}/User`);
+      const usersResponse = await fetch(`${API_URL}/user/signUp`);
       const users = await usersResponse.json();
-      const newUserId =
-        users.length > 0 ? users[users.length - 1].userid + 1 : 1;
+      // const newUserId =
+      //   users.length > 0 ? users[users.length - 1].userid + 1 : 1;
 
       // TODO : Json 서버 주소 package.json에서 삭제후 다시 넣어줘야함
-      const response = await fetch(`${API_URL}/User`, {
+      const response = await fetch(`${API_URL}/user/signUp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userid: newUserId, // 추후 서버 연결할 때 삭제
           userEmail: email,
           userPassword: password,
           userNickname: username,
@@ -114,7 +113,7 @@ const RegisterScreen = () => {
         }),
       });
 
-      console.log("response status:", response.status);
+      console.log("response status:", response);
       if (response.ok) {
         setModalMessage(
           "회원가입이 완료되었습니다. \n이전 화면에서 로그인해주세요."

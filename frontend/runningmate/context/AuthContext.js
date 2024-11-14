@@ -7,7 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   // API 주소를 전역 변수로 설정
-  const API_URL = "http://10.91.28.143:3001";
+  const API_URL = "http://43.200.193.236:8080";
 
   const login = (userData) => {
     setIsLoggedIn(true);
