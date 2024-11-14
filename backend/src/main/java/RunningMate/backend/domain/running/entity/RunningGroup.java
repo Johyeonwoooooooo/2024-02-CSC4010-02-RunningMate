@@ -3,6 +3,7 @@ package RunningMate.backend.domain.running.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -17,13 +18,13 @@ public class RunningGroup {
     private Long groupId;
 
     @Column(nullable = false)
-    private String title;
+    private String groupTitle;
 
     @Column(nullable = false)
-    private Date startTime;
+    private LocalDateTime startTime;
 
     @Column(nullable = false)
-    private Date endTime;
+    private LocalDateTime endTime;
 
     @Column(nullable = false)
     private Long targetDistance;
@@ -39,4 +40,22 @@ public class RunningGroup {
 
     @OneToMany(mappedBy = "group")
     private List<LeaderBoard> leaderBoardList;
+
+    public boolean participateGroup(){
+        if(this.currentParticipants >= this.maxParticipants)
+            return false;
+        else {
+            this.currentParticipants += 1;
+            return true;
+        }
+    }
+
+    public boolean leaveGroup(){
+        if(this.currentParticipants <= 0)
+            return false;
+        else{
+            this.currentParticipants -= 1;
+            return true;
+        }
+    }
 }
