@@ -1,8 +1,3 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -14,6 +9,8 @@ import { AuthProvider, useAuth } from "../context/AuthContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// https://docs.expo.dev/router/advanced/tabs/ *참고*
 
 function RootLayout() {
   const colorScheme = useColorScheme();
