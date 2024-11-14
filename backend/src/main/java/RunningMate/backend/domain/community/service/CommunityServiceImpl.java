@@ -103,8 +103,8 @@ public class CommunityServiceImpl implements CommunityService{
     }
 
     public List<CommunityDTO.MainPagePostResponse> getMainPagePost() {
-        List<Post> runningSpotPosts = postRepository.findTop2ByPostTagTrueOrderByLikeCount();
-        List<Post> runningCertificationPosts = postRepository.findTop2ByPostTagFalseOrderByLikeCount();
+        List<Post> runningSpotPosts = postRepository.findTop2ByPostTagTrueOrderByLikeCountDesc();
+        List<Post> runningCertificationPosts = postRepository.findTop2ByPostTagFalseOrderByLikeCountDesc();
 
         return Stream.concat(runningSpotPosts.stream(), runningCertificationPosts.stream())
                 .map(CommunityDTO.MainPagePostResponse::new)
