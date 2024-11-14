@@ -93,8 +93,8 @@ const RegisterScreen = () => {
     /* 서버에 회원가입 요청 */
     try {
       // 현재 사용자 목록을 가져와서 userid를 자동 증가시키기 위한 로직. 실제 서버랑 연결 시 삭제
-      const usersResponse = await fetch(`${API_URL}/user/signup`);
-      const users = await usersResponse.json();
+      //const usersResponse = await fetch(`${API_URL}/user/signUp`);
+      //const users = await usersResponse.json();
       // const newUserId =
       //   users.length > 0 ? users[users.length - 1].userid + 1 : 1;
 

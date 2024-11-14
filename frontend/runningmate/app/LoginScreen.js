@@ -51,18 +51,32 @@ const LoginScreen = () => {
 
     /* 서버에 로그인 요청 */
     try {
-      const response = await fetch(`${API_URL}/user/logIn`); // TODO : Json 서버 주소 package.json에서 삭제후 다시 넣어줘야함
+      const response = await fetch(`${API_URL}/user/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userEmail: email,
+          userPassword: password,
+        }),
+      });
 
-      console.log("response status:", response);
-      const users = await response.json();
-      //console.log("users:", users);
-      const user = users.find(
-        (u) => u.userEmail === email && u.userPassword === password
-      );
+      console.log("response status:", response.status);
 
-      if (user) {
-        login(user);
-        router.replace("(tabs)");
+      if (response.status === 200) {
+        const responseBody = await response.text();
+        console.log("response body:", responseBody);
+        try {
+          const user = JSON.parse(responseBody);
+          login(user);
+          router.replace("(tabs)");
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+          // JSON 파싱에 실패한 경우, 응답 본문을 그대로 사용
+          setModalMessage(responseBody);
+          setModalVisible(true);
+        }
       } else {
         setModalMessage("이메일 또는 비밀번호가 올바르지 않습니다.");
         setModalVisible(true);
