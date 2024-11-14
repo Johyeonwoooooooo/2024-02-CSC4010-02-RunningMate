@@ -25,7 +25,7 @@ public class UserController {
     private final UserService userService;
     private final SessionUtils sessionUtils;
 
-    @PostMapping("/signUp")
+    @PostMapping("/signup")
     @Operation(summary = "회원가입", description = "사용자에게 nickname, email, password, weight, height를 받아 회원가입을 진행한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "회원가입 성공"),
@@ -40,7 +40,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/logIn")
+    @PostMapping("/login")
     @Operation(summary = "로그인", description = "사용자에게 email, password를 받아 로그인을 진행한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공"),
