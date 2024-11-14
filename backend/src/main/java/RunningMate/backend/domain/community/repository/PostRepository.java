@@ -8,8 +8,8 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findTop14ByPostTagTrueOrderByLikeCountDesc();
     List<Post> findTop14ByPostTagFalseOrderByLikeCountDesc();
-    List<Post> findTop2ByPostTagTrueOrderByLikeCount();
-    List<Post> findTop2ByPostTagFalseOrderByLikeCount();
+    List<Post> findTop2ByPostTagTrueOrderByLikeCountDesc();
+    List<Post> findTop2ByPostTagFalseOrderByLikeCountDesc();
     List<Post> findTop15ByPostTagTrueOrderByPostDateDesc();
     List<Post> findTop15ByPostTagFalseOrderByPostDateDesc();
 }
