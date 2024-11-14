@@ -13,31 +13,51 @@ import { useAuth } from "@/context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import WeeklyStatsChart from "./WeeklyStatsChart";
-//import { Tabs } from "expo-router";
 
 export default function MyPageScreen() {
-  const { user, API_URL } = useAuth();
+  const { API_URL } = useAuth();
   const navigation = useNavigation();
 
+  const [user, setUser] = useState(null);
   const [selectedTab, setSelectedTab] = useState("runningStats");
   const [weeklyStats, setWeeklyStats] = useState({
     labels: [],
     distances: [],
     calories: [],
   });
-  // if (!user) {
-  //   // 로그인 오류
-  //   return (
-  //     <SafeAreaView style={styles.safeArea}>
-  //       <Text style={styles.message}>로그인이 필요합니다.</Text>
-  //     </SafeAreaView>
-  //   );
-  // }
 
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch(`${API_URL}/user/profile`, {
+          method: "GET",
+          //credentials: "include", // Include cookies for session
+        });
+        console.log("response:", response);
+
+        if (response.status === 200) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          const errorMessage = await response.text();
+          console.error("Error fetching user profile:", errorMessage);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [API_URL]);
+
+  /*
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${API_URL}/Record`);
+        const response = await fetch(`${API_URL}/Record`, {
+          method: "GET",
+          credentials: "include", // Include cookies for session
+        });
         const records = await response.json();
         const userRecords = records.filter(
           (record) => record.userId === user.userid
@@ -49,9 +69,11 @@ export default function MyPageScreen() {
       }
     };
 
-    fetchData();
+    if (user) {
+      fetchData();
+    }
   }, [user, API_URL]);
-
+*/
   const processData = (data) => {
     const today = new Date();
     const weekAgo = new Date(today);
@@ -86,6 +108,14 @@ export default function MyPageScreen() {
 
     return { labels, distances, calories };
   };
+
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Text style={styles.message}>로그인이 필요합니다.</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -163,7 +193,8 @@ export default function MyPageScreen() {
         {/* Tab Content */}
         {selectedTab === "runningStats" ? (
           // 달리기 통계 내용
-          <WeeklyStatsChart weeklyStats={weeklyStats} />
+          //<WeeklyStatsChart weeklyStats={weeklyStats} />
+          <Text>달리기 통계 내용</Text>
         ) : (
           // 작성한 글 내용
           <View style={styles.contentContainer}>

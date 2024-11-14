@@ -162,6 +162,7 @@ const PostCard = ({ post }) => {
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isLove, setIsLove] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.likeCount);
 
   const handleDelete = () => {
     setIsDeleteModalVisible(false);
@@ -172,6 +173,28 @@ const PostCard = ({ post }) => {
     return date.toLocaleDateString('ko-KR');
   };
 
+  // 좋아요 
+  const handleLike = async () => {
+    try {
+      const response = await fetch(`${API_URL}/community/post/${post.postId}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // 좋아요 상태 토글
+        setIsLove(!isLove);
+        // 좋아요 수 업데이트
+        setLikeCount(prevCount => isLove ? prevCount - 1 : prevCount + 1);
+      } else {
+        console.error('Failed to toggle like');
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
+  };
   return (
     <ThemedView style={styles.postCard}>
       <ThemedView style={styles.postHeader}>
@@ -200,13 +223,13 @@ const PostCard = ({ post }) => {
       )}
       <ThemedView style={styles.postActions}>
         <ThemedView style={styles.likeComment}>
-          <TouchableOpacity style={styles.actionButton} onPress={() => setIsLove(!isLove)}>
+          <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
             <Ionicons 
               name={isLove ? "heart" : "heart-outline"}
               size={24} 
               color={isLove ? "#FF69B4" : "#808080"}
             />
-            <ThemedText style={styles.actionCount}>{post.likeCount}</ThemedText>
+            <ThemedText style={styles.actionCount}>{likeCount}</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.actionButton}
