@@ -12,7 +12,7 @@ const DUMMY_COURSES = [
     name: '한강 러닝 코스',
     distance: '5km',
     difficulty: '초급',
-    image: 'https://i.imgur.com/UwZR5mF.jpeg',
+    image: 'https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage1.png',
     estimatedTime: '30분',
   },
   {
@@ -20,7 +20,7 @@ const DUMMY_COURSES = [
     name: '올림픽 공원 코스',
     distance: '7km',
     difficulty: '중급',
-    image: 'https://i.imgur.com/BHPqxdw.jpeg',
+    image: 'https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage2.png',
     estimatedTime: '45분',
   },
   {
@@ -28,7 +28,7 @@ const DUMMY_COURSES = [
     name: '남산 트레일',
     distance: '8km',
     difficulty: '고급',
-    image: 'https://i.imgur.com/2dXRRmp.jpeg',
+    image: 'https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage3.png',
     estimatedTime: '50분',
   },
   {
@@ -36,7 +36,7 @@ const DUMMY_COURSES = [
     name: '청계천 러닝',
     distance: '4km',
     difficulty: '초급',
-    image: 'https://i.imgur.com/Q9JqXpi.jpeg',
+    image: 'https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage4.png',
     estimatedTime: '25분',
   },
   {
@@ -44,7 +44,7 @@ const DUMMY_COURSES = [
     name: '한강 산책',
     distance: '2km',
     difficulty: '초급',
-    image: 'https://i.imgur.com/Q9JqXpi.jpeg',
+    image: 'https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage5.png',
     estimatedTime: '250분',
   },
 ];
