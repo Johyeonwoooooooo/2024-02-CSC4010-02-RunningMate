@@ -67,16 +67,9 @@ const LoginScreen = () => {
       if (response.status === 200) {
         const responseBody = await response.text();
         console.log("response body:", responseBody);
-        try {
-          const user = JSON.parse(responseBody);
-          login(user);
-          router.replace("(tabs)");
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
-          // JSON 파싱에 실패한 경우, 응답 본문을 그대로 사용
-          setModalMessage(responseBody);
-          setModalVisible(true);
-        }
+        // JSON 파싱을 하지 않고 응답 본문을 그대로 사용
+        login(responseBody);
+        router.replace("(tabs)");
       } else {
         setModalMessage("이메일 또는 비밀번호가 올바르지 않습니다.");
         setModalVisible(true);
