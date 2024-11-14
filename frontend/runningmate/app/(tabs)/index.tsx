@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const COURSE_ITEM_WIDTH = SCREEN_WIDTH - 50;
+const API_URL = 'http://43.200.193.236:8080';
 
 // 더미 데이터 정의
 const DUMMY_COURSES = [
@@ -143,35 +144,42 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const courseListRef = useRef(null);
   const [liked, setLiked] = useState<{[key: number]: boolean}>({});
+  
+  // 서버 데이터를 위한 상태 추가
+  const [runningSpotPosts, setRunningSpotPosts] = useState([]);
+  const [runningCertPosts, setRunningCertPosts] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // 코스 자동 스크롤
+  // 서버에서 데이터 가져오기
   useEffect(() => {
-    let scrollInterval;
-    // 자동스크롤 필요하면 사용
-    // const startAutoScroll = () => {
-    //   let currentIndex = 0;
-    //   scrollInterval = setInterval(() => {
-    //     currentIndex = (currentIndex + 1) % DUMMY_COURSES.length;
-    //     courseListRef.current?.scrollToIndex({
-    //       index: currentIndex,
-    //       animated: true,
-    //     });
-    //   }, 3000);
-    // };
+    const fetchMainPageData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/mainPage`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        
+        // 데이터 설정
+        setRunningSpotPosts(data.mainPageRunningSpotPostList || []);
+        setRunningCertPosts(data.mainPageRunningCertPostList || []);
+        setGroups(data.mainPageGroupList || []);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching main page data:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
 
-    // startAutoScroll();
-
-    // return () => {
-    //   if (scrollInterval) {
-    //     clearInterval(scrollInterval);
-    //   }
-    // };
+    fetchMainPageData();
   }, []);
 
   const renderCourseItem = ({ item }) => (
     <TouchableOpacity 
       style={styles.courseItemContainer}
-      // onPress={() => navigation.navigate('CourseDetail', { courseId: item.id })}
     >
       <Image
         source={{ uri: item.image }}
@@ -188,105 +196,53 @@ const HomeScreen = () => {
     </TouchableOpacity>
   );
 
-  // 메인 러닝 그리기 
-  const renderSpotPost = ({ item }) => (
+  // 게시물 렌더링 함수 통합
+  const renderPost = ({ item }) => (
     <TouchableOpacity 
       style={styles.spotContainer}
-      onPress={() => navigation.navigate('community', { spotId: item.id })}
+      onPress={() => navigation.navigate('community', { spotId: item.postId })}
     >
       <View style={styles.spotHeader}>
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item.user}</Text>
-          <Text style={styles.date}>{item.date}</Text>
+          <Text style={styles.userName}>{item.userNickname}</Text>
+          <Text style={styles.date}>
+            {new Date(item.postDate).toLocaleDateString('ko-KR')}
+          </Text>
         </View>
         <TouchableOpacity 
           style={styles.likeButton}
+          onPress={() => {
+            setLiked(prev => ({
+              ...prev,
+              [item.postId]: !prev[item.postId]
+            }));
+          }}
         >
-          <Text style={styles.heartIcon}>{liked[item.id] ? '❤️' : '🤍'}</Text>
+          <Text style={styles.heartIcon}>{liked[item.postId] ? '❤️' : '🤍'}</Text>
           <Text style={styles.likeCount}>
-            {liked[item.id] ? item.likes + 1 : item.likes}
+            {liked[item.postId] ? item.likeCount + 1 : item.likeCount}
           </Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.spotName}>{item.spotName}</Text>
-      <Text style={styles.spotDescription} numberOfLines={2}>
-        {item.spotDescription}
-      </Text>
-      
-    </TouchableOpacity>
-  );
-  const renderExercisePost = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.spotContainer}
-      onPress={() => navigation.navigate('community', { spotId: item.id })}
-    >
-      <View style={styles.spotHeader}>
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item.user}</Text>
-          <Text style={styles.date}>{item.date}</Text>
-        </View>
-        <TouchableOpacity 
-          style={styles.likeButton}
-        >
-          <Text style={styles.heartIcon}>{liked[item.id] ? '❤️' : '🤍'}</Text>
-          <Text style={styles.likeCount}>
-            {liked[item.id] ? item.likes + 1 : item.likes}
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <Text style={styles.spotName}>{item.spotName}</Text>
-      <Text style={styles.spotDescription} numberOfLines={2}>
-        {item.spotDescription}
-      </Text>
-      
+      <Text style={styles.spotName}>{item.postTitle}</Text>
     </TouchableOpacity>
   );
 
-  const renderGroup = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.groupContainer}
-      onPress={() => navigation.navigate('community', { groupId: item.id })}
-    >
-      <View style={styles.groupHeader}>
-        <Text style={styles.groupTitle}>{item.title}</Text>
-        <View style={[
-          styles.groupBadge,
-          {
-            backgroundColor: 
-              item.level === '초급' ? '#e3f2fd' :
-              item.level === '중급' ? '#fff3e0' : '#fbe9e7'
-          }
-        ]}>
-          <Text style={[
-            styles.groupLevel,
-            {
-              color: 
-                item.level === '초급' ? '#1976d2' :
-                item.level === '중급' ? '#f57c00' : '#d32f2f'
-            }
-          ]}>{item.level}</Text>
-        </View>
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
-      <View style={styles.groupInfo}>
-        <View style={styles.groupDetail}>
-          <Text style={styles.groupTime}>
-            ⏰ {item.startTime} - {item.endTime}
-          </Text>
-          <Text style={styles.groupDistance}>
-            🏃‍♂️ {item.distance}
-          </Text>
-        </View>
-        <View style={styles.groupDetail}>
-          <Text style={styles.groupLocation}>
-            📍 {item.location}
-          </Text>
-          <Text style={styles.groupMembers}>
-            👥 {item.currentMembers}/{item.maxMembers}명
-          </Text>
-        </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Error: {error}</Text>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -322,13 +278,12 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </View>
         <FlatList
-          data={DUMMY_SPOTS}
-          renderItem={renderSpotPost}
-          keyExtractor={item => item.id.toString()}
+          data={runningSpotPosts}
+          renderItem={renderPost}
+          keyExtractor={item => item.postId.toString()}
           scrollEnabled={false}
         />
       </View>
-      {/* 러닝 스팟 게시판 섹션 */}
 
       {/* 운동인증 게시판 섹션 */}
       <View style={styles.section}>
@@ -339,35 +294,58 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </View>
         <FlatList
-          data={DUMMY_EXERCISE}
-          renderItem={renderExercisePost}
-          keyExtractor={item => item.id.toString()}
+          data={runningCertPosts}
+          renderItem={renderPost}
+          keyExtractor={item => item.postId.toString()}
           scrollEnabled={false}
         />
       </View>
-      {/* 운동인증 게시판 섹션 */}
 
       {/* 러닝 그룹 섹션 */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>현재 이런 방이 생성되어 있어요!</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('running')}>
-            <Text style={styles.moreButton}>더보기 ≫</Text>
-          </TouchableOpacity>
+      {groups.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>현재 이런 방이 생성되어 있어요!</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('running')}>
+              <Text style={styles.moreButton}>더보기 ≫</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={groups}
+            renderItem={({ item }) => (
+              <TouchableOpacity 
+                style={styles.groupContainer}
+                onPress={() => navigation.navigate('running', { groupId: item.id })}
+              >
+                {/* 그룹 정보 렌더링 */}
+                <Text style={styles.groupTitle}>{item.title}</Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={item => item.id.toString()}
+            scrollEnabled={false}
+          />
         </View>
-        <FlatList
-          data={DUMMY_GROUPS}
-          renderItem={renderGroup}
-          keyExtractor={item => item.id.toString()}
-          scrollEnabled={false}
-        />
-      </View>
-      {/* 러닝 그룹 섹션 */}
+      )}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
