@@ -2,6 +2,7 @@ package RunningMate.backend.domain.running.repository;
 
 import RunningMate.backend.domain.running.entity.GroupTag;
 import RunningMate.backend.domain.running.entity.RunningGroup;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,6 @@ public interface RunningGroupRepository extends JpaRepository<RunningGroup, Long
     RunningGroup findByGroupId(Long groupId);
     void deleteAllByEndTimeBefore(LocalDateTime now);
     List<RunningGroup> findAllByEndTimeBefore(LocalDateTime now);
-    List<RunningGroup> findAllByGroupTagAndGroupTitleContains(GroupTag groupTag, String search);
-    List<RunningGroup> findAllByGroupTitleContains(String search);
+    List<RunningGroup> findAllByGroupTagAndGroupTitleContainsAndStartTimeAfter(GroupTag groupTag, String search, LocalDateTime now);
+    List<RunningGroup> findAllByGroupTitleContainsAndStartTimeAfter(String search, LocalDateTime now);
 }

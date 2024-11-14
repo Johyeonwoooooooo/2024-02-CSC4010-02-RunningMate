@@ -81,8 +81,8 @@ public class RunningController {
     })
 
     @GetMapping("/filtering")
-    public ResponseEntity<?> filteringRunningGroup(@RequestParam(name="groupTag", required = false)GroupTag groupTag,
-                                                   @RequestParam(name="searchWord", defaultValue = "") String searchWord){
+    public ResponseEntity<?> filteringRunningGroup(@RequestParam(value = "groupTag", required = false)GroupTag groupTag,
+                                                   @RequestParam(value = "searchWord", defaultValue = "") String searchWord){
         List<RunningDTO.RunningGroupViewResponse> runningGroupViewResponses = runningService.filteringGroup(groupTag, searchWord);
         if (runningGroupViewResponses.isEmpty())
             return ResponseEntity.noContent().build();

@@ -77,10 +77,10 @@ public class RunningServiceImpl implements RunningService {
     public List<RunningDTO.RunningGroupViewResponse> filteringGroup(GroupTag groupTag, String searchWord) {
         List<RunningGroup> groupList;
         if(groupTag == null){
-            groupList = groupRepository.findAllByGroupTitleContains(searchWord);
+            groupList = groupRepository.findAllByGroupTitleContainsAndStartTimeAfter(searchWord, LocalDateTime.now());
         }
         else {
-            groupList = groupRepository.findAllByGroupTagAndGroupTitleContains(groupTag, searchWord);
+            groupList = groupRepository.findAllByGroupTagAndGroupTitleContainsAndStartTimeAfter(groupTag, searchWord, LocalDateTime.now());
         }
 
         return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
