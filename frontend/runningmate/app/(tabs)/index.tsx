@@ -197,36 +197,70 @@ const HomeScreen = () => {
   );
 
   // 게시물 렌더링 함수 통합
-  const renderPost = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.spotContainer}
-      onPress={() => navigation.navigate('community', { spotId: item.postId })}
-    >
-      <View style={styles.spotHeader}>
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item.userNickname}</Text>
-          <Text style={styles.date}>
-            {new Date(item.postDate).toLocaleDateString('ko-KR')}
-          </Text>
+  const renderPost = ({ item }) => {
+    const postId = item?.postId?.toString() || item?.id?.toString() || Math.random().toString();
+    
+    const formatDate = (dateString) => {
+      if (!dateString) return '날짜 없음';
+      try {
+        return new Date(dateString).toLocaleDateString('ko-KR');
+      } catch (error) {
+        return '날짜 형식 오류';
+      }
+    };
+    
+    const handleLike = () => {
+      setLiked(prev => ({
+        ...prev,
+        [postId]: !prev[postId]
+      }));
+    };
+   
+    const getLikeCount = () => {
+      const baseCount = item?.likeCount || 0;
+      return liked[postId] ? baseCount + 1 : baseCount;
+    };
+   
+    return (
+      <TouchableOpacity 
+        style={styles.spotContainer}
+        onPress={() => navigation.navigate('community', {
+          params: {
+            selectedPostId: item.postId,
+            postTag: item.postTag,
+            screen: item.postTag ? 'running-spot' : 'exercise-proof'
+          }
+        })}
+      >
+        <View style={styles.spotHeader}>
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>
+              {item?.userNickname || '사용자 없음'}
+            </Text>
+            <Text style={styles.date}>
+              {formatDate(item?.postDate)}
+            </Text>
+          </View>
+          
+          <TouchableOpacity 
+            style={styles.likeButton}
+            onPress={handleLike}
+          >
+            <Text style={styles.heartIcon}>
+              {liked[postId] ? '❤️' : '🤍'}
+            </Text>
+            <Text style={styles.likeCount}>
+              {getLikeCount()}
+            </Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity 
-          style={styles.likeButton}
-          onPress={() => {
-            setLiked(prev => ({
-              ...prev,
-              [item.postId]: !prev[item.postId]
-            }));
-          }}
-        >
-          <Text style={styles.heartIcon}>{liked[item.postId] ? '❤️' : '🤍'}</Text>
-          <Text style={styles.likeCount}>
-            {liked[item.postId] ? item.likeCount + 1 : item.likeCount}
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <Text style={styles.spotName}>{item.postTitle}</Text>
-    </TouchableOpacity>
-  );
+   
+        <Text style={styles.spotName}>
+          {item?.postTitle || '제목 없음'}
+        </Text>
+      </TouchableOpacity>
+    );
+   };
 
   if (loading) {
     return (
@@ -303,28 +337,51 @@ const HomeScreen = () => {
 
       {/* 러닝 그룹 섹션 */}
       {groups.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>현재 이런 방이 생성되어 있어요!</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('running')}>
-              <Text style={styles.moreButton}>더보기 ≫</Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={groups}
-            renderItem={({ item }) => (
-              <TouchableOpacity 
-                style={styles.groupContainer}
-                onPress={() => navigation.navigate('running', { groupId: item.id })}
-              >
-                {/* 그룹 정보 렌더링 */}
-                <Text style={styles.groupTitle}>{item.title}</Text>
-              </TouchableOpacity>
-            )}
-            keyExtractor={item => item.id.toString()}
-            scrollEnabled={false}
-          />
-        </View>
+ <View style={styles.section}>
+   <View style={styles.sectionHeader}>
+     <Text style={styles.sectionTitle}>현재 이런 방이 생성되어 있어요!</Text>
+     <TouchableOpacity onPress={() => navigation.navigate('running')}>
+       <Text style={styles.moreButton}>더보기 ≫</Text>
+     </TouchableOpacity>
+   </View>
+   <FlatList
+     data={groups}
+     renderItem={({ item }) => (
+       <TouchableOpacity 
+         style={styles.groupContainer}
+         onPress={() => navigation.navigate('running', { groupId: item.groupId })}
+       >
+         <View style={styles.groupDetail}>
+           <Text style={styles.groupTitle}>{item.groupTitle}</Text>
+           <View style={styles.groupBadge}>
+             <Text style={styles.groupLevel}>
+               {item.groupTag === 'BEGINNER' ? '초보' : 
+                item.groupTag === 'INTERMEDIATE' ? '중수' :
+                item.groupTag === 'ADVANCED' ? '고수' : '선수'}
+             </Text>
+           </View>
+         </View>
+         <View style={styles.groupInfo}>
+           <Text style={styles.groupTime}>
+             {new Date(item.startTime).toLocaleTimeString('ko-KR', { 
+               hour: '2-digit', 
+               minute: '2-digit',
+               hour12: true 
+             })} ~ 
+             {new Date(item.endTime).toLocaleTimeString('ko-KR', {
+               hour: '2-digit',
+               minute: '2-digit',
+               hour12: true
+             })}
+           </Text>
+           <Text style={styles.groupDistance}>목표 거리: {item.targetDistance}km</Text>
+         </View>
+       </TouchableOpacity>
+     )}
+     keyExtractor={item => item.groupId.toString()}
+     scrollEnabled={false}
+   />
+ </View>
       )}
     </ScrollView>
   );
@@ -535,6 +592,7 @@ const styles = StyleSheet.create({
       fontSize: 14,
       color: '#666',
   },
+  
 });
 
 export default HomeScreen;

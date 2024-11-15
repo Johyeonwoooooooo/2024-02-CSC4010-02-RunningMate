@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -8,45 +8,87 @@ import {
   SafeAreaView,
   Platform,
   Text,
-  Modal
+  ActivityIndicator
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-
 const DIFFICULTY_LEVELS = [
-  { id: 'beginner', label: '초보' },
-  { id: 'intermediate', label: '중수' },
-  { id: 'advanced', label: '고수' },
-  { id: 'expert', label: '선수' }
+  { id: 'BEGINNER', label: '초보' },
+  { id: 'INTERMEDIATE', label: '중수' },
+  { id: 'ADVANCED', label: '고수' },
+  { id: 'EXPERT', label: '선수' }
 ];
 
 const RoomCard = ({ level, title, time, distance }) => (
   <TouchableOpacity style={styles.roomCard}>
     <View style={styles.roomHeader}>
       <View style={styles.levelBadge}>
-        <Text style={styles.levelText}>{level}</Text>
+        <Text style={styles.levelText}>{level || '레벨 미정'}</Text>
       </View>
-      <Text style={styles.timeText}>목표 시간: {time}</Text>
+      <Text style={styles.timeText}>목표 시간: {time || '미정'}</Text>
     </View>
-    <Text style={styles.titleText}>{title}</Text>
-    <Text style={styles.distanceText}>목표 거리: {distance}</Text>
+    <Text style={styles.titleText}>{title || '제목 없음'}</Text>
+    <Text style={styles.distanceText}>목표 거리: {distance || '미정'}</Text>
   </TouchableOpacity>
 );
 
 export default function RunningMateSearch() {
+  const [runningRooms, setRunningRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [selectedTimeText, setSelectedTimeText] = useState('러닝 시작 시간 입력');
+  
   const navigation = useNavigation();
-  const formatTime = (date) => {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
+  const router = useRouter();
+
+  const fetchRunningRooms = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/running');
+      if (!response.ok) throw new Error('Failed to fetch rooms');
+      const data = await response.json();
+      
+      const formattedRooms = data.map(room => ({
+        id: room.groupId,
+        level: convertGroupTag(room.groupTag),
+        title: room.groupTitle,
+        time: formatTime(room.startTime, room.endTime),
+        distance: `${room.targetDistance}km`
+      }));
+
+      setRunningRooms(formattedRooms);
+    } catch (error) {
+      console.error('Error fetching running rooms:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRunningRooms();
+  }, []);
+
+  const convertGroupTag = (tag) => {
+    const levels = {
+      'BEGINNER': '초보',
+      'INTERMEDIATE': '중수',
+      'ADVANCED': '고수',
+      'EXPERT': '선수'
+    };
+    return levels[tag] || '초보';
+  };
+
+  const formatTime = (start, end) => {
+    const formatDateTime = (dateStr) => {
+      const date = new Date(dateStr);
+      return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    };
+    return `${formatDateTime(start)} ~ ${formatDateTime(end)}`;
   };
 
   const handleTimeChange = (event, selectedDate) => {
@@ -57,8 +99,6 @@ export default function RunningMateSearch() {
     }
   };
 
-
-  const router = useRouter();
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.searchContainer}>
@@ -107,42 +147,28 @@ export default function RunningMateSearch() {
       <Text style={styles.sectionTitle}>클럽에서 참가</Text>
 
       <ScrollView style={styles.roomList}>
-        <RoomCard
-          level="초보"
-          title="현재 생성되어 있는 러닝 방"
-          time="7:30 ~ 8:15"
-          distance="3km"
-        />
-        <RoomCard
-          level="중수"
-          title="마라톤 준비"
-          time="7:30 ~ 8:15"
-          distance="5km"
-        />
-        <RoomCard
-          level="고수"
-          title="모의 마라톤 할 사람"
-          time="7:30 ~ 8:15"
-          distance="7km"
-        />
-        <RoomCard
-          level="중수"
-          title="1일 1시간 러닝"
-          time="7:30 ~ 8:15"
-          distance="5km"
-        />
-        <RoomCard
-          level="선수"
-          title="1일 1시간 러닝"
-          time="7:30 ~ 8:15"
-          distance="5km"
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
+        ) : runningRooms.length > 0 ? (
+          runningRooms.map(room => (
+            <RoomCard
+              key={room.id}
+              level={room.level}
+              title={room.title}
+              time={room.time}
+              distance={room.distance}
+            />
+          ))
+        ) : (
+          <Text style={styles.emptyText}>현재 생성된 방이 없습니다.</Text>
+        )}
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={() => {
-          router.push('/participation/participationMain');
-        }}>
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={() => router.push('/participation/participationMain')}
+        >
           <Text style={styles.buttonText}>러닝 방 생성</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.button, styles.joinButton]}>
@@ -295,5 +321,14 @@ const styles = StyleSheet.create({
   timePicker: {
     backgroundColor: 'white',
     width: Platform.OS === 'ios' ? '100%' : 'auto',
+  },
+  loadingIndicator: {
+    marginTop: 20,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#666',
   },
 });

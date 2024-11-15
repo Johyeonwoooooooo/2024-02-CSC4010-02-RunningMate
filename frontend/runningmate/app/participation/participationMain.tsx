@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   View, 
@@ -7,37 +6,40 @@ import {
   TouchableOpacity, 
   ScrollView, 
   StyleSheet,
-  Platform,  // Platform import 추가
-  SafeAreaView
+  Platform,
+  SafeAreaView,
+  Alert,
+  Modal
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
+const LEVEL_MAPPING = {
+  '초보': 'BEGINNER',
+  '중수': 'INTERMEDIATE',
+  '고수': 'ATHLETE',
+  '선수': 'EXPERT'
+};
+
 const CreateRunningRoom = ({ navigation }) => {
-  // 현재 시간 관련 유틸리티 함수들
   const getCurrentTime = () => {
     const now = new Date();
-    // 한국 시간으로 변환 (UTC+9)
     const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
     return {
-      // Date 객체
       dateObject: koreaTime,
-      // HH:mm 형식 (24시간)
       time24: `${String(koreaTime.getHours()).padStart(2, '0')}:${String(koreaTime.getMinutes()).padStart(2, '0')}`,
-      // hh:mm AM/PM 형식 (12시간)
       time12: koreaTime.toLocaleTimeString('ko-KR', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: true
       }),
-      // 개별 시간 단위
       hours: koreaTime.getHours(),
       minutes: koreaTime.getMinutes(),
-      // 1시간 뒤 시간
       oneHourLater: new Date(koreaTime.getTime() + (60 * 60 * 1000))
     };
   };
+
   const [selectedType, setSelectedType] = useState('초보');
   const [roomTitle, setRoomTitle] = useState('');
   const [targetDistance, setTargetDistance] = useState('');
@@ -62,15 +64,20 @@ const CreateRunningRoom = ({ navigation }) => {
     return isValid;
   };
 
-  const formatTime = (time) => {
-    return time.toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
+  const formatTime = (timeString) => {
+    if (!timeString) return '시간 정보 없음';
+    
+    try {
+      const date = new Date(timeString);
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
+    } catch (error) {
+      console.error('Time formatting error:', error);
+      return '시간 정보 오류';
+    }
   };
 
-  // 시간 검증 함수
   const validateTimes = (start, end) => {
     const currentTime = new Date();
     const errors = {};
@@ -86,50 +93,73 @@ const CreateRunningRoom = ({ navigation }) => {
     return errors;
   };
 
-  // DateTimePicker 핸들러
   const handleStartTimeChange = (event, selectedDate) => {
     setShowStartPicker(false);
     if (selectedDate) {
       const timeErrors = validateTimes(selectedDate, endTime);
       if (timeErrors.startTime) {
-        alert(timeErrors.startTime);
+        Alert.alert('시간 오류', timeErrors.startTime);
         return;
       }
       setStartTime(selectedDate);
     }
   };
 
-  const handleEndTimeChange = (event, selectedDate) => {
-    setShowEndPicker(false);
-    if (selectedDate) {
-      const timeErrors = validateTimes(startTime, selectedDate);
-      if (timeErrors.endTime) {
-        alert(timeErrors.endTime);
-        return;
-      }
-      setEndTime(selectedDate);
-    }
-  };
+
   const router = useRouter();
-  // 방 생성 시 최종 유효성 검사
-  const handleCreateRoom = () => {
-    const timeErrors = validateTimes(startTime, endTime);
-    if (Object.keys(timeErrors).length > 0) {
-      alert(Object.values(timeErrors).join('\n'));
+  const handleCreateRoom = async () => {
+    if (!roomTitle.trim()) {
+      Alert.alert('입력 오류', '방 제목을 입력해주세요.');
       return;
     }
-    // 생성된 방으로 보내기 .
-    router.push({
-      pathname: './waitingRoom',
-      params: {
-        roomTitle: roomTitle,
-        startTime: startTime.toISOString(), // Date 객체를 문자열로 변환
-        endTime: endTime.toISOString(),
-        targetDistance: targetDistance,
-        maxParticipants: maxParticipants,
-        selectedType: selectedType
+
+    if (!targetDistance || !maxParticipants) {
+      Alert.alert('입력 오류', '목표 거리와 최대 참가 인원을 입력해주세요.');
+      return;
+    }
+
+    const timeErrors = validateTimes(startTime, endTime);
+    if (Object.keys(timeErrors).length > 0) {
+      Alert.alert('시간 오류', Object.values(timeErrors).join('\n'));
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8080/running/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          groupTitle: roomTitle,
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          targetDistance: parseInt(targetDistance),
+          groupTag: LEVEL_MAPPING[selectedType],
+          maxParticipants: parseInt(maxParticipants)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('방 생성에 실패했습니다.');
       }
-    });
+
+      const data = await response.json();
+      
+      router.push({
+        pathname: './waitingRoom',
+        params: {
+          roomTitle: roomTitle,
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          targetDistance: targetDistance,
+          maxParticipants: maxParticipants,
+          selectedType: selectedType
+        }
+      });
+    } catch (error) {
+      Alert.alert('오류', error.message);
+    }
   };
 
   return (
@@ -187,25 +217,75 @@ const CreateRunningRoom = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
-          {showStartPicker && (
+          
+          {showStartPicker && Platform.OS === 'ios' && (
+            <Modal
+              transparent={true}
+              animationType="slide"
+              visible={showStartPicker}
+            >
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  <DateTimePicker
+                    value={startTime}
+                    mode="time"
+                    display="spinner"
+                    onChange={handleStartTimeChange}
+                    minimumDate={new Date()}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowStartPicker(false)}
+                    style={styles.closeButton}
+                  >
+                    <Text>확인</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+          )}
+          {showStartPicker && Platform.OS === 'android' && (
             <DateTimePicker
               value={startTime}
               mode="time"
-              is24Hour={false}
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              is24Hour={true}
+              display="default"
               onChange={handleStartTimeChange}
-              minimumDate={startTime}
             />
           )}
 
-          {showEndPicker && (
+          {showEndPicker && Platform.OS === 'ios' && (
+            <Modal
+              transparent={true}
+              animationType="slide"
+              visible={showEndPicker}
+            >
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  <DateTimePicker
+                    value={endTime}
+                    mode="time"
+                    display="spinner"
+                    onChange={handleEndTimeChange}
+                    minimumDate={startTime}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowEndPicker(false)}
+                    style={styles.closeButton}
+                  >
+                    <Text>확인</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+          )}
+
+          {showEndPicker && Platform.OS === 'android' && (
             <DateTimePicker
               value={endTime}
               mode="time"
-              is24Hour={false}
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              is24Hour={true}
+              display="default"
               onChange={handleEndTimeChange}
-              minimumDate={endTime}
             />
           )}
           
@@ -264,32 +344,6 @@ const CreateRunningRoom = ({ navigation }) => {
           <Text style={styles.cancelButtonText}>생성 취소</Text>
         </TouchableOpacity>
       </View>
-
-      {showStartPicker && (
-        <DateTimePicker
-          value={startTime}
-          mode="time"
-          is24Hour={false}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={(event, selectedDate) => {
-            setShowStartPicker(false);
-            if (selectedDate) setStartTime(selectedDate);
-          }}
-        />
-      )}
-
-      {showEndPicker && (
-        <DateTimePicker
-          value={endTime}
-          mode="time"
-          is24Hour={false}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={(event, selectedDate) => {
-            setShowEndPicker(false);
-            if (selectedDate) setEndTime(selectedDate);
-          }}
-        />
-      )}
     </SafeAreaView>
   );
 };
@@ -378,7 +432,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     padding: 16,
-    paddingBottom: 34, // Safe area 고려
+    paddingBottom: 34,
     gap: 8,
   },
   createButton: {
@@ -402,6 +456,23 @@ const styles = StyleSheet.create({
     color: '#dc2626',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    width: '80%',
+  },
+  closeButton: {
+    marginTop: 10,
+    padding: 10,
   },
 });
 
