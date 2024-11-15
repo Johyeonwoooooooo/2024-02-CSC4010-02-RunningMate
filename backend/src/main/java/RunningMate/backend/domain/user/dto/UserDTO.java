@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 public class UserDTO {
@@ -59,6 +60,7 @@ public class UserDTO {
         private String postTitle;
         private String postContent;
         private LocalDateTime postDate;
+        private List<String> postImages;
     }
 
 }

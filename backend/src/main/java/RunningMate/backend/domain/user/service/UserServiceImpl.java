@@ -87,13 +87,21 @@ public class UserServiceImpl implements UserService{
         List<Post> posts = user.get().getPostList();
 
         return posts.stream()
-                .map(post -> UserDTO.MyPostResponse.builder()
-                        .postId(post.getPostId())
-                        .postTitle(post.getPostTitle())
-                        .postContent(post.getPostContent())
-                        .postDate(post.getPostDate())
-                        .build())
+                .map(post -> {
+                    List<String> postImages = post.getPostImageList()
+                            .stream()
+                            .map(image -> image.getImageURL()) // 이미지 URL 추출
+                            .toList();
+                    return UserDTO.MyPostResponse.builder()
+                            .postId(post.getPostId())
+                            .postTitle(post.getPostTitle())
+                            .postContent(post.getPostContent())
+                            .postDate(post.getPostDate())
+                            .postImages(postImages) // 이미지 리스트 추가
+                            .build();
+                })
                 .toList();
+
     }
 
     // 암호화 툴 : 비밀번호는 암호화한 후 데이터베이스에 삽입.
