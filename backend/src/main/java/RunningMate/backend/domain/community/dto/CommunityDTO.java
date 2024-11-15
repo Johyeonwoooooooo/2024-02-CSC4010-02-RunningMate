@@ -32,6 +32,7 @@ public class CommunityDTO {
         private Long userId;
         private Long commentCount;
         private Long likeCount;
+        private Boolean isLikedByUser;
         private String postTitle;
         private String postContent;
         private Boolean postTag;

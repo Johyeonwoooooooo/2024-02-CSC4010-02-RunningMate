@@ -55,50 +55,50 @@ public class CommunityServiceImpl implements CommunityService{
     }
 
     @Override
-    public List<CommunityDTO.PostViewResponse> viewRunningSpotPost(Long postId) { // 메인페이지 -> 커뮤니티 넘어가는 경우
+    public List<CommunityDTO.PostViewResponse> viewRunningSpotPost(Long postId, Optional<User> user) { // 메인페이지 -> 커뮤니티 넘어가는 경우
         List<CommunityDTO.PostViewResponse> postViewResponses = new ArrayList<>();
-        postRepository.findById(postId).ifPresent(post -> postViewResponses.add(convertToDTO(post)));
+        postRepository.findById(postId).ifPresent(post -> postViewResponses.add(convertToDTO(post, user)));
 
         List<Post> posts = postRepository.findTop14ByPostTagTrueOrderByLikeCountDesc();
 
         posts.stream()
                 .filter(post -> !post.getPostId().equals(postId))
-                .map(this::convertToDTO)
+                .map(post -> convertToDTO(post, user))
                 .forEach(postViewResponses::add);
 
         return postViewResponses;
     }
 
     @Override
-    public List<CommunityDTO.PostViewResponse> viewExerciseProofPost(Long postId) {
+    public List<CommunityDTO.PostViewResponse> viewExerciseProofPost(Long postId, Optional<User> user) {
         List<CommunityDTO.PostViewResponse> postViewResponses = new ArrayList<>();
-        postRepository.findById(postId).ifPresent(post -> postViewResponses.add(convertToDTO(post)));
+        postRepository.findById(postId).ifPresent(post -> postViewResponses.add(convertToDTO(post, user)));
 
         List<Post> posts = postRepository.findTop14ByPostTagFalseOrderByLikeCountDesc();
 
         posts.stream()
                 .filter(post -> !post.getPostId().equals(postId))
-                .map(this::convertToDTO)
+                .map(post -> convertToDTO(post, user))
                 .forEach(postViewResponses::add);
 
         return postViewResponses;
     }
 
     @Override
-    public List<CommunityDTO.PostViewResponse> viewRunningSpotPost() {
+    public List<CommunityDTO.PostViewResponse> viewRunningSpotPost(Optional<User> user) {
         List<Post> posts = postRepository.findTop15ByPostTagTrueOrderByPostDateDesc();
 
         return posts.stream()
-                .map(this::convertToDTO)
+                .map(post -> convertToDTO(post, user))
                 .toList();
     }
 
     @Override
-    public List<CommunityDTO.PostViewResponse> viewExerciseProofPost() {
+    public List<CommunityDTO.PostViewResponse> viewExerciseProofPost(Optional<User> user) {
         List<Post> posts = postRepository.findTop15ByPostTagFalseOrderByPostDateDesc();
 
         return posts.stream()
-                .map(this::convertToDTO)
+                .map(post -> convertToDTO(post, user))
                 .toList();
     }
 
@@ -190,11 +190,14 @@ public class CommunityServiceImpl implements CommunityService{
         postRepository.delete(post);
     }
 
-    private CommunityDTO.PostViewResponse convertToDTO(Post post) {
+
+    private CommunityDTO.PostViewResponse convertToDTO(Post post, Optional<User> user) {
         List<String> postImages = post.getPostImageList()
                 .stream()
                 .map(PostImage::getImageURL)
                 .toList();
+
+        boolean isLiked = user.isPresent() && likeRepository.existsByUserAndPost(user.get(), post);
 
         return CommunityDTO.PostViewResponse.builder()
                 .postId(post.getPostId())
@@ -206,6 +209,7 @@ public class CommunityServiceImpl implements CommunityService{
                 .postTitle(post.getPostTitle())
                 .postDate(post.getPostDate())
                 .postImages(postImages)
+                .isLikedByUser(isLiked)
                 .build();
     }
 }

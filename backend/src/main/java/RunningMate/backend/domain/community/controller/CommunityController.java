@@ -68,9 +68,10 @@ public class CommunityController {
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
-    public ResponseEntity<?> getClickedRunningSpotPosts(@PathVariable("postId") Long postId) {
+    public ResponseEntity<?> getClickedRunningSpotPosts(@PathVariable("postId") Long postId, HttpSession session) {
         try {
-            List<CommunityDTO.PostViewResponse> postResponse = communityService.viewRunningSpotPost(postId);
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            List<CommunityDTO.PostViewResponse> postResponse = communityService.viewRunningSpotPost(postId, optionalUser);
             return ResponseEntity.ok(postResponse);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -83,9 +84,10 @@ public class CommunityController {
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
-    public ResponseEntity<?> getClickedExerciseProofPosts(@PathVariable("postId") Long postId) {
+    public ResponseEntity<?> getClickedExerciseProofPosts(@PathVariable("postId") Long postId, HttpSession session) {
         try {
-            List<CommunityDTO.PostViewResponse> postResponse = communityService.viewExerciseProofPost(postId);
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            List<CommunityDTO.PostViewResponse> postResponse = communityService.viewExerciseProofPost(postId, optionalUser);
             return ResponseEntity.ok(postResponse);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -98,8 +100,9 @@ public class CommunityController {
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
-    public ResponseEntity<?> getRunningSpotPosts() {
-        List<CommunityDTO.PostViewResponse> posts = communityService.viewRunningSpotPost();
+    public ResponseEntity<?> getRunningSpotPosts(HttpSession session) {
+        Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+        List<CommunityDTO.PostViewResponse> posts = communityService.viewRunningSpotPost(optionalUser);
         if (posts.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
@@ -113,8 +116,9 @@ public class CommunityController {
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
     })
-    public ResponseEntity<?> getExerciseProofPosts() {
-        List<CommunityDTO.PostViewResponse> posts = communityService.viewExerciseProofPost();
+    public ResponseEntity<?> getExerciseProofPosts(HttpSession session) {
+        Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+        List<CommunityDTO.PostViewResponse> posts = communityService.viewExerciseProofPost(optionalUser);
         if (posts.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
