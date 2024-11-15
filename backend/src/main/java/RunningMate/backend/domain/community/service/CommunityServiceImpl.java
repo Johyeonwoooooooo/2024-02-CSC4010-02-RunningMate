@@ -208,6 +208,7 @@ public class CommunityServiceImpl implements CommunityService{
                 .postContent(post.getPostContent())
                 .postTitle(post.getPostTitle())
                 .postDate(post.getPostDate())
+                .postTag(post.getPostTag())
                 .postImages(postImages)
                 .isLikedByUser(isLiked)
                 .build();
