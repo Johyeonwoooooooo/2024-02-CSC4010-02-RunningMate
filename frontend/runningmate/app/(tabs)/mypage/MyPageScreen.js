@@ -8,6 +8,7 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
@@ -25,7 +26,39 @@ export default function MyPageScreen() {
     distances: [],
     calories: [],
   });
+  // 유저 게시글 
+  const [userPosts, setUserPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  // 사용자 게시글 가져오기
+  const fetchUserPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/user/posts`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('User posts:', data);
+        setUserPosts(data);
+      } else {
+        console.error('Failed to fetch user posts');
+      }
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    if (selectedTab === 'writtenPosts') {
+      fetchUserPosts();
+    }
+  }, [selectedTab]);
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR');
+  };
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -193,21 +226,30 @@ export default function MyPageScreen() {
         {/* Tab Content */}
         {selectedTab === "runningStats" ? (
           // 달리기 통계 내용
-          //<WeeklyStatsChart weeklyStats={weeklyStats} />
           <Text>달리기 통계 내용</Text>
         ) : (
           // 작성한 글 내용
           <View style={styles.contentContainer}>
-            <View style={styles.postContainer}>
-              <Text style={styles.postTitle}>제목</Text>
-              <Text style={styles.postDate}>2024/10/13</Text>
-              <View style={styles.postBodyPlaceholder}></View>
-            </View>
-            <View style={styles.postContainer}>
-              <Text style={styles.postTitle}>제목</Text>
-              <Text style={styles.postDate}>2024/10/8</Text>
-              <View style={styles.postBodyPlaceholder}></View>
-            </View>
+            {loading ? (
+              <ActivityIndicator size="large" color="#0000ff" />
+            ) : userPosts.length > 0 ? (
+              userPosts.map((post) => (
+                <View key={post.postId} style={styles.postContainer}>
+                  <Text style={styles.postTitle}>{post.postTitle}</Text>
+                  <Text style={styles.postDate}>{formatDate(post.postDate)}</Text>
+                  {post.postImages && post.postImages.length > 0 && (
+                    <Image 
+                      source={{ uri: post.postImages[0] }}
+                      style={styles.postImage}
+                      resizeMode="cover"
+                    />
+                  )}
+                  <Text style={styles.postContent}>{post.postContent}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.emptyText}>작성한 글이 없습니다.</Text>
+            )}
           </View>
         )}
       </ScrollView>
@@ -225,13 +267,13 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   container: {
-    flex: 1,
+    flex: 1, 
     backgroundColor: "#fff",
     padding: 16,
   },
   profileContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "center", 
     marginBottom: 20,
   },
   profileImage: {
@@ -273,7 +315,7 @@ const styles = StyleSheet.create({
   },
   selectedTab: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "bold", 
     borderBottomWidth: 2,
     borderBottomColor: "#000",
     paddingHorizontal: 8,
@@ -282,26 +324,89 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000",
   },
+  contentContainer: {
+    flex: 1,
+    padding: 16,
+  },
   postContainer: {
     marginBottom: 16,
     padding: 16,
+    backgroundColor: '#fff',
     borderRadius: 8,
-    borderColor: "#ccc",
     borderWidth: 1,
+    borderColor: '#ddd',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   postTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 8,
   },
   postDate: {
     fontSize: 12,
-    color: "#999",
+    color: '#666',
     marginBottom: 8,
+  },
+  postContent: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#666',
+    marginTop: 32,
+  },
+  message: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#666',
   },
   postBodyPlaceholder: {
     height: 100,
     backgroundColor: "#ddd",
     borderRadius: 8,
   },
-});
+  postImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 12,
+    backgroundColor: '#f0f0f0', // placeholder color
+  },
+  postContainer: {
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    overflow: 'hidden', // 이미지가 container를 벗어나지 않도록
+  },
+ });
