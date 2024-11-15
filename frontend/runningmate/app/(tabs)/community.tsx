@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useFocusEffect } from '@react-navigation/native';
 import { 
   StyleSheet, 
   TouchableOpacity, 
@@ -20,8 +21,8 @@ import { ThemedView } from "@/components/ThemedView";
 import { useRouter } from 'expo-router';
 import { Stack } from 'expo-router';
 import AlertModal from '../../components/modal/AlertModal';
-import { useWindowDimensions } from 'react-native';
-const API_URL = 'http://43.200.193.236:8080';
+import { useWindowDimensions, RefreshControl } from 'react-native';
+const API_URL = 'http://localhost:8080';
 
 
 // CommentsModal 컴포넌트 수정
@@ -31,6 +32,77 @@ const CommentsModal = ({ visible, onClose, postId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { height: SCREEN_HEIGHT } = useWindowDimensions();
+  console.log('Modal opened with postId:', postId); // postId 로깅 추가
+  // 댓글 목록을 가져오는 함수
+  const fetchComments = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/community/post/${postId}/comments`);
+      
+      if (!response.ok) {
+        throw new Error('댓글을 불러오는데 실패했습니다.');
+      }
+
+      const data = await response.json();
+      setComments(data);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      setError('댓글을 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // visible이나 postId가 변경될 때 댓글 목록 가져오기
+  useEffect(() => {
+    if (visible && postId) {
+      fetchComments();
+    }
+  }, [visible, postId]);
+
+  // 댓글 등록 핸들러
+  const handleSubmitComment = async () => {
+    if (!comment.trim() || !postId) {
+      console.error('Missing required data:', { comment: comment.trim(), postId });
+      return;
+    }
+  
+    try {
+      const commentData = {
+        commentContent: comment.trim(),
+        postId: postId // postId 추가
+      };
+  
+      console.log('Sending comment request:', {
+        url: `${API_URL}/community/post/${postId}/comment`,
+        data: commentData
+      });
+  
+      const response = await fetch(`${API_URL}/community/post/${postId}/comment`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(commentData)
+      });
+  
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+  
+      if (response.ok) {
+        setComment('');
+        fetchComments();
+      } else {
+        Alert.alert('오류', '댓글 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Error posting comment:', error);
+      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+    }
+  };
 
   // 댓글 목록 가져오기
   useEffect(() => {
@@ -130,8 +202,15 @@ const CommentsModal = ({ visible, onClose, postId }) => {
                     placeholderTextColor="#666"
                     multiline
                   />
-                  <TouchableOpacity style={styles.sendButton}>
-                    <Ionicons name="send" size={24} color="black" />
+                  <TouchableOpacity 
+                    style={styles.sendButton}
+                    onPress={handleSubmitComment}
+                  >
+                    <Ionicons 
+                      name="send" 
+                      size={24} 
+                      color={comment.trim() ? "#36A3FD" : "#666"}
+                    />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -246,7 +325,7 @@ const PostCard = ({ post }) => {
       <CommentsModal 
         visible={isCommentsModalVisible}
         onClose={() => setIsCommentsModalVisible(false)}
-        postId={post.postId}  // postId 전달
+        postId={post.postId} // postId가 실제로 전달되는지 확인
       />
     </ThemedView>
   );
@@ -263,28 +342,37 @@ const CommunityScreen = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/community/post/get/running-spot`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      console.log('CommunityScreen - Fetched data:', data);
+      setPosts(data);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await fetch(`${API_URL}/community/post/get/running-spot`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setPosts(data);
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPosts();
   }, []);
 
-  if (loading) {
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchPosts();
+  }, []);
+
+  if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -302,8 +390,13 @@ const CommunityScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container}>
-        {posts.length > 0 ? (
+      <ScrollView 
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {posts && posts.length > 0 ? (
           posts.map(post => <PostCard key={post.postId} post={post} />)
         ) : (
           <EmptyPostsView />
@@ -317,28 +410,37 @@ const ExerciseScreen = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/community/post/get/exercise-proof`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      console.log('ExerciseScreen - Fetched data:', data);
+      setPosts(data);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await fetch(`${API_URL}/community/post/get/exercise-proof`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setPosts(data);
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPosts();
   }, []);
 
-  if (loading) {
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchPosts();
+  }, []);
+
+  if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -356,8 +458,13 @@ const ExerciseScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container}>
-        {posts.length > 0 ? (
+      <ScrollView 
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {posts && posts.length > 0 ? (
           posts.map(post => <PostCard key={post.postId} post={post} />)
         ) : (
           <EmptyPostsView />
@@ -389,10 +496,15 @@ export default function CommunityTabs() {
           tabBarStyle: { marginTop: Platform.OS === 'ios' ? 47 : 0 },
         })}
       >
-        <Tab.Screen name="러닝 스팟 공유" component={CommunityScreen} />
-        <Tab.Screen name="운동 인증" component={ExerciseScreen} />
+        <Tab.Screen 
+          name="러닝 스팟 공유" 
+          component={CommunityScreen} 
+        />
+        <Tab.Screen 
+          name="운동 인증" 
+          component={ExerciseScreen} 
+        />
       </Tab.Navigator>
-      {/* 글 쓰기 + 버튼 */}
       <FloatingActionButton />
     </View>
   );
@@ -549,6 +661,34 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  sendButton: {
+    paddingLeft: 10,
+    paddingBottom: Platform.OS === 'ios' ? 6 : 4,
+  },
+  commentInputContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
+    backgroundColor: 'white',
+  },
+  commentInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    marginHorizontal: 10,
+  },
+  commentInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#000',
+    maxHeight: 80,
+    paddingTop: Platform.OS === 'ios' ? 8 : 4,
+    paddingBottom: Platform.OS === 'ios' ? 8 : 4,
   },
   commentsList: {
     flex: 1,

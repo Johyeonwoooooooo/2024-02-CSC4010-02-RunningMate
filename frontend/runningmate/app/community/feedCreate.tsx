@@ -17,7 +17,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Stack } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 
-const API_URL = 'http://43.200.193.236:8080';
+const API_URL = 'http://localhost:8080';
 
 export default function FeedCreateScreen() {
  const [title, setTitle] = useState('');
@@ -115,7 +115,7 @@ export default function FeedCreateScreen() {
      Alert.alert('성공', '게시글이 업로드되었습니다.', [
        {
          text: '확인',
-         onPress: () => router.back()
+         onPress: () => router.replace('/(tabs)/community')
        }
      ]);
    } catch (error) {
