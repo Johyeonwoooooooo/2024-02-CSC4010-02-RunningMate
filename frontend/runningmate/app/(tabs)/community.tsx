@@ -237,14 +237,36 @@ const FloatingActionButton = () => {
 };
 
 // PostCard 컴포넌트
-const PostCard = ({ post }) => {
+const PostCard = ({ post, onDelete }) => { // onDelete prop 추가
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isLove, setIsLove] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
 
-  const handleDelete = () => {
-    setIsDeleteModalVisible(false);
+  // 삭제 핸들러
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`${API_URL}/community/post/${post.postId}/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // 삭제 성공
+        onDelete(post.postId); // 부모 컴포넌트에 삭제 알림
+        Alert.alert('성공', '게시글이 삭제되었습니다.');
+      } else {
+        // 삭제 실패
+        Alert.alert('오류', '게시글 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+    } finally {
+      setIsDeleteModalVisible(false);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -281,10 +303,12 @@ const PostCard = ({ post }) => {
           <ThemedView style={styles.profileCircle} />
           <ThemedText style={styles.userName}>{post.userNickname}</ThemedText>
         </ThemedView>
-        {/* userID가 일치할 때만 삭제 버튼 표시 */}
-        <TouchableOpacity onPress={() => setIsDeleteModalVisible(true)}>
-          <Ionicons name="trash-outline" size={20} color="#808080" />
-        </TouchableOpacity>
+        {/* userId가 일치할 때만 삭제 버튼 표시 */}
+        {post.userId === 1 && ( // 현재 로그인한 사용자의 ID와 비교
+          <TouchableOpacity onPress={() => setIsDeleteModalVisible(true)}>
+            <Ionicons name="trash-outline" size={20} color="#808080" />
+          </TouchableOpacity>
+        )}
         <AlertModal 
           visible={isDeleteModalVisible}
           onClose={() => setIsDeleteModalVisible(false)}
@@ -372,6 +396,11 @@ const CommunityScreen = () => {
     fetchPosts();
   }, []);
 
+  // 게시글 삭제 핸들러
+  const handlePostDelete = (deletedPostId) => {
+    setPosts(prevPosts => prevPosts.filter(post => post.postId !== deletedPostId));
+  };
+
   if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
@@ -397,7 +426,13 @@ const CommunityScreen = () => {
         }
       >
         {posts && posts.length > 0 ? (
-          posts.map(post => <PostCard key={post.postId} post={post} />)
+          posts.map(post => (
+            <PostCard 
+              key={post.postId} 
+              post={post} 
+              onDelete={handlePostDelete} // 삭제 핸들러 전달
+            />
+          ))
         ) : (
           <EmptyPostsView />
         )}
