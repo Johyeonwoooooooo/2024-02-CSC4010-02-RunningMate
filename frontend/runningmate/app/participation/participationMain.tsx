@@ -105,6 +105,18 @@ const CreateRunningRoom = ({ navigation }) => {
     }
   };
 
+  // 추가된 종료 시간 처리 함수
+  const handleEndTimeChange = (event, selectedDate) => {
+    setShowEndPicker(false);
+    if (selectedDate) {
+      const timeErrors = validateTimes(startTime, selectedDate);
+      if (timeErrors.endTime) {
+        Alert.alert('시간 오류', timeErrors.endTime);
+        return;
+      }
+      setEndTime(selectedDate);
+    }
+  };
 
   const router = useRouter();
   const handleCreateRoom = async () => {
@@ -217,7 +229,6 @@ const CreateRunningRoom = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
-          
           {showStartPicker && Platform.OS === 'ios' && (
             <Modal
               transparent={true}
