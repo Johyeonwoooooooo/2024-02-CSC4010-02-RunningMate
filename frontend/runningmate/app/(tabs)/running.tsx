@@ -8,9 +8,10 @@ import {
   SafeAreaView,
   Platform,
   Text,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -22,16 +23,16 @@ const DIFFICULTY_LEVELS = [
   { id: 'EXPERT', label: '선수' }
 ];
 
-const RoomCard = ({ level, title, time, distance }) => (
-  <TouchableOpacity style={styles.roomCard}>
+const RoomCard = ({ room, onPress }) => (
+  <TouchableOpacity style={styles.roomCard} onPress={() => onPress(room)}>
     <View style={styles.roomHeader}>
       <View style={styles.levelBadge}>
-        <Text style={styles.levelText}>{level || '레벨 미정'}</Text>
+        <Text style={styles.levelText}>{room.level || '레벨 미정'}</Text>
       </View>
-      <Text style={styles.timeText}>목표 시간: {time || '미정'}</Text>
+      <Text style={styles.timeText}>목표 시간: {room.time || '미정'}</Text>
     </View>
-    <Text style={styles.titleText}>{title || '제목 없음'}</Text>
-    <Text style={styles.distanceText}>목표 거리: {distance || '미정'}</Text>
+    <Text style={styles.titleText}>{room.title || '제목 없음'}</Text>
+    <Text style={styles.distanceText}>목표 거리: {room.distance || '미정'}</Text>
   </TouchableOpacity>
 );
 
@@ -43,35 +44,123 @@ export default function RunningMateSearch() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [selectedTimeText, setSelectedTimeText] = useState('러닝 시작 시간 입력');
+  const [joiningRoom, setJoiningRoom] = useState(false);
   
   const navigation = useNavigation();
   const router = useRouter();
 
   const fetchRunningRooms = async () => {
+    setLoading(true);
     try {
+      console.log('Fetching running rooms...');
       const response = await fetch('http://localhost:8080/running');
-      if (!response.ok) throw new Error('Failed to fetch rooms');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch rooms');
+      }
+      
       const data = await response.json();
+      console.log('Fetched rooms:', data);
       
       const formattedRooms = data.map(room => ({
         id: room.groupId,
         level: convertGroupTag(room.groupTag),
         title: room.groupTitle,
         time: formatTime(room.startTime, room.endTime),
-        distance: `${room.targetDistance}km`
+        distance: `${room.targetDistance}km`,
+        startTime: room.startTime,
+        endTime: room.endTime,
+        targetDistance: room.targetDistance,
+        maxParticipants: room.maxParticipants
       }));
 
       setRunningRooms(formattedRooms);
     } catch (error) {
       console.error('Error fetching running rooms:', error);
+      Alert.alert('오류', '러닝방 목록을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchRunningRooms();
-  }, []);
+  const handleJoinRoom = async (room) => {
+    if (joiningRoom) return;
+    
+    setJoiningRoom(true);
+    try {
+      console.log('Joining room with ID:', room.id);
+      
+      const response = await fetch(`http://localhost:8080/running/${room.id}/participate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+
+      // 에러 응답인 경우 (400, 500 등)
+      if (!response.ok) {
+        // 서버에서 받은 에러 메시지를 그대로 사용
+        throw new Error(responseText);
+      }
+
+      // 성공 응답의 경우에만 JSON 파싱
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Success response parsing error:', e);
+        throw new Error('서버 응답을 처리하는데 실패했습니다.');
+      }
+
+      // recordId 확인
+      if (!result.recordId) {
+        throw new Error('참가 기록 ID를 받지 못했습니다.');
+      }
+
+      // 참가 성공 시 대기실로 이동
+      router.push({
+        pathname: '../participation/waitingRoom',
+        params: {
+          roomId: room.id,
+          recordId: result.recordId,
+          roomTitle: room.title,
+          startTime: room.startTime,
+          endTime: room.endTime,
+          targetDistance: room.targetDistance,
+          maxParticipants: room.maxParticipants,
+          selectedType: room.level
+        }
+      });
+
+      Alert.alert('성공', '러닝 방 참가가 완료되었습니다.');
+
+    } catch (error) {
+      console.error('Joining room error:', error);
+      Alert.alert(
+        '참가 실패', 
+        error.message,
+        [{ text: '확인' }]
+      );
+    } finally {
+      setJoiningRoom(false);
+    }
+  };
+
+  // 화면이 포커스를 받을 때마다 실행
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchRunningRooms();
+      return () => {
+        // 화면을 벗어날 때 cleanup
+        setRunningRooms([]);
+        setLoading(true);
+      };
+    }, [])
+  );
 
   const convertGroupTag = (tag) => {
     const levels = {
@@ -95,9 +184,18 @@ export default function RunningMateSearch() {
     setShowTimePicker(false);
     if (selectedDate) {
       setSelectedTime(selectedDate);
-      setSelectedTimeText(formatTime(selectedDate));
+      const hours = selectedDate.getHours().toString().padStart(2, '0');
+      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+      setSelectedTimeText(`${hours}:${minutes}`);
     }
   };
+
+  // 검색과 필터링을 적용한 러닝방 목록
+  const filteredRooms = runningRooms.filter(room => {
+    const matchesSearch = room.title.toLowerCase().includes(searchText.toLowerCase());
+    const matchesLevel = selectedLevel ? room.level === convertGroupTag(selectedLevel) : true;
+    return matchesSearch && matchesLevel;
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -144,23 +242,31 @@ export default function RunningMateSearch() {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.sectionTitle}>클럽에서 참가</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.sectionTitle}>클럽에서 참가</Text>
+        <TouchableOpacity 
+          style={styles.refreshButton}
+          onPress={fetchRunningRooms}
+        >
+          <Ionicons name="refresh" size={24} color="#007AFF" />
+        </TouchableOpacity>
+      </View>
 
       <ScrollView style={styles.roomList}>
         {loading ? (
           <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
-        ) : runningRooms.length > 0 ? (
-          runningRooms.map(room => (
+        ) : filteredRooms.length > 0 ? (
+          filteredRooms.map(room => (
             <RoomCard
               key={room.id}
-              level={room.level}
-              title={room.title}
-              time={room.time}
-              distance={room.distance}
+              room={room}
+              onPress={handleJoinRoom}
             />
           ))
         ) : (
-          <Text style={styles.emptyText}>현재 생성된 방이 없습니다.</Text>
+          <Text style={styles.emptyText}>
+            {searchText || selectedLevel ? '검색 결과가 없습니다.' : '현재 생성된 방이 없습니다.'}
+          </Text>
         )}
       </ScrollView>
 
@@ -253,11 +359,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginLeft: 16,
-    marginBottom: 12,
+  },
+  refreshButton: {
+    padding: 8,
   },
   roomList: {
     flex: 1,
