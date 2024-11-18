@@ -110,6 +110,24 @@ public class RunningDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class WhileRunningResponse {
+        private Long recordId;
+        private Duration runningTime;
+        private Long calories;
+        private Long distance;
+
+        public WhileRunningResponse(Record record) {
+            this.recordId = record.getRecordId();
+            this.runningTime = record.getRunningTime();
+            this.calories = record.getCalories();
+            this.distance = record.getDistance();
+        }
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class MainPageGroupResponse {
         private Long groupId;
         private String groupTitle;

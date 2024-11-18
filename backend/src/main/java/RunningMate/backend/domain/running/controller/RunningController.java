@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -116,6 +117,25 @@ public class RunningController {
         try{
             return ResponseEntity.ok().body(runningService.groupParticipants(groupId));
         }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "러닝 중", description = "recordId, distance, runningTime, calories를 보내 러닝 정보를 저장한다")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "러닝 정보 저장 성공"),
+            @ApiResponse(responseCode = "400", description = "러닝 정보 저장 실패")
+    })
+    @PostMapping("/running/update")
+    public ResponseEntity<?> updateRunning(
+            @RequestParam Long recordId,
+            @RequestParam Long distance,
+            @RequestParam Duration runningTime,
+            @RequestParam Long calories) {
+        RunningDTO.WhileRunningResponse response = runningService.whileRunning(recordId, distance, runningTime, calories);
+        try {
+            return ResponseEntity.ok().body(runningService.whileRunning(recordId, distance, runningTime, calories));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

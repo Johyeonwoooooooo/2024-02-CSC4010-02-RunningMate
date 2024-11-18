@@ -188,6 +188,19 @@ public class RunningServiceImpl implements RunningService {
 //    }
 
     @Override
+    @Transactional
+    public RunningDTO.WhileRunningResponse whileRunning(Long recordId, Long distance, Duration runningTime, Long calories) {
+        Record record = recordRepository.findById(recordId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 기록을 찾을 수 없습니다."));
+
+        // 랭킹 반환 미완성
+        record.updateRecord(distance, runningTime, calories);
+        recordRepository.save(record);
+
+        return new RunningDTO.WhileRunningResponse(record);
+    }
+
+    @Override
     public List<RunningDTO.MainPageGroupResponse> mainPageGroups() {
         List<RunningGroup> groupList = groupRepository.findAllByStartTimeAfter(LocalDateTime.now());
         return groupList.stream().limit(6).map(RunningDTO.MainPageGroupResponse::new).toList();

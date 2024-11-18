@@ -5,6 +5,7 @@ import RunningMate.backend.domain.running.dto.RunningDTO;
 import RunningMate.backend.domain.running.entity.GroupTag;
 import RunningMate.backend.domain.running.entity.RunningGroup;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,4 +21,5 @@ public interface RunningService {
     List<RunningDTO.MainPageGroupResponse> mainPageGroups();
     void autoCreateQuickRunningGroup();
 //    void autoDeleteRunningGroup();
+    RunningDTO.WhileRunningResponse whileRunning(Long recordId, Long distance, Duration runningTime, Long calories);
 }
