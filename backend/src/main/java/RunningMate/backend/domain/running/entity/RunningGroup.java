@@ -38,6 +38,9 @@ public class RunningGroup {
     @Enumerated(EnumType.STRING)
     private GroupTag groupTag;
 
+    @Column(nullable = false)
+    private Boolean activate;
+
     @OneToMany(mappedBy = "group")
     private List<LeaderBoard> leaderBoardList;
 

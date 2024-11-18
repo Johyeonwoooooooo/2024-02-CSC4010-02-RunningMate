@@ -102,6 +102,7 @@ public class RunningServiceImpl implements RunningService {
                 .participants(participants).targetDistance(group.getTargetDistance()).build();
     }
 
+    @Scheduled(cron="0 0 0 * * *")
     @Override
     public RunningDTO.ParticipateQuickRunningResponse participateQuickRunning(Optional<User> optionalUser) {
         if(optionalUser.isEmpty())
