@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   StyleSheet, 
   TouchableOpacity, 
@@ -9,31 +7,30 @@ import {
   Platform, 
   View,
   Modal,
-  Dimensions,
-  TouchableWithoutFeedback,
   TextInput,
   ActivityIndicator,
-  Image
+  Image,
+  TouchableWithoutFeedback,
+  Alert,
+  RefreshControl,
+  useWindowDimensions
 } from "react-native";
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useRouter } from 'expo-router';
-import { Stack } from 'expo-router';
+import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
+import Ionicons from "@expo/vector-icons/Ionicons";
 import AlertModal from '../../components/modal/AlertModal';
-import { useWindowDimensions, RefreshControl } from 'react-native';
+
 const API_URL = 'http://localhost:8080';
 
-
-// CommentsModal 컴포넌트 수정
+// CommentsModal 컴포넌트
 const CommentsModal = ({ visible, onClose, postId }) => {
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { height: SCREEN_HEIGHT } = useWindowDimensions();
-  console.log('Modal opened with postId:', postId); // postId 로깅 추가
-  // 댓글 목록을 가져오는 함수
+
   const fetchComments = async () => {
     try {
       setLoading(true);
@@ -54,30 +51,20 @@ const CommentsModal = ({ visible, onClose, postId }) => {
     }
   };
 
-  // visible이나 postId가 변경될 때 댓글 목록 가져오기
   useEffect(() => {
     if (visible && postId) {
       fetchComments();
     }
   }, [visible, postId]);
 
-  // 댓글 등록 핸들러
   const handleSubmitComment = async () => {
-    if (!comment.trim() || !postId) {
-      console.error('Missing required data:', { comment: comment.trim(), postId });
-      return;
-    }
+    if (!comment.trim() || !postId) return;
   
     try {
       const commentData = {
         commentContent: comment.trim(),
-        postId: postId // postId 추가
+        postId: postId
       };
-  
-      console.log('Sending comment request:', {
-        url: `${API_URL}/community/post/${postId}/comment`,
-        data: commentData
-      });
   
       const response = await fetch(`${API_URL}/community/post/${postId}/comment`, {
         method: 'POST',
@@ -87,10 +74,6 @@ const CommentsModal = ({ visible, onClose, postId }) => {
         },
         body: JSON.stringify(commentData)
       });
-  
-      console.log('Response status:', response.status);
-      const responseText = await response.text();
-      console.log('Response text:', responseText);
   
       if (response.ok) {
         setComment('');
@@ -103,30 +86,6 @@ const CommentsModal = ({ visible, onClose, postId }) => {
       Alert.alert('오류', '네트워크 오류가 발생했습니다.');
     }
   };
-
-  // 댓글 목록 가져오기
-  useEffect(() => {
-    const fetchComments = async () => {
-      if (!visible || !postId) return;
-      
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_URL}/community/post/${postId}/comments`);
-        if (!response.ok) {
-          throw new Error('댓글을 불러오는데 실패했습니다.');
-        }
-        const data = await response.json();
-        setComments(data);
-      } catch (error) {
-        console.error('Error fetching comments:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchComments();
-  }, [visible, postId]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -151,7 +110,6 @@ const CommentsModal = ({ visible, onClose, postId }) => {
         <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback>
             <View style={styles.modalContent}>
-              {/* 헤더 */}
               <View style={styles.modalHeader}>
                 <ThemedText style={styles.modalTitle}>댓글</ThemedText>
                 <TouchableOpacity onPress={onClose}>
@@ -159,7 +117,6 @@ const CommentsModal = ({ visible, onClose, postId }) => {
                 </TouchableOpacity>
               </View>
 
-              {/* 댓글 목록 */}
               <View style={styles.commentsContainer}>
                 {loading ? (
                   <ActivityIndicator size="large" color="#0000ff" />
@@ -191,7 +148,6 @@ const CommentsModal = ({ visible, onClose, postId }) => {
                 )}
               </View>
 
-              {/* 입력창 */}
               <View style={styles.commentInputContainer}>
                 <View style={styles.commentInputWrapper}>
                   <TextInput
@@ -222,10 +178,9 @@ const CommentsModal = ({ visible, onClose, postId }) => {
   );
 };
 
-// + 버튼 글 쓰기
+// FloatingActionButton 컴포넌트
 const FloatingActionButton = () => {
   const router = useRouter();
-
   return (
     <TouchableOpacity 
       style={styles.fab}
@@ -237,13 +192,12 @@ const FloatingActionButton = () => {
 };
 
 // PostCard 컴포넌트
-const PostCard = ({ post, onDelete }) => { // onDelete prop 추가
+const PostCard = ({ post, onDelete }) => {
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isLove, setIsLove] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
 
-  // 삭제 핸들러
   const handleDelete = async () => {
     try {
       const response = await fetch(`${API_URL}/community/post/${post.postId}/delete`, {
@@ -254,11 +208,9 @@ const PostCard = ({ post, onDelete }) => { // onDelete prop 추가
       });
 
       if (response.ok) {
-        // 삭제 성공
-        onDelete(post.postId); // 부모 컴포넌트에 삭제 알림
+        onDelete(post.postId);
         Alert.alert('성공', '게시글이 삭제되었습니다.');
       } else {
-        // 삭제 실패
         Alert.alert('오류', '게시글 삭제에 실패했습니다.');
       }
     } catch (error) {
@@ -269,12 +221,6 @@ const PostCard = ({ post, onDelete }) => { // onDelete prop 추가
     }
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR');
-  };
-
-  // 좋아요 
   const handleLike = async () => {
     try {
       const response = await fetch(`${API_URL}/community/post/${post.postId}/like`, {
@@ -285,17 +231,18 @@ const PostCard = ({ post, onDelete }) => { // onDelete prop 추가
       });
 
       if (response.ok) {
-        // 좋아요 상태 토글
         setIsLove(!isLove);
-        // 좋아요 수 업데이트
         setLikeCount(prevCount => isLove ? prevCount - 1 : prevCount + 1);
-      } else {
-        console.error('Failed to toggle like');
       }
     } catch (error) {
       console.error('Error toggling like:', error);
     }
   };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('ko-KR');
+  };
+
   return (
     <ThemedView style={styles.postCard}>
       <ThemedView style={styles.postHeader}>
@@ -303,8 +250,7 @@ const PostCard = ({ post, onDelete }) => { // onDelete prop 추가
           <ThemedView style={styles.profileCircle} />
           <ThemedText style={styles.userName}>{post.userNickname}</ThemedText>
         </ThemedView>
-        {/* userId가 일치할 때만 삭제 버튼 표시 */}
-        {post.userId === 1 && ( // 현재 로그인한 사용자의 ID와 비교
+        {post.userId === 1 && (
           <TouchableOpacity onPress={() => setIsDeleteModalVisible(true)}>
             <Ionicons name="trash-outline" size={20} color="#808080" />
           </TouchableOpacity>
@@ -349,114 +295,76 @@ const PostCard = ({ post, onDelete }) => { // onDelete prop 추가
       <CommentsModal 
         visible={isCommentsModalVisible}
         onClose={() => setIsCommentsModalVisible(false)}
-        postId={post.postId} // postId가 실제로 전달되는지 확인
+        postId={post.postId}
       />
     </ThemedView>
   );
 };
-// 게시글이 없을 때 보여줄 컴포넌트
+
+// EmptyPostsView 컴포넌트
 const EmptyPostsView = () => (
   <View style={styles.emptyContainer}>
     <ThemedText style={styles.emptyText}>게시글이 존재하지 않습니다.</ThemedText>
   </View>
 );
 
-// Tab Navigation 컴포넌트들
+// 메인 CommunityScreen 컴포넌트
 const CommunityScreen = () => {
-  const [posts, setPosts] = useState([]);
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const initialTab = params?.initialTab ? parseInt(params.initialTab) : 0;
+  const selectedPostId = params?.selectedPostId;
+  const flatListRef = useRef(null);
+
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [spotPosts, setSpotPosts] = useState([]);
+  const [exercisePosts, setExercisePosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
+
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/community/post/get/running-spot`);
-      if (!response.ok) {
+      const [spotResponse, exerciseResponse] = await Promise.all([
+        fetch(`${API_URL}/community/post/get/running-spot`),
+        fetch(`${API_URL}/community/post/get/exercise-proof`)
+      ]);
+
+      if (!spotResponse.ok || !exerciseResponse.ok) {
         throw new Error('Network response was not ok');
       }
-      const data = await response.json();
-      console.log('CommunityScreen - Fetched data:', data);
-      setPosts(data);
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+      const spotData = await spotResponse.json();
+      const exerciseData = await exerciseResponse.json();
+      console.log('================================');
+      console.log("spotData : ", spotData);
+      console.log("exerciseData : ", exerciseData);
+      console.log('================================');
 
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    fetchPosts();
-  }, []);
+      if (selectedPostId) {
+        const selectedSpotPost = spotData.find(post => post.postId.toString() === selectedPostId);
+        const selectedExercisePost = exerciseData.find(post => post.postId.toString() === selectedPostId);
 
-  // 게시글 삭제 핸들러
-  const handlePostDelete = (deletedPostId) => {
-    setPosts(prevPosts => prevPosts.filter(post => post.postId !== deletedPostId));
-  };
-
-  if (loading && !refreshing) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
-      </View>
-    );
-  }
-
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView 
-        style={styles.container}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        if (selectedSpotPost) {
+          const filteredSpotPosts = spotData.filter(post => post.postId.toString() !== selectedPostId);
+          setSpotPosts([selectedSpotPost, ...filteredSpotPosts]);
+          setExercisePosts(exerciseData);
+          setActiveTab(0);
+        } else if (selectedExercisePost) {
+          const filteredExercisePosts = exerciseData.filter(post => post.postId.toString() !== selectedPostId);
+          setExercisePosts([selectedExercisePost, ...filteredExercisePosts]);
+          setSpotPosts(spotData);
+          setActiveTab(1);
+        } else {
+          setSpotPosts(spotData);
+          setExercisePosts(exerciseData);
         }
-      >
-        {posts && posts.length > 0 ? (
-          posts.map(post => (
-            <PostCard 
-              key={post.postId} 
-              post={post} 
-              onDelete={handlePostDelete} // 삭제 핸들러 전달
-            />
-          ))
-        ) : (
-          <EmptyPostsView />
-        )}
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
-
-const ExerciseScreen = () => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_URL}/community/post/get/exercise-proof`);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+      } else {
+        setSpotPosts(spotData);
+        setExercisePosts(exerciseData);
       }
-      const data = await response.json();
-      console.log('ExerciseScreen - Fetched data:', data);
-      setPosts(data);
     } catch (error) {
       console.error('Error fetching posts:', error);
       setError(error.message);
@@ -467,8 +375,22 @@ const ExerciseScreen = () => {
   };
 
   useEffect(() => {
+    if (params?.initialTab !== undefined) {
+      setActiveTab(parseInt(params.initialTab));
+    }
+  }, [params?.initialTab]);
+
+  useEffect(() => {
     fetchPosts();
   }, []);
+
+  const handlePostDelete = (postId, isSpotPost) => {
+    if (isSpotPost) {
+      setSpotPosts(prev => prev.filter(post => post.postId !== postId));
+    } else {
+      setExercisePosts(prev => prev.filter(post => post.postId !== postId));
+    }
+  };
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -483,69 +405,91 @@ const ExerciseScreen = () => {
     );
   }
 
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
-      </View>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView 
-        style={styles.container}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {posts && posts.length > 0 ? (
-          posts.map(post => <PostCard key={post.postId} post={post} />)
-        ) : (
-          <EmptyPostsView />
-        )}
-      </ScrollView>
+      <View style={styles.tabHeader}>
+        <TouchableOpacity 
+          style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
+          onPress={() => setActiveTab(0)}
+        >
+          <ThemedText style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>
+            러닝 스팟 공유
+          </ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
+            onPress={() => setActiveTab(1)}
+          >
+            <ThemedText style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>
+              운동 인증
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView 
+          style={styles.container}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {activeTab === 0 ? (
+            spotPosts.length > 0 ? (
+              spotPosts.map(post => (
+                <PostCard 
+                  key={post.postId} 
+                  post={post} 
+                  onDelete={(postId) => handlePostDelete(postId, true)}
+                />
+              ))
+            ) : (
+              <EmptyPostsView />
+            )
+          ) : (
+            exercisePosts.length > 0 ? (
+              exercisePosts.map(post => (
+                <PostCard 
+                  key={post.postId} 
+                  post={post}
+                  onDelete={(postId) => handlePostDelete(postId, false)}
+                />
+              ))
+            ) : (
+              <EmptyPostsView />
+            )
+          )}
+        </ScrollView>
+
+        <FloatingActionButton />
     </SafeAreaView>
   );
 };
-
-const Tab = createMaterialTopTabNavigator();
-
-// tab 이동
-export default function CommunityTabs() {
-  return (
-    <View style={styles.container}>
-      <Stack.Screen 
-        options={{
-          headerShown: false,
-          contentStyle: { backgroundColor: 'white' }
-        }} 
-      />
-      
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarLabelStyle: { fontSize: 14 },
-          tabBarIndicatorStyle: { backgroundColor: 'black' },
-          tabBarActiveTintColor: 'black',
-          tabBarInactiveTintColor: 'gray',
-          tabBarStyle: { marginTop: Platform.OS === 'ios' ? 47 : 0 },
-        })}
-      >
-        <Tab.Screen 
-          name="러닝 스팟 공유" 
-          component={CommunityScreen} 
-        />
-        <Tab.Screen 
-          name="운동 인증" 
-          component={ExerciseScreen} 
-        />
-      </Tab.Navigator>
-      <FloatingActionButton />
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
+  tabHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    marginTop: Platform.OS === 'ios' ? 47 : 0,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 5,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent'
+  },
+  activeTabButton: {
+    borderBottomColor: '#000'
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#666'
+  },
+  activeTabText: {
+    color: '#000',
+    fontWeight: '600'
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -571,6 +515,71 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  postCard: {
+    marginBottom: 8,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#DBDBDB',
+  },
+  postHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  profileCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E0E0E0',
+    marginRight: 10,
+  },
+  userName: {
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  grayArea: {
+    width: '100%',
+    height: 300,
+    backgroundColor: '#E0E0E0',
+  },
+  postActions: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  likeComment: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  actionCount: {
+    marginLeft: 6,
+    color: '#262626',
+    fontSize: 13,
+  },
+  caption: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    fontSize: 14,
+    color: '#262626',
+  },
   content: {
     paddingHorizontal: 12,
     paddingBottom: 8,
@@ -582,74 +591,6 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     fontSize: 12,
     color: '#8e8e8e',
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollContent: {
-    // paddingTop: 20,
-  },
-  postCard: {
-    marginBottom: 8,          // 간격 조정
-    backgroundColor: '#fff',
-    borderTopWidth: 1,       // 상단 구분선 추가
-    borderBottomWidth: 1,    // 하단 구분선 추가
-    borderColor: '#DBDBDB',  // 인스타그램 스타일 구분선 색상
-  },
-  postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,             // 패딩 살짝 증가
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  profileCircle: {
-    width: 32,              // 프로필 이미지 크기 조정
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#E0E0E0',
-    marginRight: 10,
-  },
-  userName: {
-    fontWeight: '600',      // 폰트 무게 조정
-    fontSize: 14,           // 폰트 크기 조정
-  },
-  grayArea: {
-    width: '100%',
-    height: 300,
-    backgroundColor: '#E0E0E0',
-  },
-  postActions: {
-    paddingHorizontal: 12,  // 패딩 조정
-    paddingVertical: 8,     // 패딩 조정
-  },
-  likeComment: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,        // 간격 조정
-  },
-  actionCount: {
-    marginLeft: 6,
-    color: '#262626',       // 텍스트 색상 조정
-    fontSize: 13,           // 폰트 크기 조정
-  },
-  caption: {
-    paddingHorizontal: 12,  // 패딩 조정
-    paddingBottom: 12,      // 패딩 조정
-    fontSize: 14,           // 폰트 크기 조정
-    color: '#262626',       // 텍스트 색상 조정
   },
   fab: {
     position: 'absolute',
@@ -679,7 +620,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    height: '60%', // MODAL_HEIGHT 대신 비율 사용
+    height: '60%',
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -696,41 +637,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  sendButton: {
-    paddingLeft: 10,
-    paddingBottom: Platform.OS === 'ios' ? 6 : 4,
-  },
-  commentInputContainer: {
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
-    backgroundColor: 'white',
-  },
-  commentInputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    marginHorizontal: 10,
-  },
-  commentInput: {
-    flex: 1,
-    fontSize: 14,
-    color: '#000',
-    maxHeight: 80,
-    paddingTop: Platform.OS === 'ios' ? 8 : 4,
-    paddingBottom: Platform.OS === 'ios' ? 8 : 4,
-  },
-  commentsList: {
-    flex: 1,
-    marginVertical: 10,
-  },
-  commentsListContent: {
-    flexGrow: 1,          // 내용이 적어도 스크롤 가능하게
   },
   commentsContainer: {
     flex: 1,
@@ -792,3 +698,5 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 6 : 4,
   },
 });
+
+export default CommunityScreen;

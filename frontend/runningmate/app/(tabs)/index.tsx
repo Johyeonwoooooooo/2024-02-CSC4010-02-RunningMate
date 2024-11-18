@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { StyleSheet, View, Image, ScrollView, TouchableOpacity, Dimensions, FlatList, Text, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const COURSE_ITEM_WIDTH = SCREEN_WIDTH - 50;
@@ -176,6 +177,28 @@ const HomeScreen = () => {
 
     fetchMainPageData();
   }, []);
+  const router = useRouter();
+  // 게시물 클릭 핸들러 수정
+  const handlePostPress = (post) => {
+    const tabIndex = post.postTag === 'RUNNING_SPOT' ? 0 : 1;
+    router.push({
+      pathname: '/community',
+      params: {
+        selectedPostId: post.postId,
+        initialTab: tabIndex
+      }
+    });
+  };
+
+  // 더보기 버튼 핸들러 수정
+  const handleMorePress = (tabIndex) => {
+    router.push({
+      pathname: '/community',
+      params: { 
+        initialTab: tabIndex // 0 또는 1
+      }
+    });
+  };
 
   const renderCourseItem = ({ item }) => (
     <TouchableOpacity 
@@ -224,13 +247,7 @@ const HomeScreen = () => {
     return (
       <TouchableOpacity 
         style={styles.spotContainer}
-        onPress={() => navigation.navigate('community', {
-          params: {
-            selectedPostId: item.postId,
-            postTag: item.postTag,
-            screen: item.postTag ? 'running-spot' : 'exercise-proof'
-          }
-        })}
+        onPress={() => handlePostPress(item)}
       >
         <View style={styles.spotHeader}>
           <View style={styles.userInfo}>
@@ -307,7 +324,7 @@ const HomeScreen = () => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>러닝 스팟 공유 게시판</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('community')}>
+          <TouchableOpacity onPress={() => handleMorePress(0)}>
             <Text style={styles.moreButton}>더보기 ≫</Text>
           </TouchableOpacity>
         </View>
@@ -323,7 +340,7 @@ const HomeScreen = () => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>운동인증 공유 게시판</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('community')}>
+          <TouchableOpacity onPress={() => handleMorePress(1)}>
             <Text style={styles.moreButton}>더보기 ≫</Text>
           </TouchableOpacity>
         </View>
