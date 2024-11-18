@@ -103,12 +103,14 @@ public class RunningServiceImpl implements RunningService {
                 .participants(participants).targetDistance(group.getTargetDistance()).build();
     }
 
-    @Scheduled(cron="30 59 18 * * *")
+    @Scheduled(cron="0 0 0 * * *")
     @Override
     public void autoCreateQuickRunningGroup() {
-//        RunningGroup group = groupRepository.findByGroupTagAndActivate(GroupTag.QUICK, true);
-//        group.deactivate();
-//        groupRepository.save(group);
+        List<RunningGroup> groups = groupRepository.findAllByGroupTagAndActivate(GroupTag.QUICK, true);
+        for (RunningGroup group : groups) {
+            group.deactivate();
+            groupRepository.save(group);
+        }
 
         groupRepository.save(RunningGroup.builder()
                             .groupTitle("빠른 매칭방")
