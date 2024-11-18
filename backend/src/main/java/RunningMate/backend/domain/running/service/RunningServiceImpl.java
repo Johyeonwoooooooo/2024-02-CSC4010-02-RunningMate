@@ -102,7 +102,6 @@ public class RunningServiceImpl implements RunningService {
                 .participants(participants).targetDistance(group.getTargetDistance()).build();
     }
 
-    @Scheduled(cron="0 0 0 * * *")
     @Override
     public RunningDTO.ParticipateQuickRunningResponse participateQuickRunning(Optional<User> optionalUser) {
         if(optionalUser.isEmpty())
@@ -153,6 +152,9 @@ public class RunningServiceImpl implements RunningService {
         List<RunningGroup> runningGroups = groupRepository.findAllByEndTimeBefore(LocalDateTime.now());
         for (RunningGroup runningGroup : runningGroups) {
             log.info("RunningGroupID : {}, endTime : {}", runningGroup.getGroupId(), runningGroup.getEndTime());
+
+            runningGroup.deactivate();
+            groupRepository.save(runningGroup);
         }
     }
 
