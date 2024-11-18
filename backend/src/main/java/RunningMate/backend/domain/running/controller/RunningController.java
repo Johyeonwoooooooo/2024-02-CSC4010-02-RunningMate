@@ -60,6 +60,22 @@ public class RunningController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @Operation(summary = "빠른 매칭 참가하기", description = "사용자를 빠른 러닝방에 참가시키고 record 정보를 리턴한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "빠른 매칭 참가 성공"),
+            @ApiResponse(responseCode = "400", description = "빠른 매칭 참가 실패")
+    })
+    @PostMapping("/quickrunning/participate")
+    public ResponseEntity<?> participateQuickRunning(HttpSession session) {
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            return ResponseEntity.ok(runningService.participateQuickRunning(optionalUser));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @Operation(summary = "러닝방 목록 조회하기", description = "사용자에게 러닝방 목록을 보여준다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "러닝 방 조회 성공"),

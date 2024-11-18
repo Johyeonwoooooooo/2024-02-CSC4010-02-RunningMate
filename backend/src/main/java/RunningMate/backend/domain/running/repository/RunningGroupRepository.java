@@ -11,6 +11,7 @@ import java.util.List;
 public interface RunningGroupRepository extends JpaRepository<RunningGroup, Long> {
     List<RunningGroup> findAllByStartTimeAfter(LocalDateTime now);
     RunningGroup findByGroupId(Long groupId);
+    RunningGroup findByGroupTagIsNull();
     void deleteAllByEndTimeBefore(LocalDateTime now);
     List<RunningGroup> findAllByEndTimeBefore(LocalDateTime now);
     List<RunningGroup> findAllByGroupTagAndGroupTitleContainsAndStartTimeAfter(GroupTag groupTag, String search, LocalDateTime now);

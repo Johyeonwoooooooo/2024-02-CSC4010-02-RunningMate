@@ -14,6 +14,7 @@ public interface RunningService {
     List<RunningDTO.RunningGroupViewResponse> viewRunningGroups();
     RunningDTO.ParticipateGroupResponse participateGroup(Long groupId, Optional<User> optionalUser);
     RunningDTO.groupParticipantResponse groupParticipants(Long groupId);
+    RunningDTO.ParticipateQuickRunningResponse participateQuickRunning(Optional<User> optionalUser);
     void cancelParticipation(RunningDTO.CancelParticipationRequest request);
     List<RunningDTO.RunningGroupViewResponse> filteringGroup(GroupTag groupTag, String searchWord);
     void deleteRunningGroup();

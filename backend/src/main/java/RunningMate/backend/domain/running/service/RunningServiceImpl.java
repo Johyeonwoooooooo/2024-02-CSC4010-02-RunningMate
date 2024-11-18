@@ -1,11 +1,9 @@
 package RunningMate.backend.domain.running.service;
 
+import RunningMate.backend.domain.running.entity.*;
+import RunningMate.backend.domain.running.entity.Record;
 import RunningMate.backend.domain.user.entity.User;
 import RunningMate.backend.domain.running.dto.RunningDTO;
-import RunningMate.backend.domain.running.entity.GroupTag;
-import RunningMate.backend.domain.running.entity.LeaderBoard;
-import RunningMate.backend.domain.running.entity.Record;
-import RunningMate.backend.domain.running.entity.RunningGroup;
 import RunningMate.backend.domain.running.repository.LeaderBoardRepository;
 import RunningMate.backend.domain.running.repository.RecordRepository;
 import RunningMate.backend.domain.running.repository.RunningGroupRepository;
@@ -102,6 +100,34 @@ public class RunningServiceImpl implements RunningService {
                 .groupTag(group.getGroupTag()).endTime(group.getEndTime()).startTime(group.getStartTime())
                 .currentParticipants(group.getCurrentParticipants()).maxParticipants(group.getMaxParticipants())
                 .participants(participants).targetDistance(group.getTargetDistance()).build();
+    }
+
+    @Override
+    public RunningDTO.ParticipateQuickRunningResponse participateQuickRunning(Optional<User> optionalUser) {
+        if(optionalUser.isEmpty())
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
+
+        RunningGroup group = groupRepository.findByGroupTagIsNull(); // groupTag이 없는 건 빠른매칭 전용
+
+        // 방이 없으면 생성
+        if (group == null) {
+            group = RunningGroup.builder()
+                    .groupTitle("빠른매칭방")
+                    .startTime(LocalDateTime.now())
+                    .endTime(LocalDateTime.now().plusYears(10)) // 매우 먼 미래로 설정
+                    .currentParticipants(0)
+                    .maxParticipants(Integer.MAX_VALUE) // 매우 큰 값으로 설정
+                    .targetDistance(Long.MAX_VALUE) // 매우 큰 값으로 설정
+                    .build();
+            group = groupRepository.save(group);
+        }
+
+        Record record = recordRepository.save(Record.builder().user(optionalUser.get())
+                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
+        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
+        leaderBoardRepository.save(leaderBoard);
+
+        return new RunningDTO.ParticipateQuickRunningResponse(record);
     }
 
     @Override

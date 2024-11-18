@@ -71,7 +71,7 @@ public class RunningDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class groupParticipantResponse{
+    public static class groupParticipantResponse {
         private String groupTitle;
         private GroupTag groupTag;
         private Long targetDistance;
@@ -80,6 +80,21 @@ public class RunningDTO {
         private Integer maxParticipants;
         private Integer currentParticipants;
         private List<String> participants;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ParticipateQuickRunningResponse {
+        private Long recordId;
+        private Duration runningTime;
+        private Long calories;
+        public ParticipateQuickRunningResponse(Record record){
+            this.recordId = record.getRecordId();
+            this.runningTime = record.getRunningTime();
+            this.calories = record.getCalories();
+        }
     }
 
     @Builder
