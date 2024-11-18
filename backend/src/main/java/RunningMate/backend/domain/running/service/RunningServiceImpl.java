@@ -36,13 +36,14 @@ public class RunningServiceImpl implements RunningService {
             throw new IllegalArgumentException("최대 참가자는 1명 이상 이어야 합니다.");
 
         return groupRepository.save(RunningGroup.builder().groupTitle(request.getGroupTitle())
-                .groupTag(request.getGroupTag())
-                .startTime(request.getStartTime())
-                .endTime(request.getEndTime())
-                .currentParticipants(0)
-                .maxParticipants(request.getMaxParticipants())
-                .targetDistance(request.getTargetDistance())
-                .build());
+                                                            .groupTag(request.getGroupTag())
+                                                            .startTime(request.getStartTime())
+                                                            .endTime(request.getEndTime())
+                                                            .currentParticipants(0)
+                                                            .maxParticipants(request.getMaxParticipants())
+                                                            .targetDistance(request.getTargetDistance())
+                                                            .activate(true)
+                                                            .build());
     }
 
     @Override
@@ -51,11 +52,16 @@ public class RunningServiceImpl implements RunningService {
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
         RunningGroup group = groupRepository.findByGroupId(groupId);
+
         if(group == null)
             throw new IllegalArgumentException("해당 러닝방을 찾을 수 없습니다.");
 
         if(!group.participateGroup())
             throw new IllegalArgumentException("최대 참가자를 달성하여 참가할 수 없습니다.");
+
+        if(group.getActivate().equals(false))
+            throw new IllegalArgumentException("해당 러닝방은 종료되었습니다.");
+        
         groupRepository.save(group);
         Record record = recordRepository.save(Record.builder().user(optionalUser.get())
                 .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
@@ -90,6 +96,9 @@ public class RunningServiceImpl implements RunningService {
         if(group == null)
             throw new IllegalArgumentException("해당 러닝방이 존재하지 않습니다.");
 
+        if(group.getActivate().equals(false))
+            throw new IllegalArgumentException("해당 러닝방은 종료되었습니다.");
+
         List<LeaderBoard> groups = leaderBoardRepository.findAllByGroup(group);
         List<String> participants = new ArrayList<>();
         for (LeaderBoard leaderBoard : groups) {
@@ -100,34 +109,6 @@ public class RunningServiceImpl implements RunningService {
                 .groupTag(group.getGroupTag()).endTime(group.getEndTime()).startTime(group.getStartTime())
                 .currentParticipants(group.getCurrentParticipants()).maxParticipants(group.getMaxParticipants())
                 .participants(participants).targetDistance(group.getTargetDistance()).build();
-    }
-
-    @Override
-    public RunningDTO.ParticipateQuickRunningResponse participateQuickRunning(Optional<User> optionalUser) {
-        if(optionalUser.isEmpty())
-            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
-
-        RunningGroup group = groupRepository.findByGroupTagIsNull(); // groupTag이 없는 건 빠른매칭 전용
-
-        // 방이 없으면 생성
-        if (group == null) {
-            group = RunningGroup.builder()
-                    .groupTitle("빠른매칭방")
-                    .startTime(LocalDateTime.now())
-                    .endTime(LocalDateTime.now().plusYears(10)) // 매우 먼 미래로 설정
-                    .currentParticipants(0)
-                    .maxParticipants(Integer.MAX_VALUE) // 매우 큰 값으로 설정
-                    .targetDistance(Long.MAX_VALUE) // 매우 큰 값으로 설정
-                    .build();
-            group = groupRepository.save(group);
-        }
-
-        Record record = recordRepository.save(Record.builder().user(optionalUser.get())
-                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
-        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
-        leaderBoardRepository.save(leaderBoard);
-
-        return new RunningDTO.ParticipateQuickRunningResponse(record);
     }
 
     @Override
@@ -146,14 +127,59 @@ public class RunningServiceImpl implements RunningService {
         recordRepository.deleteRecordByRecordId(request.getRecordId());
     }
 
+    @Scheduled(cron="0 0 0 * * *") // 매일 자정에 자동으로 실행됨
+    @Override
+    public void autoCreateQuickRunningGroup() {
+        // QUICK 이고 활성화된 방을 모두 비활성화
+        List<RunningGroup> groups = groupRepository.findAllByGroupTagAndActivate(GroupTag.QUICK, true);
+        for (RunningGroup group : groups) {
+            group.deactivate();
+            groupRepository.save(group);
+        }
+        // 새로 방 생성
+        groupRepository.save(RunningGroup.builder()
+                            .groupTitle("빠른 매칭방")
+                            .groupTag(GroupTag.QUICK)
+                            .startTime(LocalDateTime.now())
+                            .endTime(LocalDateTime.now().plusDays(1))
+                            .currentParticipants(0)
+                            .maxParticipants(Integer.MAX_VALUE)
+                            .targetDistance(Long.MAX_VALUE)
+                             .activate(true)
+                            .build());
+    }
+
+    @Override
+    public RunningDTO.ParticipateQuickRunningResponse participateQuickRunning(Optional<User> optionalUser) {
+        if(optionalUser.isEmpty())
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
+
+        RunningGroup group = groupRepository.findByGroupTagAndActivate(GroupTag.QUICK, true);
+
+        Record record = recordRepository.save(Record.builder().user(optionalUser.get())
+                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
+        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
+        leaderBoardRepository.save(leaderBoard);
+
+        return new RunningDTO.ParticipateQuickRunningResponse(record);
+    }
+
     @Override
     @Scheduled(fixedRate = 5000) // 5초마다 반복. 60000 = 1분
-    public void deleteRunningGroup() {
+    public void deactivateRunningGroup() {
         List<RunningGroup> runningGroups = groupRepository.findAllByEndTimeBefore(LocalDateTime.now());
         for (RunningGroup runningGroup : runningGroups) {
-            log.info("RunningGroupID : {}, endTime : {}", runningGroup.getGroupId(), runningGroup.getEndTime());
+            runningGroup.deactivate();
+            groupRepository.save(runningGroup);
         }
     }
+
+//    @Override
+//    @Scheduled(fixedRate = 1000)
+//    @Transactional
+//    public void autoDeleteRunningGroup() {
+//        groupRepository.deleteAllByEndTimeBefore(LocalDateTime.now().plusDays(1));
+//    }
 
     @Override
     @Transactional
