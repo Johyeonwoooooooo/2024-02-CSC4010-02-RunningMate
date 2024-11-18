@@ -19,5 +19,5 @@ public interface RunningService {
     void deactivateRunningGroup();
     List<RunningDTO.MainPageGroupResponse> mainPageGroups();
     void autoCreateQuickRunningGroup();
-    void autoDeleteRunningGroup();
+//    void autoDeleteRunningGroup();
 }

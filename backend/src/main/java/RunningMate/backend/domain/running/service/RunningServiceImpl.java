@@ -103,12 +103,12 @@ public class RunningServiceImpl implements RunningService {
                 .participants(participants).targetDistance(group.getTargetDistance()).build();
     }
 
-    @Scheduled(cron="0 0 0 * * *")
+    @Scheduled(cron="30 59 18 * * *")
     @Override
     public void autoCreateQuickRunningGroup() {
-        RunningGroup group = groupRepository.findByGroupTagAndActivate(GroupTag.QUICK, true);
-        group.deactivate();
-        groupRepository.save(group);
+//        RunningGroup group = groupRepository.findByGroupTagAndActivate(GroupTag.QUICK, true);
+//        group.deactivate();
+//        groupRepository.save(group);
 
         groupRepository.save(RunningGroup.builder()
                             .groupTitle("빠른 매칭방")
@@ -118,6 +118,7 @@ public class RunningServiceImpl implements RunningService {
                             .currentParticipants(0)
                             .maxParticipants(Integer.MAX_VALUE)
                             .targetDistance(Long.MAX_VALUE)
+                             .activate(true)
                             .build());
     }
 
@@ -157,19 +158,17 @@ public class RunningServiceImpl implements RunningService {
     public void deactivateRunningGroup() {
         List<RunningGroup> runningGroups = groupRepository.findAllByEndTimeBefore(LocalDateTime.now());
         for (RunningGroup runningGroup : runningGroups) {
-            log.info("RunningGroupID : {}, endTime : {}", runningGroup.getGroupId(), runningGroup.getEndTime());
-
             runningGroup.deactivate();
             groupRepository.save(runningGroup);
         }
     }
 
-    @Override
-    @Scheduled(fixedRate = 60000)
-    @Transactional
-    public void autoDeleteRunningGroup() {
-        groupRepository.deleteAllByEndTimeBefore(LocalDateTime.now().plusDays(1));
-    }
+//    @Override
+//    @Scheduled(fixedRate = 1000)
+//    @Transactional
+//    public void autoDeleteRunningGroup() {
+//        groupRepository.deleteAllByEndTimeBefore(LocalDateTime.now().plusDays(1));
+//    }
 
     @Override
     public List<RunningDTO.MainPageGroupResponse> mainPageGroups() {
