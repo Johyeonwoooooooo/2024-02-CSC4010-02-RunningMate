@@ -1,8 +1,9 @@
 package RunningMate.backend.domain.running.controller;
 
-import RunningMate.backend.domain.User.entity.User;
+import RunningMate.backend.domain.user.entity.User;
 import RunningMate.backend.domain.authorization.SessionUtils;
 import RunningMate.backend.domain.running.dto.RunningDTO;
+import RunningMate.backend.domain.running.entity.GroupTag;
 import RunningMate.backend.domain.running.entity.LeaderBoard;
 import RunningMate.backend.domain.running.entity.RunningGroup;
 import RunningMate.backend.domain.running.repository.LeaderBoardRepository;
@@ -51,7 +52,7 @@ public class RunningController {
             @ApiResponse(responseCode = "400", description = "러닝 방 참가 실패")
     })
     @PostMapping("/{groupId}/participate")
-    public ResponseEntity<?> participateGroup(@PathVariable Long groupId, HttpSession session){
+    public ResponseEntity<?> participateGroup(@PathVariable("groupId") Long groupId, HttpSession session){
         try{
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
             return ResponseEntity.ok(runningService.participateGroup(groupId, optionalUser));
@@ -59,6 +60,22 @@ public class RunningController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @Operation(summary = "빠른 매칭 참가하기", description = "사용자를 빠른 매칭 러닝방에 참가시키고 record 정보를 리턴한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "빠른 매칭 참가 성공"),
+            @ApiResponse(responseCode = "400", description = "빠른 매칭 참가 실패")
+    })
+    @PostMapping("/quickrunning/participate")
+    public ResponseEntity<?> participateQuickRunning(HttpSession session) {
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            return ResponseEntity.ok(runningService.participateQuickRunning(optionalUser));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @Operation(summary = "러닝방 목록 조회하기", description = "사용자에게 러닝방 목록을 보여준다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "러닝 방 조회 성공"),
@@ -73,13 +90,29 @@ public class RunningController {
             return ResponseEntity.ok().body(runningGroupViewResponses);
     }
 
-    @Operation(summary = "러닝방 참가자 조회 하기", description = "러닝방에 참가 중인 유저들을 보여준다")
+    @Operation(summary = "러닝방 목록 필터링하여 조회 하기", description = "사용자에게 groupTag, 검색어를 입력받아 필터링 후 결과를 반환한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "러닝 방 조회 성공"),
+            @ApiResponse(responseCode = "204", description = "생성된 러닝방이 없는 경우")
+    })
+
+    @GetMapping("/filtering")
+    public ResponseEntity<?> filteringRunningGroup(@RequestParam(value = "groupTag", required = false)GroupTag groupTag,
+                                                   @RequestParam(value = "searchWord", defaultValue = "") String searchWord){
+        List<RunningDTO.RunningGroupViewResponse> runningGroupViewResponses = runningService.filteringGroup(groupTag, searchWord);
+        if (runningGroupViewResponses.isEmpty())
+            return ResponseEntity.noContent().build();
+        else
+            return ResponseEntity.ok().body(runningGroupViewResponses);
+    }
+
+    @Operation(summary = "러닝방 참가자 조회 하기", description = "groupID를 보내 해당 러닝방에 참가 중인 유저들을 보여준다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "참가자 조회 성공"),
             @ApiResponse(responseCode = "400", description = "생성된 러닝방이 없는 경우")
     })
     @GetMapping("/{groupId}/participants")
-    public ResponseEntity<?> viewParticipants(@PathVariable Long groupId){
+    public ResponseEntity<?> viewParticipants(@PathVariable("groupId") Long groupId){
         try{
             return ResponseEntity.ok().body(runningService.groupParticipants(groupId));
         }catch (Exception e){
@@ -92,7 +125,7 @@ public class RunningController {
             @ApiResponse(responseCode = "200", description = "참가 취소 성공"),
             @ApiResponse(responseCode = "400", description = "참가 취소 실패")
     })
-    @DeleteMapping("/{groupId}/participants")
+    @DeleteMapping("/cancel")
     public ResponseEntity<?> cancelParticipation(@RequestBody RunningDTO.CancelParticipationRequest request){
         try{
             runningService.cancelParticipation(request);

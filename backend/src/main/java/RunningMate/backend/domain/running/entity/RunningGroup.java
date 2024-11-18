@@ -38,9 +38,15 @@ public class RunningGroup {
     @Enumerated(EnumType.STRING)
     private GroupTag groupTag;
 
+    @Column(nullable = false)
+    private Boolean activate;
+
     @OneToMany(mappedBy = "group")
     private List<LeaderBoard> leaderBoardList;
 
+    public void deactivate(){
+        this.activate = false;
+    }
     public boolean participateGroup(){
         if(this.currentParticipants >= this.maxParticipants)
             return false;

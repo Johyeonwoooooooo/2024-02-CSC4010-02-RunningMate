@@ -1,6 +1,6 @@
 package RunningMate.backend.domain.community.service;
 
-import RunningMate.backend.domain.User.entity.User;
+import RunningMate.backend.domain.user.entity.User;
 import RunningMate.backend.domain.community.dto.CommunityDTO;
 import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;
@@ -86,9 +86,7 @@ public class CommunityServiceImpl implements CommunityService{
 
     @Override
     public List<CommunityDTO.PostViewResponse> viewRunningSpotPost() {
-        List<Post> posts = postRepository.findTop15ByPostTagTrueOrderByPostDate();
-
-        List<CommunityDTO.PostViewResponse> postViewResponses = new ArrayList<>();
+        List<Post> posts = postRepository.findTop15ByPostTagTrueOrderByPostDateDesc();
 
         return posts.stream()
                 .map(this::convertToDTO)
@@ -97,9 +95,7 @@ public class CommunityServiceImpl implements CommunityService{
 
     @Override
     public List<CommunityDTO.PostViewResponse> viewExerciseProofPost() {
-        List<Post> posts = postRepository.findTop15ByPostTagFalseOrderByPostDate();
-
-        List<CommunityDTO.PostViewResponse> postViewResponses = new ArrayList<>();
+        List<Post> posts = postRepository.findTop15ByPostTagFalseOrderByPostDateDesc();
 
         return posts.stream()
                 .map(this::convertToDTO)

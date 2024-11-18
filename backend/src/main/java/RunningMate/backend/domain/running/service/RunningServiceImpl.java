@@ -1,10 +1,9 @@
 package RunningMate.backend.domain.running.service;
 
-import RunningMate.backend.domain.User.entity.User;
-import RunningMate.backend.domain.running.dto.RunningDTO;
-import RunningMate.backend.domain.running.entity.LeaderBoard;
+import RunningMate.backend.domain.running.entity.*;
 import RunningMate.backend.domain.running.entity.Record;
-import RunningMate.backend.domain.running.entity.RunningGroup;
+import RunningMate.backend.domain.user.entity.User;
+import RunningMate.backend.domain.running.dto.RunningDTO;
 import RunningMate.backend.domain.running.repository.LeaderBoardRepository;
 import RunningMate.backend.domain.running.repository.RecordRepository;
 import RunningMate.backend.domain.running.repository.RunningGroupRepository;
@@ -33,6 +32,9 @@ public class RunningServiceImpl implements RunningService {
         if(optionalUser.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
+        if(request.getMaxParticipants().equals(0))
+            throw new IllegalArgumentException("최대 참가자는 1명 이상 이어야 합니다.");
+
         return groupRepository.save(RunningGroup.builder().groupTitle(request.getGroupTitle())
                 .groupTag(request.getGroupTag())
                 .startTime(request.getStartTime())
@@ -40,6 +42,7 @@ public class RunningServiceImpl implements RunningService {
                 .currentParticipants(0)
                 .maxParticipants(request.getMaxParticipants())
                 .targetDistance(request.getTargetDistance())
+                .activate(true)
                 .build());
     }
 
@@ -70,6 +73,19 @@ public class RunningServiceImpl implements RunningService {
     }
 
     @Override
+    public List<RunningDTO.RunningGroupViewResponse> filteringGroup(GroupTag groupTag, String searchWord) {
+        List<RunningGroup> groupList;
+        if(groupTag == null){
+            groupList = groupRepository.findAllByGroupTitleContainsAndStartTimeAfter(searchWord, LocalDateTime.now());
+        }
+        else {
+            groupList = groupRepository.findAllByGroupTagAndGroupTitleContainsAndStartTimeAfter(groupTag, searchWord, LocalDateTime.now());
+        }
+
+        return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
+    }
+
+    @Override
     public RunningDTO.groupParticipantResponse groupParticipants(Long groupId) {
         RunningGroup group = groupRepository.findByGroupId(groupId);
         if(group == null)
@@ -85,6 +101,42 @@ public class RunningServiceImpl implements RunningService {
                 .groupTag(group.getGroupTag()).endTime(group.getEndTime()).startTime(group.getStartTime())
                 .currentParticipants(group.getCurrentParticipants()).maxParticipants(group.getMaxParticipants())
                 .participants(participants).targetDistance(group.getTargetDistance()).build();
+    }
+
+    @Scheduled(cron="0 0 0 * * *")
+    @Override
+    public void autoCreateQuickRunningGroup() {
+        List<RunningGroup> groups = groupRepository.findAllByGroupTagAndActivate(GroupTag.QUICK, true);
+        for (RunningGroup group : groups) {
+            group.deactivate();
+            groupRepository.save(group);
+        }
+
+        groupRepository.save(RunningGroup.builder()
+                            .groupTitle("빠른 매칭방")
+                            .groupTag(GroupTag.QUICK)
+                            .startTime(LocalDateTime.now())
+                            .endTime(LocalDateTime.now().plusDays(1))
+                            .currentParticipants(0)
+                            .maxParticipants(Integer.MAX_VALUE)
+                            .targetDistance(Long.MAX_VALUE)
+                             .activate(true)
+                            .build());
+    }
+
+    @Override
+    public RunningDTO.ParticipateQuickRunningResponse participateQuickRunning(Optional<User> optionalUser) {
+        if(optionalUser.isEmpty())
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
+
+        RunningGroup group = groupRepository.findByGroupTagAndActivate(GroupTag.QUICK, true);
+
+        Record record = recordRepository.save(Record.builder().user(optionalUser.get())
+                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
+        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
+        leaderBoardRepository.save(leaderBoard);
+
+        return new RunningDTO.ParticipateQuickRunningResponse(record);
     }
 
     @Override
@@ -105,12 +157,20 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     @Scheduled(fixedRate = 5000) // 5초마다 반복. 60000 = 1분
-    public void deleteRunningGroup() {
+    public void deactivateRunningGroup() {
         List<RunningGroup> runningGroups = groupRepository.findAllByEndTimeBefore(LocalDateTime.now());
         for (RunningGroup runningGroup : runningGroups) {
-            log.info("RunningGroupID : {}, endTime : {}", runningGroup.getGroupId(), runningGroup.getEndTime());
+            runningGroup.deactivate();
+            groupRepository.save(runningGroup);
         }
     }
+
+//    @Override
+//    @Scheduled(fixedRate = 1000)
+//    @Transactional
+//    public void autoDeleteRunningGroup() {
+//        groupRepository.deleteAllByEndTimeBefore(LocalDateTime.now().plusDays(1));
+//    }
 
     @Override
     public List<RunningDTO.MainPageGroupResponse> mainPageGroups() {

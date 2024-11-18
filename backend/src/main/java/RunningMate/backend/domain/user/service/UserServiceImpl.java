@@ -1,9 +1,8 @@
-package RunningMate.backend.domain.User.service;
+package RunningMate.backend.domain.user.service;
 
-import RunningMate.backend.domain.User.dto.UserDTO;
-import RunningMate.backend.domain.User.entity.User;
-import RunningMate.backend.domain.User.repository.UserRepository;
-import RunningMate.backend.domain.community.dto.CommunityDTO;
+import RunningMate.backend.domain.user.dto.UserDTO;
+import RunningMate.backend.domain.user.entity.User;
+import RunningMate.backend.domain.user.repository.UserRepository;
 import RunningMate.backend.domain.community.entity.Post;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,11 +66,12 @@ public class UserServiceImpl implements UserService{
         if (optionalUser.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
+        String userNickname = request.getUserNickname();
         Long userHeight = request.getUserHeight();
         Long userWeight = request.getUserWeight();
 
         User user = optionalUser.get();
-        user.updateProfile(userWeight, userHeight);
+        user.updateProfile(userNickname, userWeight, userHeight);
         return userRepository.save(user);
     }
 

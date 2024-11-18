@@ -1,13 +1,11 @@
 package RunningMate.backend.domain.community.controller;
 
-import RunningMate.backend.domain.User.entity.User;
+import RunningMate.backend.domain.user.entity.User;
 import RunningMate.backend.domain.authorization.SessionUtils;
 import RunningMate.backend.domain.community.dto.CommunityDTO;
 import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;
-import RunningMate.backend.domain.community.entity.PostImage;
 import RunningMate.backend.domain.community.entity.PostLike;
-import RunningMate.backend.domain.community.repository.PostRepository;
 import RunningMate.backend.domain.community.service.CommunityService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -80,7 +78,7 @@ public class CommunityController {
     }
 
     @GetMapping("/post/get/{postId}/exercise-proof")
-    @Operation(summary = "메인 페이지를 통한 운도 인증 게시글 확인", description = "메인 페이지를 통해 운동 인증 게시글을 확인한다.")
+    @Operation(summary = "메인 페이지를 통한 운동 인증 게시글 확인", description = "메인 페이지를 통해 운동 인증 게시글을 확인한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")

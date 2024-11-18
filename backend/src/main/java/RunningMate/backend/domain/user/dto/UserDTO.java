@@ -1,4 +1,4 @@
-package RunningMate.backend.domain.User.dto;
+package RunningMate.backend.domain.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,6 +45,7 @@ public class UserDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UpdateProfileRequest {
+        private String userNickname;
         private Long userWeight;
         private Long userHeight;
     }

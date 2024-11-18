@@ -1,4 +1,4 @@
-package RunningMate.backend.domain.User.entity;
+package RunningMate.backend.domain.user.entity;
 
 import RunningMate.backend.domain.community.entity.Comment;
 import RunningMate.backend.domain.community.entity.Post;
@@ -50,8 +50,9 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<PostLike> postLikeList;
 
-    public void updateProfile(Long userWeight, Long userHeight){
-        this.userWeight=userWeight;
-        this.userHeight=userHeight;
+    public void updateProfile(String userNickname, Long userWeight, Long userHeight){
+        this.userNickname = userNickname;
+        this.userWeight = userWeight;
+        this.userHeight = userHeight;
     }
 }

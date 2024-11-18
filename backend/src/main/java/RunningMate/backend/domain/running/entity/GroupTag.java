@@ -1,5 +1,5 @@
 package RunningMate.backend.domain.running.entity;
 
 public enum GroupTag {
-    BEGINNER, INTERMEDIATE, EXPERT, ATHLETE
+    BEGINNER, INTERMEDIATE, EXPERT, ATHLETE, QUICK
 }

@@ -1,7 +1,7 @@
 package RunningMate.backend.domain.authorization;
 
-import RunningMate.backend.domain.User.entity.User;
-import RunningMate.backend.domain.User.repository.UserRepository;
+import RunningMate.backend.domain.user.entity.User;
+import RunningMate.backend.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
