@@ -61,7 +61,7 @@ public class RunningController {
         }
     }
 
-    @Operation(summary = "빠른 매칭 참가하기", description = "사용자를 빠른 러닝방에 참가시키고 record 정보를 리턴한다.")
+    @Operation(summary = "빠른 매칭 참가하기", description = "사용자를 빠른 매칭 러닝방에 참가시키고 record 정보를 리턴한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "빠른 매칭 참가 성공"),
             @ApiResponse(responseCode = "400", description = "빠른 매칭 참가 실패")
