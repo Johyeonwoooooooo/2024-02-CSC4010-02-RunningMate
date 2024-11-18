@@ -103,25 +103,30 @@ public class RunningServiceImpl implements RunningService {
                 .participants(participants).targetDistance(group.getTargetDistance()).build();
     }
 
+    @Scheduled(cron="0 0 0 * * *")
+    @Override
+    public void autoCreateQuickRunningGroup() {
+        RunningGroup group = groupRepository.findByGroupTagAndActivate(GroupTag.QUICK, true);
+        group.deactivate();
+        groupRepository.save(group);
+
+        groupRepository.save(RunningGroup.builder()
+                            .groupTitle("빠른 매칭방")
+                            .groupTag(GroupTag.QUICK)
+                            .startTime(LocalDateTime.now())
+                            .endTime(LocalDateTime.now().plusDays(1))
+                            .currentParticipants(0)
+                            .maxParticipants(Integer.MAX_VALUE)
+                            .targetDistance(Long.MAX_VALUE)
+                            .build());
+    }
+
     @Override
     public RunningDTO.ParticipateQuickRunningResponse participateQuickRunning(Optional<User> optionalUser) {
         if(optionalUser.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
-        RunningGroup group = groupRepository.findByGroupTagIsNull(); // groupTag이 없는 건 빠른매칭 전용
-
-        // 방이 없으면 생성
-        if (group == null) {
-            group = RunningGroup.builder()
-                    .groupTitle("빠른매칭방")
-                    .startTime(LocalDateTime.now())
-                    .endTime(LocalDateTime.now().plusYears(10)) // 매우 먼 미래로 설정
-                    .currentParticipants(0)
-                    .maxParticipants(Integer.MAX_VALUE) // 매우 큰 값으로 설정
-                    .targetDistance(Long.MAX_VALUE) // 매우 큰 값으로 설정
-                    .build();
-            group = groupRepository.save(group);
-        }
+        RunningGroup group = groupRepository.findByGroupTagAndActivate(GroupTag.QUICK, true);
 
         Record record = recordRepository.save(Record.builder().user(optionalUser.get())
                 .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
@@ -149,7 +154,7 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     @Scheduled(fixedRate = 5000) // 5초마다 반복. 60000 = 1분
-    public void deleteRunningGroup() {
+    public void deactivateRunningGroup() {
         List<RunningGroup> runningGroups = groupRepository.findAllByEndTimeBefore(LocalDateTime.now());
         for (RunningGroup runningGroup : runningGroups) {
             log.info("RunningGroupID : {}, endTime : {}", runningGroup.getGroupId(), runningGroup.getEndTime());
@@ -157,6 +162,13 @@ public class RunningServiceImpl implements RunningService {
             runningGroup.deactivate();
             groupRepository.save(runningGroup);
         }
+    }
+
+    @Override
+    @Scheduled(fixedRate = 60000)
+    @Transactional
+    public void autoDeleteRunningGroup() {
+        groupRepository.deleteAllByEndTimeBefore(LocalDateTime.now().plusDays(1));
     }
 
     @Override

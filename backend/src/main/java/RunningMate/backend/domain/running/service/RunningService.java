@@ -3,7 +3,6 @@ package RunningMate.backend.domain.running.service;
 import RunningMate.backend.domain.user.entity.User;
 import RunningMate.backend.domain.running.dto.RunningDTO;
 import RunningMate.backend.domain.running.entity.GroupTag;
-import RunningMate.backend.domain.running.entity.Record;
 import RunningMate.backend.domain.running.entity.RunningGroup;
 
 import java.util.List;
@@ -17,6 +16,8 @@ public interface RunningService {
     RunningDTO.ParticipateQuickRunningResponse participateQuickRunning(Optional<User> optionalUser);
     void cancelParticipation(RunningDTO.CancelParticipationRequest request);
     List<RunningDTO.RunningGroupViewResponse> filteringGroup(GroupTag groupTag, String searchWord);
-    void deleteRunningGroup();
+    void deactivateRunningGroup();
     List<RunningDTO.MainPageGroupResponse> mainPageGroups();
+    void autoCreateQuickRunningGroup();
+    void autoDeleteRunningGroup();
 }
