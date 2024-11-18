@@ -52,7 +52,6 @@ export default function RunningMateSearch() {
   const fetchRunningRooms = async () => {
     setLoading(true);
     try {
-      console.log('Fetching running rooms...');
       const response = await fetch('http://localhost:8080/running');
       
       if (!response.ok) {
@@ -60,7 +59,6 @@ export default function RunningMateSearch() {
       }
       
       const data = await response.json();
-      console.log('Fetched rooms:', data);
       
       const formattedRooms = data.map(room => ({
         id: room.groupId,
@@ -88,7 +86,6 @@ export default function RunningMateSearch() {
     
     setJoiningRoom(true);
     try {
-      console.log('Joining room with ID:', room.id);
       
       const response = await fetch(`http://localhost:8080/running/${room.id}/participate`, {
         method: 'POST',
@@ -97,9 +94,7 @@ export default function RunningMateSearch() {
         }
       });
 
-      console.log('Response status:', response.status);
       const responseText = await response.text();
-      console.log('Raw response:', responseText);
 
       // 에러 응답인 경우 (400, 500 등)
       if (!response.ok) {

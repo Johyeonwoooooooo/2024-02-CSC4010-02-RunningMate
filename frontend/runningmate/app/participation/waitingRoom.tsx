@@ -1,4 +1,3 @@
-// screens/participation/RunningWaitingRoom.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -9,45 +8,142 @@ import {
   TouchableOpacity,
   Alert
 } from 'react-native';
-import { router, useRouter, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-const ParticipantCard = ({ name }) => (
-  <View style={styles.participantCard}>
-    <View style={styles.participantInfo}>
-      <Ionicons name="person-circle-outline" size={24} color="#666" />
-      <Text style={styles.participantName}>{name}</Text>
-    </View>
-    {/* <View style={[styles.levelBadge, styles[`level${level}`]]}>
-      <Text style={styles.levelText}>{level}</Text>
-    </View> */}
-  </View>
-);
+const RunningWaitingRoom = () => {
+  const params = useLocalSearchParams();
+  const { 
+    roomTitle, 
+    startTime, 
+    endTime, 
+    targetDistance, 
+    maxParticipants,
+    recordId,
+    roomId,
+    selectedType
+  } = params;
 
-const RunningWaitingRoom = ({ route, navigation }) => {
-    const params = useLocalSearchParams();
-    const { roomTitle, startTime, endTime, targetDistance, maxParticipants } = params;
   
-    console.log('Received params:', params);  // 파라미터 확인용 로그
-    
-    const [timeLeft, setTimeLeft] = useState('');
-    const [isActive, setIsActive] = useState(true); // 타이머 활성화 상태 추가
-    const [participants, setParticipants] = useState([
-      { id: 1, name: '방장' },
-      { id: 2, name: '참가자1'},
-      { id: 3, name: '참가자2'},
-    ]);
+  
+  const [timeLeft, setTimeLeft] = useState('');
+  const [isActive, setIsActive] = useState(true);
+  const [participants, setParticipants] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 참가자 목록 조회 함수
+  const fetchParticipants = async () => {
+    try {
+      const numericRoomId = parseInt(roomId, 10); // roomId를 숫자로 변환
+      console.log('Fetching participants for roomId:', numericRoomId);
+
+      const response = await fetch(`http://localhost:8080/running/${numericRoomId}/participants`);
+      console.log('API Response status:', response.status);
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      console.log('Participants data:', data);
+      
+      if (data && Array.isArray(data.participants)) {
+        const formattedParticipants = data.participants.map((name, index) => ({
+          id: index + 1,
+          name: name
+        }));
+        
+        setParticipants(formattedParticipants);
+        setError(null);
+      } else {
+        throw new Error('Invalid data format received');
+      }
+    } catch (err) {
+      console.error('Error fetching participants:', err);
+      setError('참가자 목록을 불러오는데 실패했습니다.');
+    }
+  };
+
+  // 방 나가기 API 호출 함수
+  const cancelParticipation = async () => {
+    setIsLoading(true);
+    try {
+      const numericRoomId = parseInt(roomId, 10);
+      const numericRecordId = parseInt(recordId, 10);
+
+      console.log('Sending cancel request with:', {
+        groupId: numericRoomId,
+        recordId: numericRecordId
+      });
+
+      const response = await fetch('http://localhost:8080/running/cancel', {
+        method: 'DELETE',  
+        headers: {
+          'Accept': '*/*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          groupId: numericRoomId,
+          recordId: numericRecordId
+        })
+      });
+
+      // 응답 상태 및 데이터 로깅
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        let errorMessage = '취소 요청이 실패했습니다.';
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          console.error('Error parsing error response:', e);
+        }
+        throw new Error(errorMessage);
+      }
+
+      setIsActive(false);
+      Alert.alert(
+        "알림",
+        "러닝방에서 나가셨습니다.",
+        [
+          {
+            text: "확인",
+            onPress: () => {
+              setIsLoading(false);
+              router.push('../(tabs)/running');
+            }
+          }
+        ]
+      );
+    } catch (err) {
+      console.error('Error in cancelParticipation:', err);
+      console.error('Error details:', {
+        message: err.message,
+        stack: err.stack
+      });
+      
+      Alert.alert(
+        "오류",
+        `방 나가기에 실패했습니다. (${err.message})`,
+        [{ 
+          text: "확인",
+          onPress: () => setIsLoading(false)
+        }]
+      );
+    }
+  };
 
   // 남은 시간 계산 함수
   const calculateTimeLeft = () => {
-    if (!isActive) return; // 타이머가 비활성화되면 계산하지 않음
+    if (!isActive) return;
     const now = new Date();
     const start = new Date(startTime);
     const diff = start - now;
 
     if (diff <= 0) {
-      // 시작 시간이 되면 러닝 화면으로 자동 이동
-      router.push('../(tabs)/running') // 이건 지금 러닝 참가 첫 화면 변경해야함.
+      router.push('../(tabs)/running');
       return '러닝 시작!';
     }
 
@@ -58,7 +154,39 @@ const RunningWaitingRoom = ({ route, navigation }) => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // 방 나가기
+  // 참가자 목록 주기적 업데이트
+  useEffect(() => {
+    if (roomId) {  // roomId로 조건 변경
+      fetchParticipants();
+
+      const participantsInterval = setInterval(() => {
+        fetchParticipants();
+      }, 5000);
+
+      return () => clearInterval(participantsInterval);
+    } else {
+      console.log('No roomId available');
+    }
+  }, [roomId]);  // roomId로 의존성 변경
+
+
+  // 타이머 업데이트
+  useEffect(() => {
+    let timer;
+    if (isActive) {
+      timer = setInterval(() => {
+        setTimeLeft(calculateTimeLeft());
+      }, 1000);
+    }
+
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [isActive, startTime]);
+
+  // 방 나나기 처리 함수
   const handleLeaveRoom = () => {
     Alert.alert(
       "방 나가기",
@@ -70,9 +198,8 @@ const RunningWaitingRoom = ({ route, navigation }) => {
         },
         { 
           text: "나가기", 
-          onPress: () => {
-            setIsActive(false); // 타이머 중지
-            router.push('../(tabs)/running');
+          onPress: async () => {
+            await cancelParticipation();
           },
           style: "destructive"
         }
@@ -80,26 +207,10 @@ const RunningWaitingRoom = ({ route, navigation }) => {
     );
   };
 
-  useEffect(() => {
-    let timer;
-    if (isActive) {
-      timer = setInterval(() => {
-        setTimeLeft(calculateTimeLeft());
-      }, 1000);
-    }
-
-    // cleanup 함수
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
-    };
-  }, [isActive, params.startTime]); // isActive를 의존성 배열에 추가
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>{params.roomTitle}</Text>
+        <Text style={styles.title}>{roomTitle}</Text>
         
         <View style={styles.timeSection}>
           <Text style={styles.timeLabel}>러닝 시작까지</Text>
@@ -109,43 +220,53 @@ const RunningWaitingRoom = ({ route, navigation }) => {
         <View style={styles.infoSection}>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>목표 거리</Text>
-            <Text style={styles.infoValue}>{params.targetDistance}km</Text>
+            <Text style={styles.infoValue}>{targetDistance}km</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>러닝 시간</Text>
             <Text style={styles.infoValue}>
-              오후 {new Date(params.startTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} ~
-              오후 {new Date(params.endTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+              {new Date(startTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} ~
+              {new Date(endTime).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
             </Text>
           </View>
         </View>
 
         <View style={styles.participantsHeader}>
           <Text style={styles.participantsTitle}>
-            참가자 ({participants.length}/{params.maxParticipants})
+            참가자 ({participants.length}/{maxParticipants})
           </Text>
-          <View style={[styles.levelBadge, styles[`level${params.selectedType}`]]}>
-            <Text style={styles.levelBadgeText}>{params.selectedType}</Text>
+          <View style={[styles.levelBadge, styles[`level${selectedType}`]]}>
+            <Text style={styles.levelBadgeText}>{selectedType}</Text>
           </View>
         </View>
 
         <ScrollView style={styles.participantsList}>
-          {participants.map(participant => (
-            <View key={participant.id} style={styles.participantItem}>
-              <View style={styles.participantInfo}>
-                <Ionicons name="person-circle-outline" size={24} color="#666" />
-                <Text style={styles.participantName}>{participant.name}</Text>
+          {error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : (
+            participants.map(participant => (
+              <View key={participant.id} style={styles.participantItem}>
+                <View style={styles.participantInfo}>
+                  <Ionicons name="person-circle-outline" size={24} color="#666" />
+                  <Text style={styles.participantName}>{participant.name}</Text>
+                </View>
               </View>
-            </View>
-          ))}
+            ))
+          )}
         </ScrollView>
       </View>
 
       <TouchableOpacity 
-        style={styles.leaveButton}
+        style={[
+          styles.leaveButton,
+          isLoading && styles.leaveButtonDisabled
+        ]}
         onPress={handleLeaveRoom}
+        disabled={isLoading}
       >
-        <Text style={styles.leaveButtonText}>러닝방 나가기</Text>
+        <Text style={styles.leaveButtonText}>
+          {isLoading ? "처리 중..." : "러닝방 나가기"}
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -256,11 +377,19 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     borderRadius: 12,
   },
+  leaveButtonDisabled: {
+    backgroundColor: '#FFB4B4',
+  },
   leaveButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    padding: 20,
   },
 });
 
