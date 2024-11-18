@@ -72,6 +72,22 @@ public class RunningServiceImpl implements RunningService {
     }
 
     @Override
+    @Transactional
+    public void cancelParticipation(RunningDTO.CancelParticipationRequest request) {
+        RunningGroup group = groupRepository.findByGroupId(request.getGroupId());
+        if(group == null)
+            throw new IllegalArgumentException("해당 러닝방이 존재하지 않습니다.");
+        Record record = recordRepository.findRecordByRecordId(request.getRecordId());
+        if(group == null)
+            throw new IllegalArgumentException("해당 기록이 존재하지 않습니다.");
+
+        if(!group.leaveGroup())
+            throw new IllegalArgumentException("이미 참가자가 없습니다.");
+        leaderBoardRepository.deleteLeaderBoardByGroupAndRecord(group, record);
+        recordRepository.deleteRecordByRecordId(request.getRecordId());
+    }
+
+    @Override
     public List<RunningDTO.RunningGroupViewResponse> viewRunningGroups() {
         List<RunningGroup> groupList = groupRepository.findAllByStartTimeAfter(LocalDateTime.now());
         return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
@@ -111,22 +127,6 @@ public class RunningServiceImpl implements RunningService {
                 .participants(participants).targetDistance(group.getTargetDistance()).build();
     }
 
-    @Override
-    @Transactional
-    public void cancelParticipation(RunningDTO.CancelParticipationRequest request) {
-        RunningGroup group = groupRepository.findByGroupId(request.getGroupId());
-        if(group == null)
-            throw new IllegalArgumentException("해당 러닝방이 존재하지 않습니다.");
-        Record record = recordRepository.findRecordByRecordId(request.getRecordId());
-        if(group == null)
-            throw new IllegalArgumentException("해당 기록이 존재하지 않습니다.");
-
-        if(!group.leaveGroup())
-            throw new IllegalArgumentException("이미 참가자가 없습니다.");
-        leaderBoardRepository.deleteLeaderBoardByGroupAndRecord(group, record);
-        recordRepository.deleteRecordByRecordId(request.getRecordId());
-    }
-
     @Scheduled(cron="0 0 0 * * *") // 매일 자정에 자동으로 실행됨
     @Override
     public void autoCreateQuickRunningGroup() {
@@ -155,11 +155,17 @@ public class RunningServiceImpl implements RunningService {
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
         RunningGroup group = groupRepository.findByGroupTagAndActivate(GroupTag.QUICK, true);
+        if(group == null)
+            throw new IllegalArgumentException("생성되어 있는 빠른 러닝방이 없습니다.");
 
         Record record = recordRepository.save(Record.builder().user(optionalUser.get())
                 .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
-        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
+
+        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(leaderBoardRepository.count()).build();
         leaderBoardRepository.save(leaderBoard);
+
+        group.participateGroup();
+        groupRepository.save(group);
 
         return new RunningDTO.ParticipateQuickRunningResponse(record);
     }
