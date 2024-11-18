@@ -42,6 +42,7 @@ public class RunningServiceImpl implements RunningService {
                 .currentParticipants(0)
                 .maxParticipants(request.getMaxParticipants())
                 .targetDistance(request.getTargetDistance())
+                .activate(true)
                 .build());
     }
 
