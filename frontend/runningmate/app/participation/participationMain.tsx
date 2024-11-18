@@ -11,7 +11,7 @@ import {
   Alert,
   Modal
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -22,39 +22,47 @@ const LEVEL_MAPPING = {
   '선수': 'EXPERT'
 };
 
-const CreateRunningRoom = ({ navigation }) => {
-  const getCurrentTime = () => {
+const CreateRunningRoom = () => {
+  // 초기 시간 설정
+  const initTimes = (() => {
     const now = new Date();
-    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+    const defaultStart = new Date(now.getTime() + (30 * 60 * 1000));
+    const defaultEnd = new Date(defaultStart.getTime() + (60 * 60 * 1000));
     return {
-      dateObject: koreaTime,
-      time24: `${String(koreaTime.getHours()).padStart(2, '0')}:${String(koreaTime.getMinutes()).padStart(2, '0')}`,
-      time12: koreaTime.toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      }),
-      hours: koreaTime.getHours(),
-      minutes: koreaTime.getMinutes(),
-      oneHourLater: new Date(koreaTime.getTime() + (60 * 60 * 1000))
+      defaultStartTime: defaultStart,
+      defaultEndTime: defaultEnd
     };
-  };
+  })();
 
-  const [selectedType, setSelectedType] = useState('초보');
-  const [roomTitle, setRoomTitle] = useState('');
-  const [targetDistance, setTargetDistance] = useState('');
-  const [maxParticipants, setMaxParticipants] = useState('');
-  const currentTime = getCurrentTime();
+  // 상태 관리
+  const [formData, setFormData] = useState({
+    roomTitle: '',
+    selectedType: '초보',
+    targetDistance: '',
+    maxParticipants: ''
+  });
 
-  const [startTime, setStartTime] = useState(currentTime.dateObject);
-  const [endTime, setEndTime] = useState(currentTime.oneHourLater);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [timeData, setTimeData] = useState({
+    startTime: initTimes.defaultStartTime,
+    endTime: initTimes.defaultEndTime,
+    showStartPicker: false,
+    showEndPicker: false
+  });
+
   const [errors, setErrors] = useState({
     targetDistance: false,
     maxParticipants: false
   });
 
+  // 입력값 변경 핸들러
+  const handleInputChange = (name, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // 숫자 입력 검증
   const validateNumber = (value, field) => {
     const isValid = value === '' || /^\d+$/.test(value);
     setErrors(prev => ({
@@ -64,115 +72,158 @@ const CreateRunningRoom = ({ navigation }) => {
     return isValid;
   };
 
-  const formatTime = (timeString) => {
-    if (!timeString) return '시간 정보 없음';
+  // 시간 포맷팅
+  const formatTime = (date) => {
+    if (!date || !(date instanceof Date)) return '시간 선택';
     
     try {
-      const date = new Date(timeString);
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      return `${hours}:${minutes}`;
+      return date.toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
     } catch (error) {
       console.error('Time formatting error:', error);
-      return '시간 정보 오류';
+      return '시간 오류';
     }
   };
 
+  // 시간 검증
   const validateTimes = (start, end) => {
     const currentTime = new Date();
     const errors = {};
 
-    if (start < currentTime) {
-      errors.startTime = '시작 시간은 현재 시간 이후여야 합니다.';
+    const minStartTime = new Date(currentTime.getTime() + (15 * 60 * 1000));
+    if (start < minStartTime) {
+      errors.startTime = '시작 시간은 현재 시간으로부터 15분 이후여야 합니다.';
     }
 
-    if (end <= start) {
-      errors.endTime = '종료 시간은 시작 시간 이후여야 합니다.';
+    const minEndTime = new Date(start.getTime() + (30 * 60 * 1000));
+    if (end < minEndTime) {
+      errors.endTime = '종료 시간은 시작 시간으로부터 최소 30분 이후여야 합니다.';
     }
 
     return errors;
   };
 
+  // 시간 선택 핸들러
   const handleStartTimeChange = (event, selectedDate) => {
-    setShowStartPicker(false);
+    if (Platform.OS === 'android') {
+      setTimeData(prev => ({ ...prev, showStartPicker: false }));
+    }
+    
     if (selectedDate) {
-      const timeErrors = validateTimes(selectedDate, endTime);
+      console.log('Selected start time:', selectedDate);
+      
+      const timeErrors = validateTimes(selectedDate, timeData.endTime);
       if (timeErrors.startTime) {
         Alert.alert('시간 오류', timeErrors.startTime);
         return;
       }
-      setStartTime(selectedDate);
+      
+      const newEndTime = new Date(selectedDate.getTime() + (60 * 60 * 1000));
+      setTimeData(prev => ({
+        ...prev,
+        startTime: selectedDate,
+        endTime: newEndTime,
+        showStartPicker: false
+      }));
     }
   };
 
-  // 추가된 종료 시간 처리 함수
   const handleEndTimeChange = (event, selectedDate) => {
-    setShowEndPicker(false);
+    if (Platform.OS === 'android') {
+      setTimeData(prev => ({ ...prev, showEndPicker: false }));
+    }
+    
     if (selectedDate) {
-      const timeErrors = validateTimes(startTime, selectedDate);
+      console.log('Selected end time:', selectedDate);
+      
+      const timeErrors = validateTimes(timeData.startTime, selectedDate);
       if (timeErrors.endTime) {
         Alert.alert('시간 오류', timeErrors.endTime);
         return;
       }
-      setEndTime(selectedDate);
+      
+      setTimeData(prev => ({
+        ...prev,
+        endTime: selectedDate,
+        showEndPicker: false
+      }));
     }
   };
 
-  const router = useRouter();
+  // 방 생성 핸들러
   const handleCreateRoom = async () => {
-    if (!roomTitle.trim()) {
+    if (!formData.roomTitle.trim()) {
       Alert.alert('입력 오류', '방 제목을 입력해주세요.');
       return;
     }
 
-    if (!targetDistance || !maxParticipants) {
+    if (!formData.targetDistance || !formData.maxParticipants) {
       Alert.alert('입력 오류', '목표 거리와 최대 참가 인원을 입력해주세요.');
       return;
     }
 
-    const timeErrors = validateTimes(startTime, endTime);
+    const timeErrors = validateTimes(timeData.startTime, timeData.endTime);
     if (Object.keys(timeErrors).length > 0) {
       Alert.alert('시간 오류', Object.values(timeErrors).join('\n'));
       return;
     }
 
     try {
+      const requestData = {
+        groupTitle: formData.roomTitle,
+        startTime: timeData.startTime.toISOString(),
+        endTime: timeData.endTime.toISOString(),
+        targetDistance: parseInt(formData.targetDistance),
+        groupTag: LEVEL_MAPPING[formData.selectedType],
+        maxParticipants: parseInt(formData.maxParticipants)
+      };
+
+      console.log('Request Data:', requestData);
+
       const response = await fetch('http://localhost:8080/running/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          groupTitle: roomTitle,
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString(),
-          targetDistance: parseInt(targetDistance),
-          groupTag: LEVEL_MAPPING[selectedType],
-          maxParticipants: parseInt(maxParticipants)
-        })
+        body: JSON.stringify(requestData)
       });
+
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
 
       if (!response.ok) {
-        throw new Error('방 생성에 실패했습니다.');
+        throw new Error(responseText || '방 생성에 실패했습니다.');
       }
 
-      const data = await response.json();
-      
+      const data = JSON.parse(responseText);
+      console.log('Success data:', data);
+
+      // 성공 시 대기실로 이동
       router.push({
-        pathname: './waitingRoom',
+        pathname: '/participation/waitingRoom',
         params: {
-          roomTitle: roomTitle,
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString(),
-          targetDistance: targetDistance,
-          maxParticipants: maxParticipants,
-          selectedType: selectedType
+          roomId: data.groupId?.toString(),
+          recordId: data.recordId?.toString(),
+          roomTitle: formData.roomTitle,
+          startTime: timeData.startTime.toISOString(),
+          endTime: timeData.endTime.toISOString(),
+          targetDistance: formData.targetDistance,
+          maxParticipants: formData.maxParticipants,
+          selectedType: formData.selectedType
         }
       });
+
     } catch (error) {
+      console.error('Error creating room:', error);
       Alert.alert('오류', error.message);
     }
   };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -183,8 +234,8 @@ const CreateRunningRoom = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="방 제목을 입력하세요"
-            value={roomTitle}
-            onChangeText={setRoomTitle}
+            value={formData.roomTitle}
+            onChangeText={(text) => handleInputChange('roomTitle', text)}
           />
           
           <View style={styles.typeButtons}>
@@ -193,13 +244,13 @@ const CreateRunningRoom = ({ navigation }) => {
                 key={type}
                 style={[
                   styles.typeButton,
-                  selectedType === type && styles.selectedTypeButton
+                  formData.selectedType === type && styles.selectedTypeButton
                 ]}
-                onPress={() => setSelectedType(type)}
+                onPress={() => handleInputChange('selectedType', type)}
               >
                 <Text style={[
                   styles.typeButtonText,
-                  selectedType === type && styles.selectedTypeButtonText
+                  formData.selectedType === type && styles.selectedTypeButtonText
                 ]}>
                   {type}
                 </Text>
@@ -210,95 +261,24 @@ const CreateRunningRoom = ({ navigation }) => {
           <View style={styles.timeSection}>
             <TouchableOpacity 
               style={styles.timeSelector}
-              onPress={() => setShowStartPicker(true)}
+              onPress={() => setTimeData(prev => ({ ...prev, showStartPicker: true }))}
             >
               <Ionicons name="time-outline" size={24} color="#666" />
               <Text style={styles.timeSelectorText}>
-                시작 시간: {formatTime(startTime)}
+                시작 시간: {formatTime(timeData.startTime)}
               </Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
               style={styles.timeSelector}
-              onPress={() => setShowEndPicker(true)}
+              onPress={() => setTimeData(prev => ({ ...prev, showEndPicker: true }))}
             >
               <Ionicons name="checkmark-circle-outline" size={24} color="#666" />
               <Text style={styles.timeSelectorText}>
-                종료 시간: {formatTime(endTime)}
+                종료 시간: {formatTime(timeData.endTime)}
               </Text>
             </TouchableOpacity>
           </View>
-
-          {showStartPicker && Platform.OS === 'ios' && (
-            <Modal
-              transparent={true}
-              animationType="slide"
-              visible={showStartPicker}
-            >
-              <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                  <DateTimePicker
-                    value={startTime}
-                    mode="time"
-                    display="spinner"
-                    onChange={handleStartTimeChange}
-                    minimumDate={new Date()}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowStartPicker(false)}
-                    style={styles.closeButton}
-                  >
-                    <Text>확인</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </Modal>
-          )}
-          {showStartPicker && Platform.OS === 'android' && (
-            <DateTimePicker
-              value={startTime}
-              mode="time"
-              is24Hour={true}
-              display="default"
-              onChange={handleStartTimeChange}
-            />
-          )}
-
-          {showEndPicker && Platform.OS === 'ios' && (
-            <Modal
-              transparent={true}
-              animationType="slide"
-              visible={showEndPicker}
-            >
-              <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                  <DateTimePicker
-                    value={endTime}
-                    mode="time"
-                    display="spinner"
-                    onChange={handleEndTimeChange}
-                    minimumDate={startTime}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowEndPicker(false)}
-                    style={styles.closeButton}
-                  >
-                    <Text>확인</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </Modal>
-          )}
-
-          {showEndPicker && Platform.OS === 'android' && (
-            <DateTimePicker
-              value={endTime}
-              mode="time"
-              is24Hour={true}
-              display="default"
-              onChange={handleEndTimeChange}
-            />
-          )}
           
           <View style={styles.inputSection}>
             <View style={[
@@ -308,10 +288,10 @@ const CreateRunningRoom = ({ navigation }) => {
               <Text style={styles.inputLabel}>목표 거리 (km)</Text>
               <TextInput
                 style={styles.boxInput}
-                value={targetDistance}
+                value={formData.targetDistance}
                 onChangeText={(text) => {
                   if (validateNumber(text, 'targetDistance')) {
-                    setTargetDistance(text);
+                    handleInputChange('targetDistance', text);
                   }
                 }}
                 keyboardType="numeric"
@@ -326,10 +306,10 @@ const CreateRunningRoom = ({ navigation }) => {
               <Text style={styles.inputLabel}>최대 참가 인원</Text>
               <TextInput
                 style={styles.boxInput}
-                value={maxParticipants}
+                value={formData.maxParticipants}
                 onChangeText={(text) => {
                   if (validateNumber(text, 'maxParticipants')) {
-                    setMaxParticipants(text);
+                    handleInputChange('maxParticipants', text);
                   }
                 }}
                 keyboardType="numeric"
@@ -340,19 +320,99 @@ const CreateRunningRoom = ({ navigation }) => {
         </View>
       </ScrollView>
 
+      {/* Time Picker Modals */}
+      {timeData.showStartPicker && (Platform.OS === 'ios' ? (
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={timeData.showStartPicker}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <DateTimePicker
+                value={timeData.startTime}
+                mode="time"
+                display="spinner"
+                onChange={handleStartTimeChange}
+                minuteInterval={5}
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => setTimeData(prev => ({ ...prev, showStartPicker: false }))}
+                >
+                  <Text style={styles.modalButtonText}>취소</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonConfirm]}
+                  onPress={() => setTimeData(prev => ({ ...prev, showStartPicker: false }))}
+                >
+                  <Text style={styles.modalButtonTextConfirm}>확인</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      ) : (
+        <DateTimePicker
+          value={timeData.startTime}
+          mode="time"
+          is24Hour={true}
+          display="default"
+          onChange={handleStartTimeChange}
+          minuteInterval={5}
+        />
+      ))}
+
+      {timeData.showEndPicker && (Platform.OS === 'ios' ? (
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={timeData.showEndPicker}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <DateTimePicker
+                value={timeData.endTime}
+                mode="time"
+                display="spinner"
+                onChange={handleEndTimeChange}
+                minuteInterval={5}
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => setTimeData(prev => ({ ...prev, showEndPicker: false }))}
+                >
+                  <Text style={styles.modalButtonText}>취소</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonConfirm]}
+                  onPress={() => setTimeData(prev => ({ ...prev, showEndPicker: false }))}
+                >
+                  <Text style={styles.modalButtonTextConfirm}>확인</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      ) : (
+        <DateTimePicker
+          value={timeData.endTime}
+          mode="time"
+          is24Hour={true}
+          display="default"
+          onChange={handleEndTimeChange}
+          minuteInterval={5}
+        />
+      ))}
+
       <View style={styles.buttonContainer}>
         <TouchableOpacity 
           style={styles.createButton}
           onPress={handleCreateRoom}
         >
           <Text style={styles.createButtonText}>러닝 방 생성</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.cancelButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.cancelButtonText}>생성 취소</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -371,36 +431,44 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '600',
     marginBottom: 24,
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 25,
-    padding: 12,
+    borderRadius: 12,
+    padding: 15,
     marginBottom: 24,
+    fontSize: 16,
   },
   typeButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 24,
+    paddingHorizontal: 10,
   },
   typeButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 20,
     backgroundColor: '#f3f4f6',
+    minWidth: 80,
+    alignItems: 'center',
   },
   selectedTypeButton: {
     backgroundColor: '#8DCCFF',
   },
   typeButtonText: {
     color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
   },
   selectedTypeButtonText: {
-    color: '#fff',
+    color: 'white',
+    fontWeight: '600',
   },
   timeSection: {
     marginBottom: 24,
@@ -409,82 +477,162 @@ const styles = StyleSheet.create({
   timeSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: 15,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: 'white',
   },
   timeSelectorText: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 10,
     fontSize: 16,
-    color: '#666',
+    color: '#333',
   },
   inputSection: {
     gap: 16,
+    marginBottom: 24,
   },
   inputBox: {
     backgroundColor: '#f9fafb',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   inputBoxError: {
-    borderWidth: 1,
-    borderColor: '#ef4444',
+    borderColor: '#ff4444',
   },
   inputLabel: {
     fontSize: 14,
     color: '#666',
     marginBottom: 8,
+    fontWeight: '500',
   },
   boxInput: {
-    backgroundColor: 'transparent',
+    fontSize: 16,
+    color: '#333',
+    padding: 0,
   },
   buttonContainer: {
     padding: 16,
-    paddingBottom: 34,
-    gap: 8,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
   },
   createButton: {
     backgroundColor: '#8DCCFF',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   createButtonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
-  cancelButton: {
-    backgroundColor: '#fee2e2',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#dc2626',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  // Modal Styles
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalView: {
     backgroundColor: 'white',
-    borderRadius: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: 20,
+    paddingTop: 30,
     alignItems: 'center',
-    width: '80%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  closeButton: {
-    marginTop: 10,
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 20,
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingTop: 15,
+  },
+  modalButton: {
     padding: 10,
+    borderRadius: 8,
+    minWidth: 100,
+    alignItems: 'center',
   },
+  modalButtonConfirm: {
+    backgroundColor: '#8DCCFF',
+  },
+  modalButtonText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  modalButtonTextConfirm: {
+    fontSize: 16,
+    color: 'white',
+    fontWeight: '600',
+  },
+  // Error Styles
+  errorContainer: {
+    marginTop: 4,
+  },
+  errorText: {
+    color: '#ff4444',
+    fontSize: 12,
+  },
+  // Additional Time Picker Styles
+  timePickerContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+  },
+  timePickerText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#eee',
+    marginVertical: 10,
+  },
+  // Disabled State Styles
+  disabledButton: {
+    opacity: 0.5,
+  },
+  disabledText: {
+    color: '#999',
+  },
+  // Input Focus Styles
+  inputFocused: {
+    borderColor: '#8DCCFF',
+    borderWidth: 2,
+  },
+  // Loading State Styles
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  }
 });
 
 export default CreateRunningRoom;
