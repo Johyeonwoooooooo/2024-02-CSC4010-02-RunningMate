@@ -17,8 +17,10 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -189,17 +191,82 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     @Transactional
-    public RunningDTO.WhileRunningResponse whileRunning(Long recordId, Long distance, Duration runningTime, Long calories) {
-        Record record = recordRepository.findById(recordId)
+    public List<RunningDTO.WhileRunningResponse> whileRunning(RunningDTO.WhileRunningRequest request, Optional<User> optionalUser) {
+        if(optionalUser.isEmpty())
+            throw new IllegalArgumentException("로그인이 필요한 서비스 입니다.");
+
+        Record record = recordRepository.findById(request.getRecordId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 기록을 찾을 수 없습니다."));
 
-        // 랭킹 반환 미완성
-        record.updateRecord(distance, runningTime, calories);
+        LeaderBoard userLeaderboard = leaderBoardRepository.findLeaderBoardByRecord(record);
+        if(userLeaderboard==null)
+            throw new IllegalArgumentException("해당하는 리더보드를 찾을 수 없습니다.");
+
+        Long pre_ranking = userLeaderboard.getRanking();
+        RunningGroup group = userLeaderboard.getGroup();
+
+        record.updateRecord(request.getDistance(), request.getRunningTime(), request.getCalories());
         recordRepository.save(record);
 
-        return new RunningDTO.WhileRunningResponse(record);
+        List<LeaderBoard> newLeaderboard = sortByDistance(leaderBoardRepository.findAllByGroup(group));
+
+        Record newRecord = recordRepository.findRecordByRecordId(request.getRecordId());
+        Long new_rank = leaderBoardRepository.findLeaderBoardByRecord(newRecord).getRanking();
+        String rankChange = compareRanking(pre_ranking, new_rank);
+
+        return whileRunningResponse(newLeaderboard, new_rank, rankChange);
     }
 
+    private List<LeaderBoard> sortByDistance(List<LeaderBoard> records){
+        records.sort((o1, o2) -> Double.compare(o2.getRecord().getDistance(), o1.getRecord().getDistance()));
+        for(int i = 1; i<= records.size(); i++){
+            records.get(i-1).updateRanking(Long.valueOf(i));
+        }
+        return leaderBoardRepository.saveAll(records);
+    }
+    private String compareRanking(Long pre_rank, Long new_rank){
+        if(pre_rank > new_rank)
+            return "up";
+        else if(pre_rank < new_rank)
+            return "down";
+        else
+            return "same";
+    }
+
+    private List<RunningDTO.WhileRunningResponse> whileRunningResponse(List<LeaderBoard> newLeaderboard, Long new_rank, String rankChange){
+        List<RunningDTO.WhileRunningResponse> response = new ArrayList<>();
+        int tail = newLeaderboard.size();
+        if(newLeaderboard.size() < 3) { 
+            // 참가 인원 3명이하일 때, 기존 리더보드 + 더미데이터 추가
+            for (LeaderBoard leaderBoard : newLeaderboard) {
+                response.add(new RunningDTO.WhileRunningResponse(leaderBoard, new_rank, rankChange));
+            }
+
+            for (int i = 1; i <= 3 - newLeaderboard.size(); i++) {
+                response.add(new RunningDTO.WhileRunningResponse("-", Long.valueOf(tail + i), false, "same"));
+            }
+        }
+        else{
+            // 3명 이상일때 
+            if(new_rank.equals(1L)){ // 1등이면 1,2,3등
+                for (LeaderBoard leaderBoard : newLeaderboard.subList(0, 3)) {
+                    response.add(new RunningDTO.WhileRunningResponse(leaderBoard, new_rank, rankChange));
+                }
+            }
+            else if(new_rank.equals(newLeaderboard.size())){ // 꼴등이면 뒤에서 3, 2, 1등
+                for (LeaderBoard leaderBoard : newLeaderboard.subList(tail-3, tail)){
+                    response.add(new RunningDTO.WhileRunningResponse(leaderBoard, new_rank, rankChange));
+                }
+            }
+            else{ // 나머진 위 나 아래
+                int index = new_rank.intValue() - 1;
+                response.add(new RunningDTO.WhileRunningResponse(newLeaderboard.get(index-1), new_rank, rankChange));
+                response.add(new RunningDTO.WhileRunningResponse(newLeaderboard.get(index), new_rank, rankChange));
+                response.add(new RunningDTO.WhileRunningResponse(newLeaderboard.get(index+1), new_rank, rankChange));
+            }
+        }
+        return response;
+    }
     @Override
     public List<RunningDTO.LeaderboardResponse> leaderboard(Long recordId, Optional<User> optionalUser) {
         if(optionalUser.isEmpty())

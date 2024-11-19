@@ -142,20 +142,16 @@ public class RunningController {
             @ApiResponse(responseCode = "400", description = "러닝 정보 저장 실패")
     })
     @PostMapping("/running/update")
-    public ResponseEntity<?> updateRunning(
-            @RequestParam Long recordId,
-            @RequestParam Long distance,
-            @RequestParam Duration runningTime,
-            @RequestParam Long calories) {
-        RunningDTO.WhileRunningResponse response = runningService.whileRunning(recordId, distance, runningTime, calories);
+    public ResponseEntity<?> whileRunning(@RequestBody RunningDTO.WhileRunningRequest request, HttpSession session) {
         try {
-            return ResponseEntity.ok().body(runningService.whileRunning(recordId, distance, runningTime, calories));
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            return ResponseEntity.ok().body(runningService.whileRunning(request, optionalUser));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @Operation(summary = "리더보드", description = "recordId를 제공해 리더보드를 제공한다.")
+    @Operation(summary = "리더보드", description = "recordId를 입력받아 리더보드를 제공한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "리더보드 조회 성공"),
             @ApiResponse(responseCode = "400", description = "리더보드 조회 실패 ")
