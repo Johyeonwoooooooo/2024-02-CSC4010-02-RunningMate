@@ -22,4 +22,5 @@ public interface RunningService {
     void autoCreateQuickRunningGroup();
 //    void autoDeleteRunningGroup();
     RunningDTO.WhileRunningResponse whileRunning(Long recordId, Long distance, Duration runningTime, Long calories);
+    List<RunningDTO.LeaderboardResponse> leaderboard(Long recordId, Optional<User> optionalUser);
 }

@@ -1,6 +1,7 @@
 package RunningMate.backend.domain.running.dto;
 
 import RunningMate.backend.domain.running.entity.GroupTag;
+import RunningMate.backend.domain.running.entity.LeaderBoard;
 import RunningMate.backend.domain.running.entity.Record;
 import RunningMate.backend.domain.running.entity.RunningGroup;
 import lombok.AllArgsConstructor;
@@ -121,6 +122,22 @@ public class RunningDTO {
             this.runningTime = record.getRunningTime();
             this.calories = record.getCalories();
             this.distance = record.getDistance();
+        }
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LeaderboardResponse {
+        private Long ranking;
+        private String userNickname;
+        private boolean yourRecord;
+
+        public LeaderboardResponse(LeaderBoard leaderBoard, boolean yourRecord){
+            this.ranking = leaderBoard.getRanking();
+            this.userNickname = leaderBoard.getRecord().getUser().getUserNickname();
+            this.yourRecord = yourRecord;
         }
     }
 

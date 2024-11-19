@@ -161,7 +161,7 @@ public class RunningServiceImpl implements RunningService {
         Record record = recordRepository.save(Record.builder().user(optionalUser.get())
                 .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
 
-        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(leaderBoardRepository.count()).build();
+        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(leaderBoardRepository.count() + 1).build();
         leaderBoardRepository.save(leaderBoard);
 
         group.participateGroup();
@@ -198,6 +198,32 @@ public class RunningServiceImpl implements RunningService {
         recordRepository.save(record);
 
         return new RunningDTO.WhileRunningResponse(record);
+    }
+
+    @Override
+    public List<RunningDTO.LeaderboardResponse> leaderboard(Long recordId, Optional<User> optionalUser) {
+        if(optionalUser.isEmpty())
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
+
+        Record record = recordRepository.findRecordByRecordId(recordId);
+        if(record == null)
+            throw new IllegalArgumentException("해당 리더보드를 찾을 수 없습니다.");
+
+        RunningGroup group = leaderBoardRepository.findLeaderBoardByRecord(record).getGroup();
+        if(group == null)
+            throw new IllegalArgumentException("해당 리더보드를 찾을 수 없습니다.");
+
+        List<LeaderBoard> allRecord = leaderBoardRepository.findAllByGroupOrderByRankingAsc(group);
+        if(allRecord.isEmpty())
+            throw new IllegalArgumentException("해당 러닝방에 참가한 기록이 없습니다.");
+
+        List<RunningDTO.LeaderboardResponse> leaderboardResponses = new ArrayList<>();
+        for (LeaderBoard leaderBoard : allRecord) {
+            boolean yourRecord = false;
+            if(leaderBoard.getRecord().getUser().equals(optionalUser.get())) yourRecord = true;
+            leaderboardResponses.add(new RunningDTO.LeaderboardResponse(leaderBoard, yourRecord));
+        }
+        return leaderboardResponses;
     }
 
     @Override

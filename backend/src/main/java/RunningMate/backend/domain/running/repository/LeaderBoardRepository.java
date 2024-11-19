@@ -9,5 +9,8 @@ import java.util.List;
 
 public interface LeaderBoardRepository extends JpaRepository<LeaderBoard, Long> {
     List<LeaderBoard> findAllByGroup(RunningGroup group);
+    List<LeaderBoard> findAllByGroupOrderByRankingAsc(RunningGroup group);
     void deleteLeaderBoardByGroupAndRecord(RunningGroup group, Record record);
+    LeaderBoard findLeaderBoardByRecord(Record record);
+
 }
