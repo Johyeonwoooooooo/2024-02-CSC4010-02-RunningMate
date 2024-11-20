@@ -63,6 +63,10 @@ public class RunningServiceImpl implements RunningService {
 
         if(group.getActivate().equals(false))
             throw new IllegalArgumentException("해당 러닝방은 종료되었습니다.");
+
+        boolean alreadyParticipated = leaderBoardRepository.existsByGroupAndRecordUser(group, optionalUser);
+        if (alreadyParticipated)
+            throw new IllegalArgumentException("이미 해당 러닝방에 참여하셨습니다.");
         
         groupRepository.save(group);
         Record record = recordRepository.save(Record.builder().user(optionalUser.get())
@@ -160,14 +164,29 @@ public class RunningServiceImpl implements RunningService {
         if(group == null)
             throw new IllegalArgumentException("생성되어 있는 빠른 러닝방이 없습니다.");
 
-        Record record = recordRepository.save(Record.builder().user(optionalUser.get())
+        Record existingRecord = recordRepository.findByUserAndLeaderBoardGroup(optionalUser, group);
+        Record record;
+        if (existingRecord != null) {
+            record = existingRecord;
+        } else {
+            record = recordRepository.save(Record.builder().user(optionalUser.get())
                 .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
 
-        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(leaderBoardRepository.count() + 1).build();
-        leaderBoardRepository.save(leaderBoard);
+            LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(leaderBoardRepository.count() + 1).build();
+            leaderBoardRepository.save(leaderBoard);
 
-        group.participateGroup();
-        groupRepository.save(group);
+            group.participateGroup();
+            groupRepository.save(group);
+        }
+
+//        Record record = recordRepository.save(Record.builder().user(optionalUser.get())
+//                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
+//
+//        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(leaderBoardRepository.count() + 1).build();
+//        leaderBoardRepository.save(leaderBoard);
+//
+//        group.participateGroup();
+//        groupRepository.save(group);
 
         return new RunningDTO.ParticipateQuickRunningResponse(record);
     }
@@ -247,7 +266,7 @@ public class RunningServiceImpl implements RunningService {
             }
         }
         else{
-            // 3명 이상일때 
+            // 3명 이상일때
             if(new_rank.equals(1L)){ // 1등이면 1,2,3등
                 for (LeaderBoard leaderBoard : newLeaderboard.subList(0, 3)) {
                     response.add(new RunningDTO.WhileRunningResponse(leaderBoard, new_rank, rankChange));
