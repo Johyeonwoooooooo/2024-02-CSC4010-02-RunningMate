@@ -136,12 +136,18 @@ public class RunningController {
         }
     }
 
-    @Operation(summary = "러닝 중", description = "recordId, distance, runningTime, calories를 보내 러닝 정보를 저장한다")
+    @Operation(summary = "러닝 중", description = "recordId, distance, runningTime, calories를 보내 러닝 정보를 저장한다. \n" +
+            "{\n" +
+            "  \"recordId\": 1,\n" +
+            "  \"runningTime\": \"PT1H3M4S\",\n" +
+            "  \"calories\": 100,\n" +
+            "  \"distance\": 5\n" +
+            "}")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "러닝 정보 저장 성공"),
             @ApiResponse(responseCode = "400", description = "러닝 정보 저장 실패")
     })
-    @PostMapping("/running/update")
+    @PostMapping("/update")
     public ResponseEntity<?> whileRunning(@RequestBody RunningDTO.WhileRunningRequest request, HttpSession session) {
         try {
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
@@ -156,7 +162,7 @@ public class RunningController {
             @ApiResponse(responseCode = "200", description = "리더보드 조회 성공"),
             @ApiResponse(responseCode = "400", description = "리더보드 조회 실패 ")
     })
-    @GetMapping("/running/leaderboard")
+    @GetMapping("/leaderboard")
     public ResponseEntity<?> leaderboard(@RequestParam Long recordId, HttpSession session) {
         Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
         try {
