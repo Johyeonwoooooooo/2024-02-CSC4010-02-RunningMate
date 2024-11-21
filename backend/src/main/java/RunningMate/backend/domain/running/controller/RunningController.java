@@ -149,12 +149,12 @@ public class RunningController {
     })
     @PostMapping("/update")
     public ResponseEntity<?> whileRunning(@RequestBody RunningDTO.WhileRunningRequest request, HttpSession session) {
-//        try {
-        Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
-        return ResponseEntity.ok().body(runningService.whileRunning(request, optionalUser));
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            return ResponseEntity.ok().body(runningService.whileRunning(request, optionalUser));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @Operation(summary = "리더보드", description = "recordId를 입력받아 리더보드를 제공한다.")
