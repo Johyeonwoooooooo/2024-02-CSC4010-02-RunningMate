@@ -30,7 +30,7 @@ const CommentsModal = ({ visible, onClose, postId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { height: SCREEN_HEIGHT } = useWindowDimensions();
-
+  // 댓글 불러오기
   const fetchComments = async () => {
     try {
       setLoading(true);
@@ -56,7 +56,7 @@ const CommentsModal = ({ visible, onClose, postId }) => {
       fetchComments();
     }
   }, [visible, postId]);
-
+  // 댓글 달기
   const handleSubmitComment = async () => {
     if (!comment.trim() || !postId) return;
   
@@ -197,7 +197,7 @@ const PostCard = ({ post, onDelete }) => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isLove, setIsLove] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
-
+  // 삭제 기능 구현
   const handleDelete = async () => {
     try {
       const response = await fetch(`${API_URL}/community/post/${post.postId}/delete`, {
@@ -220,7 +220,7 @@ const PostCard = ({ post, onDelete }) => {
       setIsDeleteModalVisible(false);
     }
   };
-
+  // 좋아요 기능 구현
   const handleLike = async () => {
     try {
       const response = await fetch(`${API_URL}/community/post/${post.postId}/like`, {
@@ -327,44 +327,89 @@ const CommunityScreen = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const [spotResponse, exerciseResponse] = await Promise.all([
-        fetch(`${API_URL}/community/post/get/running-spot`),
-        fetch(`${API_URL}/community/post/get/exercise-proof`)
-      ]);
+      let spotData = [];
+      let exerciseData = [];
+      
+      console.log('1. Initial check - selectedPostId:', selectedPostId);
+      
+      if (selectedPostId && selectedPostId.toString().trim() !== '') {
+        console.log('2. Entering selectedPostId block');
+        try {
+          // 전체 목록을 먼저 가져옵니다
+          console.log('3. Fetching all posts first');
+          const [spotResponse, exerciseResponse] = await Promise.all([
+            fetch(`${API_URL}/community/post/get/running-spot`),
+            fetch(`${API_URL}/community/post/get/exercise-proof`)
+          ]);
 
-      if (!spotResponse.ok || !exerciseResponse.ok) {
-        throw new Error('Network response was not ok');
-      }
+          if (!spotResponse.ok || !exerciseResponse.ok) {
+            throw new Error('Network response was not ok');
+          }
 
-      const spotData = await spotResponse.json();
-      const exerciseData = await exerciseResponse.json();
-      console.log('================================');
-      console.log("spotData : ", spotData);
-      console.log("exerciseData : ", exerciseData);
-      console.log('================================');
+          spotData = await spotResponse.json();
+          exerciseData = await exerciseResponse.json();
+          
+          console.log('4. Checking if selected post exists in current data');
+          // 현재 데이터에서 선택된 포스트를 찾습니다
+          const selectedSpotPost = spotData.find(post => post.postId.toString() === selectedPostId.toString());
+          const selectedExercisePost = exerciseData.find(post => post.postId.toString() === selectedPostId.toString());
 
-      if (selectedPostId) {
-        const selectedSpotPost = spotData.find(post => post.postId.toString() === selectedPostId);
-        const selectedExercisePost = exerciseData.find(post => post.postId.toString() === selectedPostId);
-
-        if (selectedSpotPost) {
-          const filteredSpotPosts = spotData.filter(post => post.postId.toString() !== selectedPostId);
-          setSpotPosts([selectedSpotPost, ...filteredSpotPosts]);
-          setExercisePosts(exerciseData);
-          setActiveTab(0);
-        } else if (selectedExercisePost) {
-          const filteredExercisePosts = exerciseData.filter(post => post.postId.toString() !== selectedPostId);
-          setExercisePosts([selectedExercisePost, ...filteredExercisePosts]);
-          setSpotPosts(spotData);
-          setActiveTab(1);
-        } else {
-          setSpotPosts(spotData);
-          setExercisePosts(exerciseData);
+          if (selectedSpotPost) {
+            console.log('5. Selected post found in spot data');
+            // 러닝 스팟 포스트인 경우
+            const otherSpotPosts = spotData.filter(post => post.postId.toString() !== selectedPostId.toString());
+            spotData = [selectedSpotPost, ...otherSpotPosts];
+            setActiveTab(0); // 러닝 스팟 탭으로 설정
+          } else if (selectedExercisePost) {
+            console.log('5. Selected post found in exercise data');
+            // 운동 인증 포스트인 경우
+            const otherExercisePosts = exerciseData.filter(post => post.postId.toString() !== selectedPostId.toString());
+            exerciseData = [selectedExercisePost, ...otherExercisePosts];
+            setActiveTab(1); // 운동 인증 탭으로 설정
+          } else {
+            console.log('5. Selected post not found in current data, fetching it separately');
+            // 선택된 포스트가 현재 데이터에 없는 경우, 별도로 가져옵니다
+            const selectedPostResponse = await fetch(`${API_URL}/community/post/get/${selectedPostId}`);
+            
+            if (selectedPostResponse.ok) {
+              const selectedPost = await selectedPostResponse.json();
+              if (selectedPost.postTag === true) {
+                spotData = [selectedPost, ...spotData];
+                setActiveTab(0);
+              } else {
+                exerciseData = [selectedPost, ...exerciseData];
+                setActiveTab(1);
+              }
+            }
+          }
+          
+        } catch (error) {
+          console.log('6. Error occurred:', error);
+          console.error('Error details:', error);
         }
       } else {
-        setSpotPosts(spotData);
-        setExercisePosts(exerciseData);
+        console.log('2. No selected post, fetching all posts');
+        const [spotResponse, exerciseResponse] = await Promise.all([
+          fetch(`${API_URL}/community/post/get/running-spot`),
+          fetch(`${API_URL}/community/post/get/exercise-proof`)
+        ]);
+
+        if (!spotResponse.ok || !exerciseResponse.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        spotData = await spotResponse.json();
+        exerciseData = await exerciseResponse.json();
       }
+
+      console.log('7. Setting final data');
+      setSpotPosts(spotData);
+      setExercisePosts(exerciseData);
+      console.log('Final data:', {
+        spotPosts: spotData.length,
+        exercisePosts: exerciseData.length
+      });
+
     } catch (error) {
       console.error('Error fetching posts:', error);
       setError(error.message);

@@ -51,95 +51,6 @@ const DUMMY_COURSES = [
   },
 ];
 
-const DUMMY_SPOTS = [
-  {
-    id: 1,
-    user: '러너 김철수1',
-    date: '2024.02.15',
-    spotName: '여의도 한강공원',
-    spotDescription: '새벽 러닝하기 좋아요! 러닝 메이트 구합니다 👋',
-    likes: 24,
-    images: ['https://i.imgur.com/Q9JqXpi.jpeg']
-  },
-  {
-    id: 2,
-    user: '마라토너 이영',
-    date: '2024.02.14',
-    spotName: '올림픽공원',
-    spotDescription: '저녁에 사람 적고 공기 좋아요~ 코스도 잘 되어있습니다!',
-    likes: 18,
-    images: ['https://i.imgur.com/BHPqxdw.jpeg']
-  }
-];
-
-const DUMMY_GROUPS = [
-  {
-    id: 1,
-    title: '아침을 여는 러너들',
-    startTime: '06:00',
-    endTime: '07:00',
-    distance: '5km',
-    currentMembers: 3,
-    maxMembers: 6,
-    level: '초급',
-    location: '여의도 한강공원'
-  },
-  {
-    id: 2,
-    title: '퇴근 후 스트레스 해소',
-    startTime: '19:00',
-    endTime: '20:00',
-    distance: '7km',
-    currentMembers: 4,
-    maxMembers: 8,
-    level: '중급',
-    location: '올림픽공원'
-  },
-  {
-    id: 3,
-    title: '주말 마라톤 준비',
-    startTime: '08:00',
-    endTime: '09:30',
-    distance: '10km',
-    currentMembers: 5,
-    maxMembers: 10,
-    level: '고급',
-    location: '남산 둘레길'
-  },
-  {
-    id: 4,
-    title: '초보자 환영 러닝',
-    startTime: '07:00',
-    endTime: '08:00',
-    distance: '3km',
-    currentMembers: 2,
-    maxMembers: 6,
-    level: '초급',
-    location: '청계천'
-  },
-];
-
-const DUMMY_EXERCISE = [
-  {
-    id: 10,
-    user: '러너 김철수123',
-    date: '2024.02.15',
-    spotName: '여의도 한강공원',
-    spotDescription: '새벽 러닝하기 좋아요! 러닝 메이트 구합니다 👋',
-    likes: 24,
-    images: ['https://i.imgur.com/Q9JqXpi.jpeg']
-  },
-  {
-    id: 11,
-    user: '러너 손흥민',
-    date: '2024.02.15',
-    spotName: '여의도 한강공원',
-    spotDescription: '새벽 러닝하기 좋아요! 러닝 메이트 구합니다 👋',
-    likes: 24,
-    images: ['https://i.imgur.com/Q9JqXpi.jpeg']
-  },
-];
-
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -152,7 +63,7 @@ const HomeScreen = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  console.log(runningCertPosts, 'gggggggggggg')
   // 서버에서 데이터 가져오기
   useEffect(() => {
     const fetchMainPageData = async () => {
@@ -180,7 +91,9 @@ const HomeScreen = () => {
   const router = useRouter();
   // 게시물 클릭 핸들러 수정
   const handlePostPress = (post) => {
-    const tabIndex = post.postTag === 'RUNNING_SPOT' ? 0 : 1;
+    console.log(post.postTag, 'postttt')
+    const tabIndex = post.postTag === true ? 0 : 1;
+    console.log(tabIndex, "tabIndexxxxx")
     router.push({
       pathname: '/community',
       params: {
