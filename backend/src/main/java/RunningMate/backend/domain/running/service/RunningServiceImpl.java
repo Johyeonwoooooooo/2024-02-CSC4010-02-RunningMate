@@ -17,10 +17,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -164,11 +162,9 @@ public class RunningServiceImpl implements RunningService {
         if(group == null)
             throw new IllegalArgumentException("생성되어 있는 빠른 러닝방이 없습니다.");
 
-        Record existingRecord = recordRepository.findByUserAndLeaderBoardGroup(optionalUser, group);
-        Record record;
-        if (existingRecord != null) {
-            record = existingRecord;
-        } else {
+        Record record = recordRepository.findByUserAndLeaderBoardGroup(optionalUser, group);
+
+        if (record == null){
             record = recordRepository.save(Record.builder().user(optionalUser.get())
                 .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
 
@@ -178,16 +174,6 @@ public class RunningServiceImpl implements RunningService {
             group.participateGroup();
             groupRepository.save(group);
         }
-
-//        Record record = recordRepository.save(Record.builder().user(optionalUser.get())
-//                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
-//
-//        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(leaderBoardRepository.count() + 1).build();
-//        leaderBoardRepository.save(leaderBoard);
-//
-//        group.participateGroup();
-//        groupRepository.save(group);
-
         return new RunningDTO.ParticipateQuickRunningResponse(record);
     }
 
@@ -210,7 +196,7 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     @Transactional
-    public List<RunningDTO.WhileRunningResponse> whileRunning(RunningDTO.WhileRunningRequest request, Optional<User> optionalUser) {
+    public RunningDTO.WhileRunningResponse whileRunning(RunningDTO.WhileRunningRequest request, Optional<User> optionalUser) {
         if(optionalUser.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스 입니다.");
 
@@ -232,10 +218,35 @@ public class RunningServiceImpl implements RunningService {
         Record newRecord = recordRepository.findRecordByRecordId(request.getRecordId());
         Long new_rank = leaderBoardRepository.findLeaderBoardByRecord(newRecord).getRanking();
         String rankChange = compareRanking(pre_ranking, new_rank);
-
-        return whileRunningResponse(newLeaderboard, new_rank, rankChange);
+        String TTSMessage = generateTTSMessage(rankChange, new_rank, request.getDistance(), newLeaderboard, optionalUser);
+        return whileRunningResponse(newLeaderboard, new_rank, rankChange, TTSMessage);
     }
 
+    private String generateTTSMessage(String rankChange, Long new_rank, Long currentDistance,
+                                         List<LeaderBoard> newLeaderboard, Optional<User> optionalUser){
+        List<Record> recordList = optionalUser.get().getRecord();
+        Long userBestRecord = -1L;
+        for (Record record : recordList) {
+            if(record.getDistance() > userBestRecord)
+                userBestRecord = record.getDistance();
+        }
+
+        if (currentDistance > userBestRecord) {
+            return "현재 러닝 최고 기록 갱신 중 입니다. 현재 " + currentDistance + "미터 입니다.";
+        }
+
+        if(rankChange.equals("up")) {
+            int userIndex = new_rank.intValue()-1;
+            Long userDistance = newLeaderboard.get(userIndex).getRecord().getDistance();
+            if(userIndex == 0) {
+                return "현재" + userDistance + "미터로 1등 입니다! 선두를 유지하세요.";
+            }
+            Long leadingDistance = newLeaderboard.get(userIndex - 1).getRecord().getDistance();
+            long distanceGap = userDistance - leadingDistance;
+            return new_rank + "등이 되었습니다. " + (new_rank - 1) + "등과 " + distanceGap + "미터 차이 입니다.";
+        }
+        return "";
+    }
     private List<LeaderBoard> sortByDistance(List<LeaderBoard> records){
         records.sort((o1, o2) -> Double.compare(o2.getRecord().getDistance(), o1.getRecord().getDistance()));
         for(int i = 1; i<= records.size(); i++){
@@ -252,39 +263,39 @@ public class RunningServiceImpl implements RunningService {
             return "same";
     }
 
-    private List<RunningDTO.WhileRunningResponse> whileRunningResponse(List<LeaderBoard> newLeaderboard, Long new_rank, String rankChange){
-        List<RunningDTO.WhileRunningResponse> response = new ArrayList<>();
+    private RunningDTO.WhileRunningResponse whileRunningResponse(List<LeaderBoard> newLeaderboard, Long new_rank, String rankChange, String ttsMessage){
+        List<RunningDTO.WhileRunningLeaderboardResponse> response = new ArrayList<>();
         int tail = newLeaderboard.size();
         if(newLeaderboard.size() < 3) { 
             // 참가 인원 3명이하일 때, 기존 리더보드 + 더미데이터 추가
             for (LeaderBoard leaderBoard : newLeaderboard) {
-                response.add(new RunningDTO.WhileRunningResponse(leaderBoard, new_rank, rankChange));
+                response.add(new RunningDTO.WhileRunningLeaderboardResponse(leaderBoard, new_rank, rankChange));
             }
 
             for (int i = 1; i <= 3 - newLeaderboard.size(); i++) {
-                response.add(new RunningDTO.WhileRunningResponse("-", Long.valueOf(tail + i), false, "same"));
+                response.add(new RunningDTO.WhileRunningLeaderboardResponse("-", Long.valueOf(tail + i), false, "same"));
             }
         }
         else{
             // 3명 이상일때
             if(new_rank.equals(1L)){ // 1등이면 1,2,3등
                 for (LeaderBoard leaderBoard : newLeaderboard.subList(0, 3)) {
-                    response.add(new RunningDTO.WhileRunningResponse(leaderBoard, new_rank, rankChange));
+                    response.add(new RunningDTO.WhileRunningLeaderboardResponse(leaderBoard, new_rank, rankChange));
                 }
             }
             else if(new_rank.equals(newLeaderboard.size())){ // 꼴등이면 뒤에서 3, 2, 1등
                 for (LeaderBoard leaderBoard : newLeaderboard.subList(tail-3, tail)){
-                    response.add(new RunningDTO.WhileRunningResponse(leaderBoard, new_rank, rankChange));
+                    response.add(new RunningDTO.WhileRunningLeaderboardResponse(leaderBoard, new_rank, rankChange));
                 }
             }
             else{ // 나머진 위 나 아래
                 int index = new_rank.intValue() - 1;
-                response.add(new RunningDTO.WhileRunningResponse(newLeaderboard.get(index-1), new_rank, rankChange));
-                response.add(new RunningDTO.WhileRunningResponse(newLeaderboard.get(index), new_rank, rankChange));
-                response.add(new RunningDTO.WhileRunningResponse(newLeaderboard.get(index+1), new_rank, rankChange));
+                response.add(new RunningDTO.WhileRunningLeaderboardResponse(newLeaderboard.get(index-1), new_rank, rankChange));
+                response.add(new RunningDTO.WhileRunningLeaderboardResponse(newLeaderboard.get(index), new_rank, rankChange));
+                response.add(new RunningDTO.WhileRunningLeaderboardResponse(newLeaderboard.get(index+1), new_rank, rankChange));
             }
         }
-        return response;
+        return RunningDTO.WhileRunningResponse.builder().leaderboardResponseList(response).ttsMessage(ttsMessage).build();
     }
     @Override
     public List<RunningDTO.LeaderboardResponse> leaderboard(Long recordId, Optional<User> optionalUser) {

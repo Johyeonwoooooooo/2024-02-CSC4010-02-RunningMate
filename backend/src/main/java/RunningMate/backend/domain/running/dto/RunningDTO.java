@@ -4,13 +4,10 @@ import RunningMate.backend.domain.running.entity.GroupTag;
 import RunningMate.backend.domain.running.entity.LeaderBoard;
 import RunningMate.backend.domain.running.entity.Record;
 import RunningMate.backend.domain.running.entity.RunningGroup;
-import RunningMate.backend.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -125,16 +122,23 @@ public class RunningDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class WhileRunningResponse {
+    public static class WhileRunningResponse{
+        private List<WhileRunningLeaderboardResponse> leaderboardResponseList;
+        private String ttsMessage;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class WhileRunningLeaderboardResponse {
         private String userNickname;
         private Long rank;
         private Boolean isMyRecord;
         private String rankChange;
 
-        public WhileRunningResponse(LeaderBoard leaderBoard, Long rank, String rankChange){
+        public WhileRunningLeaderboardResponse(LeaderBoard leaderBoard, Long rank, String rankChange){
             this.userNickname = leaderBoard.getRecord().getUser().getUserNickname();
             this.rank = leaderBoard.getRanking();
-
             this.isMyRecord = false;
             if(this.rank.equals(rank))
                 this.isMyRecord = true;

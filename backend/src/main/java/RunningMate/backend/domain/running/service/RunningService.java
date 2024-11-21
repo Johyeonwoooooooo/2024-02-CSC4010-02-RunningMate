@@ -5,7 +5,6 @@ import RunningMate.backend.domain.running.dto.RunningDTO;
 import RunningMate.backend.domain.running.entity.GroupTag;
 import RunningMate.backend.domain.running.entity.RunningGroup;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +20,6 @@ public interface RunningService {
     List<RunningDTO.MainPageGroupResponse> mainPageGroups();
     void autoCreateQuickRunningGroup();
 //    void autoDeleteRunningGroup();
-    List<RunningDTO.WhileRunningResponse> whileRunning(RunningDTO.WhileRunningRequest request, Optional<User> optionalUser);
+    RunningDTO.WhileRunningResponse whileRunning(RunningDTO.WhileRunningRequest request, Optional<User> optionalUser);
     List<RunningDTO.LeaderboardResponse> leaderboard(Long recordId, Optional<User> optionalUser);
 }
