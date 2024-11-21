@@ -232,7 +232,7 @@ public class RunningServiceImpl implements RunningService {
                 userBestRecord = record.getDistance();
         }
 
-        if (currentDistance == userBestRecord) {
+        if (currentDistance >= userBestRecord) {
             return "현재 러닝 최고 기록 갱신 중 입니다. 현재 " + currentDistance + "미터 입니다.";
         }
 
