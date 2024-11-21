@@ -143,7 +143,7 @@ const RunningWaitingRoom = () => {
     const diff = start - now;
 
     if (diff <= 0) {
-      router.push('../(tabs)/running');
+      router.push('./runningRecord');
       return '러닝 시작!';
     }
 
