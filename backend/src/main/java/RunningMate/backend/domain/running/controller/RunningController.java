@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,6 +61,37 @@ public class RunningController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @Operation(summary = "러닝 참가 취소", description = "recordId, groupId를 보내 러닝 참가를 취소 한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "참가 취소 성공"),
+            @ApiResponse(responseCode = "400", description = "참가 취소 실패")
+    })
+    @DeleteMapping("/cancel")
+    public ResponseEntity<?> cancelParticipation(@RequestBody RunningDTO.CancelParticipationRequest request){
+        try{
+            runningService.cancelParticipation(request);
+            return ResponseEntity.ok().body("정상적으로 참가취소되었습니다.");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "빠른 매칭 참가하기", description = "사용자를 빠른 매칭 러닝방에 참가시키고 record 정보를 리턴한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "빠른 매칭 참가 성공"),
+            @ApiResponse(responseCode = "400", description = "빠른 매칭 참가 실패")
+    })
+    @PostMapping("/quickrunning/participate")
+    public ResponseEntity<?> participateQuickRunning(HttpSession session) {
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            return ResponseEntity.ok(runningService.participateQuickRunning(optionalUser));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @Operation(summary = "러닝방 목록 조회하기", description = "사용자에게 러닝방 목록을 보여준다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "러닝 방 조회 성공"),
@@ -104,17 +136,38 @@ public class RunningController {
         }
     }
 
-    @Operation(summary = "러닝 참가 취소", description = "recordId, groupId를 보내 러닝 참가를 취소 한다.")
+    @Operation(summary = "러닝 중", description = "recordId, distance, runningTime, calories를 보내 러닝 정보를 저장한다. \n" +
+            "{\n" +
+            "  \"recordId\": 1,\n" +
+            "  \"runningTime\": \"PT1H3M4S\",\n" +
+            "  \"calories\": 100,\n" +
+            "  \"distance\": 5\n" +
+            "}")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "참가 취소 성공"),
-            @ApiResponse(responseCode = "400", description = "참가 취소 실패")
+            @ApiResponse(responseCode = "200", description = "러닝 정보 저장 성공"),
+            @ApiResponse(responseCode = "400", description = "러닝 정보 저장 실패")
     })
-    @DeleteMapping("/cancel")
-    public ResponseEntity<?> cancelParticipation(@RequestBody RunningDTO.CancelParticipationRequest request){
-        try{
-            runningService.cancelParticipation(request);
-            return ResponseEntity.ok().body("정상적으로 참가취소되었습니다.");
-        }catch (Exception e){
+    @PostMapping("/update")
+    public ResponseEntity<?> whileRunning(@RequestBody RunningDTO.WhileRunningRequest request, HttpSession session) {
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            return ResponseEntity.ok().body(runningService.whileRunning(request, optionalUser));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "리더보드", description = "recordId를 입력받아 리더보드를 제공한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "리더보드 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "리더보드 조회 실패 ")
+    })
+    @GetMapping("/leaderboard")
+    public ResponseEntity<?> leaderboard(@RequestParam Long recordId, HttpSession session) {
+        Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+        try {
+            return ResponseEntity.ok().body(runningService.leaderboard(recordId, optionalUser));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

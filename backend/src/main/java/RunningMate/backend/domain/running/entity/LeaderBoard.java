@@ -27,4 +27,8 @@ public class LeaderBoard {
 
     @Column(nullable = false)
     private Long ranking;
+
+    public void updateRanking(Long ranking){
+        this.ranking = ranking;
+    }
 }

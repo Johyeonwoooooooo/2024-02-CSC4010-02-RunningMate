@@ -1,13 +1,16 @@
 package RunningMate.backend.domain.running.dto;
 
 import RunningMate.backend.domain.running.entity.GroupTag;
+import RunningMate.backend.domain.running.entity.LeaderBoard;
 import RunningMate.backend.domain.running.entity.Record;
 import RunningMate.backend.domain.running.entity.RunningGroup;
+import RunningMate.backend.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -71,7 +74,7 @@ public class RunningDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class groupParticipantResponse{
+    public static class groupParticipantResponse {
         private String groupTitle;
         private GroupTag groupTag;
         private Long targetDistance;
@@ -86,9 +89,76 @@ public class RunningDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class ParticipateQuickRunningResponse {
+        private Long recordId;
+        private Duration runningTime;
+        private Long calories;
+        public ParticipateQuickRunningResponse(Record record){
+            this.recordId = record.getRecordId();
+            this.runningTime = record.getRunningTime();
+            this.calories = record.getCalories();
+        }
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CancelParticipationRequest{
         private Long groupId;
         private Long recordId;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class WhileRunningRequest {
+        private Long recordId;
+        private Duration runningTime;
+        private Long calories;
+        private Long distance;
+
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class WhileRunningResponse {
+        private String userNickname;
+        private Long rank;
+        private Boolean isMyRecord;
+        private String rankChange;
+
+        public WhileRunningResponse(LeaderBoard leaderBoard, Long rank, String rankChange){
+            this.userNickname = leaderBoard.getRecord().getUser().getUserNickname();
+            this.rank = leaderBoard.getRanking();
+
+            this.isMyRecord = false;
+            if(this.rank.equals(rank))
+                this.isMyRecord = true;
+
+            this.rankChange = "same";
+            if(isMyRecord)
+                this.rankChange = rankChange;
+        }
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LeaderboardResponse {
+        private Long ranking;
+        private String userNickname;
+        private boolean yourRecord;
+
+        public LeaderboardResponse(LeaderBoard leaderBoard, boolean yourRecord){
+            this.ranking = leaderBoard.getRanking();
+            this.userNickname = leaderBoard.getRecord().getUser().getUserNickname();
+            this.yourRecord = yourRecord;
+        }
     }
 
     @Builder

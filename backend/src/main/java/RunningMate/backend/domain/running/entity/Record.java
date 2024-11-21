@@ -8,6 +8,7 @@ import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Getter
@@ -40,7 +41,7 @@ public class Record {
     @OneToOne(mappedBy = "record")
     private LeaderBoard leaderBoard;
 
-    public void updateRecord(Long distance, Duration runningTime, Long calories){
+    public void updateRecord(Long distance, Duration runningTime, Long calories) {
         this.distance = distance;
         this.runningTime = runningTime;
         this.calories = calories;
