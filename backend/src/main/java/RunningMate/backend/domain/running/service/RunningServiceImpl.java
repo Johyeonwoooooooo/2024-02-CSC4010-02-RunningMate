@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -231,7 +232,7 @@ public class RunningServiceImpl implements RunningService {
                 userBestRecord = record.getDistance();
         }
 
-        if (currentDistance > userBestRecord) {
+        if (currentDistance == userBestRecord) {
             return "현재 러닝 최고 기록 갱신 중 입니다. 현재 " + currentDistance + "미터 입니다.";
         }
 
@@ -242,13 +243,15 @@ public class RunningServiceImpl implements RunningService {
                 return "현재" + userDistance + "미터로 1등 입니다! 선두를 유지하세요.";
             }
             Long leadingDistance = newLeaderboard.get(userIndex - 1).getRecord().getDistance();
-            long distanceGap = userDistance - leadingDistance;
+            long distanceGap = leadingDistance - userDistance;
             return new_rank + "등이 되었습니다. " + (new_rank - 1) + "등과 " + distanceGap + "미터 차이 입니다.";
         }
         return "";
     }
     private List<LeaderBoard> sortByDistance(List<LeaderBoard> records){
-        records.sort((o1, o2) -> Double.compare(o2.getRecord().getDistance(), o1.getRecord().getDistance()));
+        if (!records.isEmpty()) {
+            records.sort(Comparator.comparing((LeaderBoard r) -> r.getRecord().getDistance()).reversed());
+        }
         for(int i = 1; i<= records.size(); i++){
             records.get(i-1).updateRanking(Long.valueOf(i));
         }
@@ -283,16 +286,16 @@ public class RunningServiceImpl implements RunningService {
                     response.add(new RunningDTO.WhileRunningLeaderboardResponse(leaderBoard, new_rank, rankChange));
                 }
             }
-            else if(new_rank.equals(newLeaderboard.size())){ // 꼴등이면 뒤에서 3, 2, 1등
+            else if(new_rank.intValue() ==  newLeaderboard.size()){ // 꼴등이면 뒤에서 3, 2, 1등
                 for (LeaderBoard leaderBoard : newLeaderboard.subList(tail-3, tail)){
                     response.add(new RunningDTO.WhileRunningLeaderboardResponse(leaderBoard, new_rank, rankChange));
                 }
             }
             else{ // 나머진 위 나 아래
                 int index = new_rank.intValue() - 1;
-                response.add(new RunningDTO.WhileRunningLeaderboardResponse(newLeaderboard.get(index-1), new_rank, rankChange));
+                response.add(new RunningDTO.WhileRunningLeaderboardResponse(newLeaderboard.get(index-1), new_rank-1, "same"));
                 response.add(new RunningDTO.WhileRunningLeaderboardResponse(newLeaderboard.get(index), new_rank, rankChange));
-                response.add(new RunningDTO.WhileRunningLeaderboardResponse(newLeaderboard.get(index+1), new_rank, rankChange));
+                response.add(new RunningDTO.WhileRunningLeaderboardResponse(newLeaderboard.get(index+1), new_rank+1, "same"));
             }
         }
         return RunningDTO.WhileRunningResponse.builder().leaderboardResponseList(response).ttsMessage(ttsMessage).build();
