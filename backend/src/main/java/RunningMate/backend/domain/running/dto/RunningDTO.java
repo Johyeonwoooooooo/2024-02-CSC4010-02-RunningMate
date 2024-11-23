@@ -135,6 +135,7 @@ public class RunningDTO {
         private Long rank;
         private Boolean isMyRecord;
         private String rankChange;
+        private Double distance;
 
         public WhileRunningLeaderboardResponse(LeaderBoard leaderBoard, Long rank, String rankChange){
             this.userNickname = leaderBoard.getRecord().getUser().getUserNickname();
@@ -146,6 +147,7 @@ public class RunningDTO {
             this.rankChange = "same";
             if(isMyRecord)
                 this.rankChange = rankChange;
+            this.distance = Double.valueOf(leaderBoard.getRecord().getDistance()) / 1000;
         }
     }
 
