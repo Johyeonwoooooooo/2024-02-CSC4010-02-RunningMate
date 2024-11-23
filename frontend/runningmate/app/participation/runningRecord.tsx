@@ -98,6 +98,7 @@ const RunningScreen = () => {
     userNickname: string;
     rankChange: "up" | "down" | "same";
     isMyRecord: boolean;
+    distance: string;
   }
 
   const updateLeaderboard = (leaderboardResponseList: LeaderboardRecord[]) => {
@@ -247,7 +248,7 @@ const RunningScreen = () => {
             >
               <Text style={styles.rankNumber}>{user.rank}</Text>
               <Text style={styles.name}>{user.userNickname}</Text>
-              <Text style={styles.distance}>{user.distance}</Text>
+              <Text style={styles.distance}>{user.distance} km</Text>
               <Text
                 style={[styles.rankChange, { color: user.rankChangeColor }]}
               >
