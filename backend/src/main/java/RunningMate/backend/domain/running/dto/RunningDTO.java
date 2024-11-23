@@ -157,10 +157,12 @@ public class RunningDTO {
         private Long ranking;
         private String userNickname;
         private boolean yourRecord;
+        private Long distance;
 
         public LeaderboardResponse(LeaderBoard leaderBoard, boolean yourRecord){
             this.ranking = leaderBoard.getRanking();
             this.userNickname = leaderBoard.getRecord().getUser().getUserNickname();
+            this.distance = leaderBoard.getRecord().getDistance();
             this.yourRecord = yourRecord;
         }
     }
