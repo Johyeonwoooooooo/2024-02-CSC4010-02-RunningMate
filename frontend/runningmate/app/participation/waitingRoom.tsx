@@ -153,7 +153,7 @@ const RunningWaitingRoom = () => {
         setIsActive(false); // isActive를 false로 설정하여 한 번만 실행되도록 함
         router.push({
           pathname: "./runningRecord",
-          params: { recordId: recordId }
+          params: { recordId: recordId },
         });
       }
       return "러닝 시작!";

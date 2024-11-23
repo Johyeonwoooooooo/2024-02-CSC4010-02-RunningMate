@@ -133,7 +133,7 @@ const RunningScreen = () => {
 
         // Prepare data for API
         const runningData = {
-          recordId: 1,
+          recordId: recordId,
           runningTime: duration,
           calories: Math.round(calories),
           distance: Number(distance.toFixed(2)) * 1000, // convert km to m
@@ -228,12 +228,12 @@ const RunningScreen = () => {
   };
   const params = useLocalSearchParams();
   const { recordId } = params;
-  console.log(recordId, 'recordId');
+  console.log(recordId, "recordId");
   const handleStopRunning = () => {
     setIsRunning(false);
     router.push({
       pathname: "./leaderboard",
-      params: { recordId: recordId }
+      params: { recordId: recordId },
     });
   };
 
