@@ -94,7 +94,7 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     public List<RunningDTO.RunningGroupViewResponse> viewRunningGroups() {
-        List<RunningGroup> groupList = groupRepository.findAllByStartTimeAfter(LocalDateTime.now());
+        List<RunningGroup> groupList = groupRepository.findAllByActivateTrueAndGroupTagNot(GroupTag.QUICK);
         return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
     }
 
@@ -102,10 +102,10 @@ public class RunningServiceImpl implements RunningService {
     public List<RunningDTO.RunningGroupViewResponse> filteringGroup(GroupTag groupTag, String searchWord) {
         List<RunningGroup> groupList;
         if(groupTag == null){
-            groupList = groupRepository.findAllByGroupTitleContainsAndStartTimeAfter(searchWord, LocalDateTime.now());
+            groupList = groupRepository.findAllByGroupTitleContainsAndActivateTrue(searchWord);
         }
         else {
-            groupList = groupRepository.findAllByGroupTagAndGroupTitleContainsAndStartTimeAfter(groupTag, searchWord, LocalDateTime.now());
+            groupList = groupRepository.findAllByGroupTagAndGroupTitleContainsAndActivateTrue(groupTag, searchWord);
         }
 
         return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
@@ -136,7 +136,7 @@ public class RunningServiceImpl implements RunningService {
     @Override
     public void autoCreateQuickRunningGroup() {
         // QUICK 이고 활성화된 방을 모두 비활성화
-        List<RunningGroup> groups = groupRepository.findAllByGroupTagAndActivate(GroupTag.QUICK, true);
+        List<RunningGroup> groups = groupRepository.findAllByGroupTagAndActivateTrue(GroupTag.QUICK);
         for (RunningGroup group : groups) {
             group.deactivate();
             groupRepository.save(group);
@@ -159,7 +159,7 @@ public class RunningServiceImpl implements RunningService {
         if(optionalUser.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
-        RunningGroup group = groupRepository.findByGroupTagAndActivate(GroupTag.QUICK, true);
+        RunningGroup group = groupRepository.findByGroupTagAndActivateTrue(GroupTag.QUICK);
         if(group == null)
             throw new IllegalArgumentException("생성되어 있는 빠른 러닝방이 없습니다.");
 
@@ -181,7 +181,7 @@ public class RunningServiceImpl implements RunningService {
     @Override
     @Scheduled(fixedRate = 5000) // 5초마다 반복. 60000 = 1분
     public void deactivateRunningGroup() {
-        List<RunningGroup> runningGroups = groupRepository.findAllByEndTimeBefore(LocalDateTime.now());
+        List<RunningGroup> runningGroups = groupRepository.findAllByEndTimeBeforeAndActivateTrue(LocalDateTime.now());
         for (RunningGroup runningGroup : runningGroups) {
             runningGroup.deactivate();
             groupRepository.save(runningGroup);
@@ -276,7 +276,7 @@ public class RunningServiceImpl implements RunningService {
             }
 
             for (int i = 1; i <= 3 - newLeaderboard.size(); i++) {
-                response.add(new RunningDTO.WhileRunningLeaderboardResponse("-", Long.valueOf(tail + i), false, "same"));
+                response.add(new RunningDTO.WhileRunningLeaderboardResponse("-", Long.valueOf(tail + i), false, "same", 0.0));
             }
         }
         else{
@@ -328,7 +328,7 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     public List<RunningDTO.MainPageGroupResponse> mainPageGroups() {
-        List<RunningGroup> groupList = groupRepository.findAllByStartTimeAfter(LocalDateTime.now());
+        List<RunningGroup> groupList = groupRepository.findAllByActivateTrueAndGroupTagNot(GroupTag.QUICK);
         return groupList.stream().limit(6).map(RunningDTO.MainPageGroupResponse::new).toList();
     }
 }
