@@ -66,7 +66,7 @@ const RunningMateSearch = () => {
   const fetchRunningRooms = async () => {
     setLoading(true);
     try {
-      let url = "http://43.200.193.236/running";
+      let url = "http://43.200.193.236:8080/running";
 
       if (selectedLevel || searchQuery.trim()) {
         const params = new URLSearchParams();
