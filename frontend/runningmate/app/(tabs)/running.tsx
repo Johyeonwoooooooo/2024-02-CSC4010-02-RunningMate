@@ -298,7 +298,45 @@ const RunningMateSearch = () => {
       setSelectedTimeText(`${hours}:${minutes}`);
     }
   };
+  const handleQuickJoin = async () => {
+    try {
+      const response = await fetch(
+        "http://43.200.193.236:8080/running/quickrunning/participate",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "빠른 참가에 실패했습니다.");
+      }
+
+      const data = await response.json();
+      console.log("Quick join success:", data);
+
+      // 성공 시 러닝방으로 이동
+      router.push({
+        pathname: "/participation/runningRecord",
+        params: {
+          roomId: data.groupId?.toString(),
+          recordId: data.recordId?.toString(),
+          roomTitle: data.roomTitle,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          targetDistance: data.targetDistance,
+          maxParticipants: data.maxParticipants,
+          selectedType: data.selectedType,
+        },
+      });
+    } catch (error) {
+      console.error("Error in quick join:", error);
+      Alert.alert("오류", error.message);
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.searchContainer}>
@@ -389,7 +427,10 @@ const RunningMateSearch = () => {
         >
           <Text style={styles.buttonText}>러닝 방 생성</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.joinButton]}>
+        <TouchableOpacity
+          style={[styles.button, styles.joinButton]}
+          onPress={handleQuickJoin}
+        >
           <Text style={styles.buttonText}>빠른 참가</Text>
         </TouchableOpacity>
       </View>
