@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 
 const RunningScreen = () => {
   const [distance, setDistance] = useState(0);
@@ -12,6 +13,15 @@ const RunningScreen = () => {
   const [isRunning, setIsRunning] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const router = useRouter();
+
+  // 헤더 가리기
+  const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+      //title: "", // 헤더의 제목을 빈 문자열로 설정
+    });
+  }, [navigation]);
 
   const dummyData = [
     {

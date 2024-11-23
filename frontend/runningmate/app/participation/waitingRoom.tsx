@@ -10,8 +10,10 @@ import {
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const RunningWaitingRoom = () => {
+  const navigation = useNavigation();
   const params = useLocalSearchParams();
   const {
     roomTitle,
@@ -29,6 +31,13 @@ const RunningWaitingRoom = () => {
   const [participants, setParticipants] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false, // 헤더를 가리기
+      // title: "", // 헤더의 제목을 빈 문자열로 설정
+    });
+  }, [navigation]);
 
   // 참가자 목록 조회 함수
   const fetchParticipants = async () => {
@@ -140,7 +149,10 @@ const RunningWaitingRoom = () => {
     const diff = start - now;
 
     if (diff <= 0) {
-      router.push("./runningRecord");
+      if (isActive) {
+        setIsActive(false); // isActive를 false로 설정하여 한 번만 실행되도록 함
+        router.push("./runningRecord");
+      }
       return "러닝 시작!";
     }
 

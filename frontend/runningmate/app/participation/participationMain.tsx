@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useNavigation } from "@react-navigation/native";
 
 const LEVEL_MAPPING = {
   초보: "BEGINNER",
@@ -23,6 +24,14 @@ const LEVEL_MAPPING = {
 };
 
 const CreateRunningRoom = () => {
+  const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+      //title: "", // 헤더의 제목을 빈 문자열로 설정
+    });
+  }, [navigation]);
+
   // 초기 시간 설정
   const initTimes = (() => {
     const now = new Date();
@@ -464,6 +473,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   title: {
+    padding: 30,
     fontSize: 24,
     fontWeight: "600",
     marginBottom: 24,
