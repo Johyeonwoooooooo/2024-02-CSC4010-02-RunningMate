@@ -331,7 +331,6 @@ const CommunityScreen = () => {
   const params = useLocalSearchParams();
   const initialTab = params?.initialTab ? parseInt(params.initialTab) : 0;
   const selectedPostId = params?.selectedPostId;
-  const flatListRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [spotPosts, setSpotPosts] = useState([]);
@@ -340,33 +339,31 @@ const CommunityScreen = () => {
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (isRefreshing = false) => {
     try {
-      setLoading(true);
+      if (!isRefreshing) {
+        setLoading(true);
+      }
+
       let spotData = [];
       let exerciseData = [];
 
-      console.log("1. Initial check - selectedPostId:", selectedPostId);
+      // 기본 데이터 가져오기
+      const [spotResponse, exerciseResponse] = await Promise.all([
+        fetch(`${API_URL}/community/post/get/running-spot`),
+        fetch(`${API_URL}/community/post/get/exercise-proof`),
+      ]);
 
-      if (selectedPostId && selectedPostId.toString().trim() !== "") {
-        console.log("2. Entering selectedPostId block");
+      if (!spotResponse.ok || !exerciseResponse.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      spotData = await spotResponse.json();
+      exerciseData = await exerciseResponse.json();
+
+      // 새로고침이 아니고 선택된 포스트가 있는 경우에만 처리
+      if (!isRefreshing && selectedPostId) {
         try {
-          // 전체 목록을 먼저 가져옵니다
-          console.log("3. Fetching all posts first");
-          const [spotResponse, exerciseResponse] = await Promise.all([
-            fetch(`${API_URL}/community/post/get/running-spot`),
-            fetch(`${API_URL}/community/post/get/exercise-proof`),
-          ]);
-
-          if (!spotResponse.ok || !exerciseResponse.ok) {
-            throw new Error("Network response was not ok");
-          }
-
-          spotData = await spotResponse.json();
-          exerciseData = await exerciseResponse.json();
-
-          console.log("4. Checking if selected post exists in current data");
-          // 현재 데이터에서 선택된 포스트를 찾습니다
           const selectedSpotPost = spotData.find(
             (post) => post.postId.toString() === selectedPostId.toString()
           );
@@ -375,26 +372,18 @@ const CommunityScreen = () => {
           );
 
           if (selectedSpotPost) {
-            console.log("5. Selected post found in spot data");
-            // 러닝 스팟 포스트인 경우
             const otherSpotPosts = spotData.filter(
               (post) => post.postId.toString() !== selectedPostId.toString()
             );
             spotData = [selectedSpotPost, ...otherSpotPosts];
-            setActiveTab(0); // 러닝 스팟 탭으로 설정
+            setActiveTab(0);
           } else if (selectedExercisePost) {
-            console.log("5. Selected post found in exercise data");
-            // 운동 인증 포스트인 경우
             const otherExercisePosts = exerciseData.filter(
               (post) => post.postId.toString() !== selectedPostId.toString()
             );
             exerciseData = [selectedExercisePost, ...otherExercisePosts];
-            setActiveTab(1); // 운동 인증 탭으로 설정
+            setActiveTab(1);
           } else {
-            console.log(
-              "5. Selected post not found in current data, fetching it separately"
-            );
-            // 선택된 포스트가 현재 데이터에 없는 경우, 별도로 가져옵니다
             const selectedPostResponse = await fetch(
               `${API_URL}/community/post/get/${selectedPostId}`
             );
@@ -411,31 +400,12 @@ const CommunityScreen = () => {
             }
           }
         } catch (error) {
-          console.log("6. Error occurred:", error);
-          console.error("Error details:", error);
+          console.error("Error processing selected post:", error);
         }
-      } else {
-        console.log("2. No selected post, fetching all posts");
-        const [spotResponse, exerciseResponse] = await Promise.all([
-          fetch(`${API_URL}/community/post/get/running-spot`),
-          fetch(`${API_URL}/community/post/get/exercise-proof`),
-        ]);
-
-        if (!spotResponse.ok || !exerciseResponse.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        spotData = await spotResponse.json();
-        exerciseData = await exerciseResponse.json();
       }
 
-      console.log("7. Setting final data");
       setSpotPosts(spotData);
       setExercisePosts(exerciseData);
-      console.log("Final data:", {
-        spotPosts: spotData.length,
-        exercisePosts: exerciseData.length,
-      });
     } catch (error) {
       console.error("Error fetching posts:", error);
       setError(error.message);
@@ -445,27 +415,30 @@ const CommunityScreen = () => {
     }
   };
 
+  // 초기 로딩
+  useEffect(() => {
+    fetchPosts(false);
+  }, []);
+
+  // params 변경 감지
   useEffect(() => {
     if (params?.initialTab !== undefined) {
       setActiveTab(parseInt(params.initialTab));
     }
-  }, [params?.initialTab]);
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const handlePostDelete = (postId, isSpotPost) => {
-    if (isSpotPost) {
-      setSpotPosts((prev) => prev.filter((post) => post.postId !== postId));
-    } else {
-      setExercisePosts((prev) => prev.filter((post) => post.postId !== postId));
+    if (selectedPostId) {
+      fetchPosts(false);
     }
-  };
+  }, [params?.initialTab, params?.selectedPostId]);
 
+  // 새로고침 처리
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    fetchPosts();
+    // 새로고침 시 URL 변경
+    router.replace({
+      pathname: "/community",
+    });
+    // 기본 데이터 로드
+    fetchPosts(true);
   }, []);
 
   if (loading && !refreshing) {
