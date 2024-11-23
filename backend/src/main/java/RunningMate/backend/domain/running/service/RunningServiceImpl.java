@@ -326,6 +326,13 @@ public class RunningServiceImpl implements RunningService {
             if(leaderBoard.getRecord().getUser().equals(optionalUser.get())) yourRecord = true;
             leaderboardResponses.add(new RunningDTO.LeaderboardResponse(leaderBoard, yourRecord));
         }
+
+        int size = leaderboardResponses.size();
+        if(size < 3){
+            for(int i = 0; i < 3- size; i++){
+                leaderboardResponses.add(new RunningDTO.LeaderboardResponse(Long.valueOf(size+1+i), "-", false,  0L));
+            }
+        }
         return leaderboardResponses;
     }
 
