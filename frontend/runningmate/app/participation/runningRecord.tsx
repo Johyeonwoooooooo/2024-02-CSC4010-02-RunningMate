@@ -6,13 +6,14 @@ import { useNavigation } from "@react-navigation/native";
 
 const RunningScreen = () => {
   const [distance, setDistance] = useState(0);
-  const [previousLocation, setPreviousLocation] = 
+  const [previousLocation, setPreviousLocation] =
     useState<Location.LocationObject | null>(null);
   const [runningTime, setRunningTime] = useState(0);
   const [calories, setCalories] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const router = useRouter();
+  const [leaderboard, setLeaderboard] = useState<LeaderboardRecord[]>([]);
 
   // 헤더 가리기
   const navigation = useNavigation();
@@ -92,12 +93,37 @@ const RunningScreen = () => {
     };
   }, [previousLocation]);
 
+  interface LeaderboardRecord {
+    rank: number;
+    userNickname: string;
+    rankChange: "up" | "down" | "same";
+    isMyRecord: boolean;
+  }
+
+  const updateLeaderboard = (leaderboardResponseList: LeaderboardRecord[]) => {
+    return leaderboardResponseList.map((record) => ({
+      ...record,
+      rankChangeIcon:
+        record.rankChange === "up"
+          ? "▲"
+          : record.rankChange === "down"
+          ? "▼"
+          : "-",
+      rankChangeColor:
+        record.rankChange === "up"
+          ? "green"
+          : record.rankChange === "down"
+          ? "red"
+          : "black",
+    }));
+  };
+
   // Updated useEffect with API call
   useEffect(() => {
     if (isRunning) {
       timerRef.current = setInterval(async () => {
         setRunningTime((prevTime) => prevTime + 1);
-        
+
         // Format running time as ISO 8601 duration
         const hours = Math.floor(runningTime / 3600);
         const minutes = Math.floor((runningTime % 3600) / 60);
@@ -109,23 +135,34 @@ const RunningScreen = () => {
           recordId: 1,
           runningTime: duration,
           calories: Math.round(calories),
-          distance: Number(distance.toFixed(2))
+          distance: Number(distance.toFixed(2)) * 1000, // convert km to m
         };
-
+        //console.log("Running data:", runningData);
         try {
-          const response = await fetch('/running/update', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(runningData)
-          });
+          const response = await fetch(
+            "http://43.200.193.236:8080/running/update",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(runningData),
+            }
+          );
 
           if (!response.ok) {
-            console.error('Failed to update running data');
+            console.error("Failed to update running data");
+          } else {
+            const responseBody = await response.json();
+            console.log("Response body:", responseBody);
+
+            const leaderboard = updateLeaderboard(
+              responseBody.leaderboardResponseList
+            );
+            setLeaderboard(leaderboard);
           }
         } catch (error) {
-          console.error('Error updating running data:', error);
+          console.error("Error updating running data:", error);
         }
       }, 1000);
     } else if (timerRef.current) {
@@ -198,22 +235,27 @@ const RunningScreen = () => {
     <View style={styles.container}>
       {/* Rank List */}
       <View style={styles.rankList}>
-        {dummyData.map((user, index) => (
-          <View
-            key={index}
-            style={[
-              styles.rankItem,
-              user.isMyRecord ? styles.currentUser : null,
-            ]}
-          >
-            <Text style={styles.rankNumber}>{user.rank}</Text>
-            <Text style={styles.name}>{user.username}</Text>
-            <Text style={styles.distance}>{user.distance}</Text>
-            <Text style={[styles.rankChange, { color: user.rankChangeColor }]}>
-              {user.rankChange}
-            </Text>
-          </View>
-        ))}
+        {/* Rank List */}
+        <View style={styles.rankList}>
+          {leaderboard.map((user, index) => (
+            <View
+              key={index}
+              style={[
+                styles.rankItem,
+                user.isMyRecord ? styles.currentUser : null,
+              ]}
+            >
+              <Text style={styles.rankNumber}>{user.rank}</Text>
+              <Text style={styles.name}>{user.userNickname}</Text>
+              <Text style={styles.distance}>{user.distance}</Text>
+              <Text
+                style={[styles.rankChange, { color: user.rankChangeColor }]}
+              >
+                {user.rankChangeIcon}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       {/* Running Info */}
