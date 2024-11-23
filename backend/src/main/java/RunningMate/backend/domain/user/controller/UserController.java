@@ -110,4 +110,26 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
+
+    @GetMapping("/records")
+    @Operation(summary = "사용자의 운동 기록 확인", description = "사용자의 운동 기록을 확인한다")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 완료"),
+            @ApiResponse(responseCode = "204", description = "운동 기록이 없음"),
+            @ApiResponse(responseCode = "403", description = "조회 권한이 없음")
+    })
+    public ResponseEntity<?> viewMyRecords(HttpSession session) {
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            List<UserDTO.MyRecordResponse> myRecords = userService.viewMyRecord(optionalUser);
+
+            if (myRecords.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.ok(myRecords);
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
 }

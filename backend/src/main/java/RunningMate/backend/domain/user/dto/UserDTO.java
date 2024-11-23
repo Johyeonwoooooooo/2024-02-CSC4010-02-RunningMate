@@ -1,5 +1,6 @@
 package RunningMate.backend.domain.user.dto;
 
+import RunningMate.backend.domain.running.entity.Record;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -63,4 +64,21 @@ public class UserDTO {
         private List<String> postImages;
     }
 
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MyRecordResponse { // 날짜, 거리, 일주일 거리 총합
+        private LocalDateTime recordDate;
+        private Long dailyDistance;
+        private Long weekDistance; // 총 거리
+        private Long weekCalories; // 총 칼로리
+
+        public MyRecordResponse(Record record) {
+            this.recordDate = record.getRunningStartTime().atStartOfDay(); // LocalDate to LocalDateTime
+            this.dailyDistance = record.getDistance();
+            this.weekDistance = 0L; // 계산 후 세팅
+            this.weekCalories = 0L; // 계산 후 세팅
+        }
+    }
 }

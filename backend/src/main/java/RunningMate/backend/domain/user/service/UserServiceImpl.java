@@ -1,5 +1,7 @@
 package RunningMate.backend.domain.user.service;
 
+import RunningMate.backend.domain.running.entity.Record;
+import RunningMate.backend.domain.running.repository.RecordRepository;
 import RunningMate.backend.domain.user.dto.UserDTO;
 import RunningMate.backend.domain.user.entity.User;
 import RunningMate.backend.domain.user.repository.UserRepository;
@@ -11,14 +13,19 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
+    private final RecordRepository recordRepository;
 
     @Override
     public User signUp(UserDTO.SignUpRequest request) {
@@ -102,6 +109,49 @@ public class UserServiceImpl implements UserService{
                 })
                 .toList();
 
+    }
+
+    @Override
+    public List<UserDTO.MyRecordResponse> viewMyRecord(Optional<User> user) {
+        if (user.isEmpty())
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
+
+        List<Record> userRecords = recordRepository.findAllByUser(user);
+
+        // 오늘 날짜 기준으로 지난 7일 데이터를 필터링
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(6); // 7일 전 시작
+
+        Map<LocalDate, List<Record>> groupedRecords = userRecords.stream()
+                .filter(record -> !record.getRunningStartTime().isBefore(startDate) &&
+                        !record.getRunningStartTime().isAfter(endDate))
+                .collect(Collectors.groupingBy(Record::getRunningStartTime));
+
+        List<UserDTO.MyRecordResponse> responses = new ArrayList<>();
+        long totalDistance = 0;
+        long totalCalories = 0;
+
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            List<Record> dailyRecords = groupedRecords.getOrDefault(date, new ArrayList<>());
+
+            // 하루 동안의 거리와 칼로리 계산
+            long dailyDistance = dailyRecords.stream().mapToLong(Record::getDistance).sum();
+            long dailyCalories = dailyRecords.stream().mapToLong(Record::getCalories).sum();
+
+            // 누적 거리 및 칼로리
+            totalDistance += dailyDistance;
+            totalCalories += dailyCalories;
+
+            // 하루 기록 응답 생성
+            responses.add(UserDTO.MyRecordResponse.builder()
+                    .recordDate(date.atStartOfDay())
+                    .dailyDistance(dailyDistance)
+                    .weekDistance(totalDistance)
+                    .weekCalories(totalCalories)
+                    .build());
+        }
+
+        return responses;
     }
 
     // 암호화 툴 : 비밀번호는 암호화한 후 데이터베이스에 삽입.
