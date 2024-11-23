@@ -93,9 +93,9 @@ const CreateRunningRoom = () => {
     const currentTime = new Date();
     const errors = {};
 
-    const minStartTime = new Date(currentTime.getTime() + 15 * 60 * 1000);
+    const minStartTime = new Date(currentTime.getTime());
     if (start < minStartTime) {
-      errors.startTime = "시작 시간은 현재 시간으로부터 15분 이후여야 합니다.";
+      errors.startTime = "시작 시간은 현재 시간 이후여야 합니다.";
     }
 
     const minEndTime = new Date(start.getTime() + 30 * 60 * 1000);
