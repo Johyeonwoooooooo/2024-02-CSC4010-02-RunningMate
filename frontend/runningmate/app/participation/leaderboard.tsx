@@ -71,6 +71,7 @@ const LeaderboardScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       navigation.setOptions({
+        headerShown: false,
         headerStyle: { backgroundColor: "#8dccff" },
         headerTintColor: "#fff",
         headerTitleStyle: { fontWeight: "bold" },
@@ -105,7 +106,7 @@ const LeaderboardScreen = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.navigate("/running")}>
-          <Text style={styles.backButton}>Back</Text>
+          <Text style={styles.backButton}>{"<"}</Text>
         </TouchableOpacity>
         <Text style={styles.headerText}>Leaderboard</Text>
       </View>
@@ -198,16 +199,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    justifyContent: "space-between",
+    backgroundColor: "#8dccff",
+    paddingVertical: 10,
+  },
+  backButton: {
+    fontSize: 24,
+    color: "#fff",
   },
   headerText: {
     fontSize: 20,
     fontWeight: "bold",
-  },
-  backButton: {
-    fontSize: 16,
-    color: "blue",
+    color: "#fff",
+    textAlign: "center",
+    flex: 1,
   },
   topThreeContainer: {
     flexDirection: "row",
