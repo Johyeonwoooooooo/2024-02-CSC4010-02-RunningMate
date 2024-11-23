@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  StyleSheet, 
-  TouchableOpacity, 
-  ScrollView, 
-  SafeAreaView, 
-  Platform, 
+import React, { useState, useEffect, useRef } from "react";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  Platform,
   View,
   Modal,
   TextInput,
@@ -13,19 +13,19 @@ import {
   TouchableWithoutFeedback,
   Alert,
   RefreshControl,
-  useWindowDimensions
+  useWindowDimensions,
 } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
+import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import AlertModal from '../../components/modal/AlertModal';
+import AlertModal from "../../components/modal/AlertModal";
 
-const API_URL = 'http://localhost:8080';
+const API_URL = "http://43.200.193.236:8080";
 
 // CommentsModal 컴포넌트
 const CommentsModal = ({ visible, onClose, postId }) => {
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -34,18 +34,20 @@ const CommentsModal = ({ visible, onClose, postId }) => {
   const fetchComments = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/community/post/${postId}/comments`);
-      
+      const response = await fetch(
+        `${API_URL}/community/post/${postId}/comments`
+      );
+
       if (!response.ok) {
-        throw new Error('댓글을 불러오는데 실패했습니다.');
+        throw new Error("댓글을 불러오는데 실패했습니다.");
       }
 
       const data = await response.json();
       setComments(data);
       setError(null);
     } catch (error) {
-      console.error('Error fetching comments:', error);
-      setError('댓글을 불러오는데 실패했습니다.');
+      console.error("Error fetching comments:", error);
+      setError("댓글을 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -59,31 +61,34 @@ const CommentsModal = ({ visible, onClose, postId }) => {
   // 댓글 달기
   const handleSubmitComment = async () => {
     if (!comment.trim() || !postId) return;
-  
+
     try {
       const commentData = {
         commentContent: comment.trim(),
-        postId: postId
+        postId: postId,
       };
-  
-      const response = await fetch(`${API_URL}/community/post/${postId}/comment`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(commentData)
-      });
-  
+
+      const response = await fetch(
+        `${API_URL}/community/post/${postId}/comment`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(commentData),
+        }
+      );
+
       if (response.ok) {
-        setComment('');
+        setComment("");
         fetchComments();
       } else {
-        Alert.alert('오류', '댓글 등록에 실패했습니다.');
+        Alert.alert("오류", "댓글 등록에 실패했습니다.");
       }
     } catch (error) {
-      console.error('Error posting comment:', error);
-      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+      console.error("Error posting comment:", error);
+      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
     }
   };
 
@@ -92,11 +97,11 @@ const CommentsModal = ({ visible, onClose, postId }) => {
     const now = new Date();
     const diffTime = Math.abs(now - date);
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-    
+
     if (diffHours < 24) {
       return `${diffHours}시간 전`;
     }
-    return date.toLocaleDateString('ko-KR');
+    return date.toLocaleDateString("ko-KR");
   };
 
   return (
@@ -123,7 +128,9 @@ const CommentsModal = ({ visible, onClose, postId }) => {
                 ) : error ? (
                   <ThemedText style={styles.errorText}>{error}</ThemedText>
                 ) : comments.length === 0 ? (
-                  <ThemedText style={styles.emptyText}>댓글이 없습니다.</ThemedText>
+                  <ThemedText style={styles.emptyText}>
+                    댓글이 없습니다.
+                  </ThemedText>
                 ) : (
                   <ScrollView>
                     {comments.map((item) => (
@@ -158,13 +165,13 @@ const CommentsModal = ({ visible, onClose, postId }) => {
                     placeholderTextColor="#666"
                     multiline
                   />
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.sendButton}
                     onPress={handleSubmitComment}
                   >
-                    <Ionicons 
-                      name="send" 
-                      size={24} 
+                    <Ionicons
+                      name="send"
+                      size={24}
                       color={comment.trim() ? "#36A3FD" : "#666"}
                     />
                   </TouchableOpacity>
@@ -182,9 +189,9 @@ const CommentsModal = ({ visible, onClose, postId }) => {
 const FloatingActionButton = () => {
   const router = useRouter();
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.fab}
-      onPress={() => router.push('/community/feedCreate')}
+      onPress={() => router.push("/community/feedCreate")}
     >
       <Ionicons name="add" size={24} color="#000000" />
     </TouchableOpacity>
@@ -200,22 +207,25 @@ const PostCard = ({ post, onDelete }) => {
   // 삭제 기능 구현
   const handleDelete = async () => {
     try {
-      const response = await fetch(`${API_URL}/community/post/${post.postId}/delete`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${API_URL}/community/post/${post.postId}/delete`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         onDelete(post.postId);
-        Alert.alert('성공', '게시글이 삭제되었습니다.');
+        Alert.alert("성공", "게시글이 삭제되었습니다.");
       } else {
-        Alert.alert('오류', '게시글 삭제에 실패했습니다.');
+        Alert.alert("오류", "게시글 삭제에 실패했습니다.");
       }
     } catch (error) {
-      console.error('Error deleting post:', error);
-      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+      console.error("Error deleting post:", error);
+      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
     } finally {
       setIsDeleteModalVisible(false);
     }
@@ -223,24 +233,27 @@ const PostCard = ({ post, onDelete }) => {
   // 좋아요 기능 구현
   const handleLike = async () => {
     try {
-      const response = await fetch(`${API_URL}/community/post/${post.postId}/like`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${API_URL}/community/post/${post.postId}/like`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         setIsLove(!isLove);
-        setLikeCount(prevCount => isLove ? prevCount - 1 : prevCount + 1);
+        setLikeCount((prevCount) => (isLove ? prevCount - 1 : prevCount + 1));
       }
     } catch (error) {
-      console.error('Error toggling like:', error);
+      console.error("Error toggling like:", error);
     }
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('ko-KR');
+    return new Date(dateString).toLocaleDateString("ko-KR");
   };
 
   return (
@@ -255,7 +268,7 @@ const PostCard = ({ post, onDelete }) => {
             <Ionicons name="trash-outline" size={20} color="#808080" />
           </TouchableOpacity>
         )}
-        <AlertModal 
+        <AlertModal
           visible={isDeleteModalVisible}
           onClose={() => setIsDeleteModalVisible(false)}
           onConfirm={handleDelete}
@@ -264,8 +277,8 @@ const PostCard = ({ post, onDelete }) => {
         />
       </ThemedView>
       {post.postImages && post.postImages.length > 0 && (
-        <Image 
-          source={{ uri: post.postImages[0] }} 
+        <Image
+          source={{ uri: post.postImages[0] }}
           style={styles.grayArea}
           resizeMode="cover"
         />
@@ -273,26 +286,28 @@ const PostCard = ({ post, onDelete }) => {
       <ThemedView style={styles.postActions}>
         <ThemedView style={styles.likeComment}>
           <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
-            <Ionicons 
+            <Ionicons
               name={isLove ? "heart" : "heart-outline"}
-              size={24} 
+              size={24}
               color={isLove ? "#FF69B4" : "#808080"}
             />
             <ThemedText style={styles.actionCount}>{likeCount}</ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.actionButton}
             onPress={() => setIsCommentsModalVisible(true)}
           >
             <Ionicons name="chatbubble-outline" size={24} color="#808080" />
-            <ThemedText style={styles.actionCount}>{post.commentCount}</ThemedText>
+            <ThemedText style={styles.actionCount}>
+              {post.commentCount}
+            </ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </ThemedView>
       <ThemedText style={styles.caption}>{post.postTitle}</ThemedText>
       <ThemedText style={styles.content}>{post.postContent}</ThemedText>
       <ThemedText style={styles.date}>{formatDate(post.postDate)}</ThemedText>
-      <CommentsModal 
+      <CommentsModal
         visible={isCommentsModalVisible}
         onClose={() => setIsCommentsModalVisible(false)}
         postId={post.postId}
@@ -304,7 +319,9 @@ const PostCard = ({ post, onDelete }) => {
 // EmptyPostsView 컴포넌트
 const EmptyPostsView = () => (
   <View style={styles.emptyContainer}>
-    <ThemedText style={styles.emptyText}>게시글이 존재하지 않습니다.</ThemedText>
+    <ThemedText style={styles.emptyText}>
+      게시글이 존재하지 않습니다.
+    </ThemedText>
   </View>
 );
 
@@ -323,54 +340,65 @@ const CommunityScreen = () => {
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
-
   const fetchPosts = async () => {
     try {
       setLoading(true);
       let spotData = [];
       let exerciseData = [];
-      
-      console.log('1. Initial check - selectedPostId:', selectedPostId);
-      
-      if (selectedPostId && selectedPostId.toString().trim() !== '') {
-        console.log('2. Entering selectedPostId block');
+
+      console.log("1. Initial check - selectedPostId:", selectedPostId);
+
+      if (selectedPostId && selectedPostId.toString().trim() !== "") {
+        console.log("2. Entering selectedPostId block");
         try {
           // 전체 목록을 먼저 가져옵니다
-          console.log('3. Fetching all posts first');
+          console.log("3. Fetching all posts first");
           const [spotResponse, exerciseResponse] = await Promise.all([
             fetch(`${API_URL}/community/post/get/running-spot`),
-            fetch(`${API_URL}/community/post/get/exercise-proof`)
+            fetch(`${API_URL}/community/post/get/exercise-proof`),
           ]);
 
           if (!spotResponse.ok || !exerciseResponse.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error("Network response was not ok");
           }
 
           spotData = await spotResponse.json();
           exerciseData = await exerciseResponse.json();
-          
-          console.log('4. Checking if selected post exists in current data');
+
+          console.log("4. Checking if selected post exists in current data");
           // 현재 데이터에서 선택된 포스트를 찾습니다
-          const selectedSpotPost = spotData.find(post => post.postId.toString() === selectedPostId.toString());
-          const selectedExercisePost = exerciseData.find(post => post.postId.toString() === selectedPostId.toString());
+          const selectedSpotPost = spotData.find(
+            (post) => post.postId.toString() === selectedPostId.toString()
+          );
+          const selectedExercisePost = exerciseData.find(
+            (post) => post.postId.toString() === selectedPostId.toString()
+          );
 
           if (selectedSpotPost) {
-            console.log('5. Selected post found in spot data');
+            console.log("5. Selected post found in spot data");
             // 러닝 스팟 포스트인 경우
-            const otherSpotPosts = spotData.filter(post => post.postId.toString() !== selectedPostId.toString());
+            const otherSpotPosts = spotData.filter(
+              (post) => post.postId.toString() !== selectedPostId.toString()
+            );
             spotData = [selectedSpotPost, ...otherSpotPosts];
             setActiveTab(0); // 러닝 스팟 탭으로 설정
           } else if (selectedExercisePost) {
-            console.log('5. Selected post found in exercise data');
+            console.log("5. Selected post found in exercise data");
             // 운동 인증 포스트인 경우
-            const otherExercisePosts = exerciseData.filter(post => post.postId.toString() !== selectedPostId.toString());
+            const otherExercisePosts = exerciseData.filter(
+              (post) => post.postId.toString() !== selectedPostId.toString()
+            );
             exerciseData = [selectedExercisePost, ...otherExercisePosts];
             setActiveTab(1); // 운동 인증 탭으로 설정
           } else {
-            console.log('5. Selected post not found in current data, fetching it separately');
+            console.log(
+              "5. Selected post not found in current data, fetching it separately"
+            );
             // 선택된 포스트가 현재 데이터에 없는 경우, 별도로 가져옵니다
-            const selectedPostResponse = await fetch(`${API_URL}/community/post/get/${selectedPostId}`);
-            
+            const selectedPostResponse = await fetch(
+              `${API_URL}/community/post/get/${selectedPostId}`
+            );
+
             if (selectedPostResponse.ok) {
               const selectedPost = await selectedPostResponse.json();
               if (selectedPost.postTag === true) {
@@ -382,36 +410,34 @@ const CommunityScreen = () => {
               }
             }
           }
-          
         } catch (error) {
-          console.log('6. Error occurred:', error);
-          console.error('Error details:', error);
+          console.log("6. Error occurred:", error);
+          console.error("Error details:", error);
         }
       } else {
-        console.log('2. No selected post, fetching all posts');
+        console.log("2. No selected post, fetching all posts");
         const [spotResponse, exerciseResponse] = await Promise.all([
           fetch(`${API_URL}/community/post/get/running-spot`),
-          fetch(`${API_URL}/community/post/get/exercise-proof`)
+          fetch(`${API_URL}/community/post/get/exercise-proof`),
         ]);
 
         if (!spotResponse.ok || !exerciseResponse.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error("Network response was not ok");
         }
 
         spotData = await spotResponse.json();
         exerciseData = await exerciseResponse.json();
       }
 
-      console.log('7. Setting final data');
+      console.log("7. Setting final data");
       setSpotPosts(spotData);
       setExercisePosts(exerciseData);
-      console.log('Final data:', {
+      console.log("Final data:", {
         spotPosts: spotData.length,
-        exercisePosts: exerciseData.length
+        exercisePosts: exerciseData.length,
       });
-
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error("Error fetching posts:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -431,9 +457,9 @@ const CommunityScreen = () => {
 
   const handlePostDelete = (postId, isSpotPost) => {
     if (isSpotPost) {
-      setSpotPosts(prev => prev.filter(post => post.postId !== postId));
+      setSpotPosts((prev) => prev.filter((post) => post.postId !== postId));
     } else {
-      setExercisePosts(prev => prev.filter(post => post.postId !== postId));
+      setExercisePosts((prev) => prev.filter((post) => post.postId !== postId));
     }
   };
 
@@ -453,203 +479,205 @@ const CommunityScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.tabHeader}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
           onPress={() => setActiveTab(0)}
         >
-          <ThemedText style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>
+          <ThemedText
+            style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
+          >
             러닝 스팟 공유
           </ThemedText>
         </TouchableOpacity>
-        <TouchableOpacity 
-            style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
-            onPress={() => setActiveTab(1)}
-          >
-            <ThemedText style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>
-              운동 인증
-            </ThemedText>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView 
-          style={styles.container}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
+          onPress={() => setActiveTab(1)}
         >
-          {activeTab === 0 ? (
-            spotPosts.length > 0 ? (
-              spotPosts.map(post => (
-                <PostCard 
-                  key={post.postId} 
-                  post={post} 
-                  onDelete={(postId) => handlePostDelete(postId, true)}
-                />
-              ))
-            ) : (
-              <EmptyPostsView />
-            )
-          ) : (
-            exercisePosts.length > 0 ? (
-              exercisePosts.map(post => (
-                <PostCard 
-                  key={post.postId} 
-                  post={post}
-                  onDelete={(postId) => handlePostDelete(postId, false)}
-                />
-              ))
-            ) : (
-              <EmptyPostsView />
-            )
-          )}
-        </ScrollView>
+          <ThemedText
+            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
+          >
+            운동 인증
+          </ThemedText>
+        </TouchableOpacity>
+      </View>
 
-        <FloatingActionButton />
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {activeTab === 0 ? (
+          spotPosts.length > 0 ? (
+            spotPosts.map((post) => (
+              <PostCard
+                key={post.postId}
+                post={post}
+                onDelete={(postId) => handlePostDelete(postId, true)}
+              />
+            ))
+          ) : (
+            <EmptyPostsView />
+          )
+        ) : exercisePosts.length > 0 ? (
+          exercisePosts.map((post) => (
+            <PostCard
+              key={post.postId}
+              post={post}
+              onDelete={(postId) => handlePostDelete(postId, false)}
+            />
+          ))
+        ) : (
+          <EmptyPostsView />
+        )}
+      </ScrollView>
+
+      <FloatingActionButton />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   tabHeader: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    marginTop: Platform.OS === 'ios' ? 47 : 0,
+    borderBottomColor: "#f0f0f0",
+    marginTop: Platform.OS === "ios" ? 47 : 0,
   },
   tabButton: {
     flex: 1,
     paddingVertical: 5,
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomWidth: 2,
-    borderBottomColor: 'transparent'
+    borderBottomColor: "transparent",
   },
   activeTabButton: {
-    borderBottomColor: '#000'
+    borderBottomColor: "#000",
   },
   tabText: {
     fontSize: 14,
-    color: '#666'
+    color: "#666",
   },
   activeTabText: {
-    color: '#000',
-    fontWeight: '600'
+    color: "#000",
+    fontWeight: "600",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   errorText: {
-    color: 'red',
-    textAlign: 'center',
+    color: "red",
+    textAlign: "center",
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingTop: 100,
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   postCard: {
     marginBottom: 8,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#DBDBDB',
+    borderColor: "#DBDBDB",
   },
   postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 12,
   },
   userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   profileCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: "#E0E0E0",
     marginRight: 10,
   },
   userName: {
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 14,
   },
   grayArea: {
-    width: '100%',
+    width: "100%",
     height: 300,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: "#E0E0E0",
   },
   postActions: {
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   likeComment: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: 16,
   },
   actionCount: {
     marginLeft: 6,
-    color: '#262626',
+    color: "#262626",
     fontSize: 13,
   },
   caption: {
     paddingHorizontal: 12,
     paddingBottom: 12,
     fontSize: 14,
-    color: '#262626',
+    color: "#262626",
   },
   content: {
     paddingHorizontal: 12,
     paddingBottom: 8,
     fontSize: 14,
-    color: '#262626',
+    color: "#262626",
   },
   date: {
     paddingHorizontal: 12,
     paddingBottom: 12,
     fontSize: 12,
-    color: '#8e8e8e',
+    color: "#8e8e8e",
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: 20,
     bottom: 80,
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#ffffff",
+    justifyContent: "center",
+    alignItems: "center",
     ...Platform.select({
       ios: {
-        shadowColor: '#000000',
+        shadowColor: "#000000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
@@ -661,27 +689,27 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
   },
   modalContent: {
-    height: '60%',
-    backgroundColor: 'white',
+    height: "60%",
+    backgroundColor: "white",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 16,
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingBottom: 15,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   commentsContainer: {
     flex: 1,
@@ -692,40 +720,40 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   commentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 5,
   },
   smallProfileCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: "#E0E0E0",
     marginRight: 10,
   },
   commentUserName: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   commentTime: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
   commentText: {
     marginLeft: 42,
-    color: '#333',
+    color: "#333",
     fontSize: 14,
     lineHeight: 20,
   },
   commentInputContainer: {
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: "#eee",
     paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
+    paddingBottom: Platform.OS === "ios" ? 20 : 10,
   },
   commentInputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 8,
@@ -733,14 +761,14 @@ const styles = StyleSheet.create({
   commentInput: {
     flex: 1,
     fontSize: 14,
-    color: '#000',
+    color: "#000",
     maxHeight: 80,
-    paddingTop: Platform.OS === 'ios' ? 8 : 4,
-    paddingBottom: Platform.OS === 'ios' ? 8 : 4,
+    paddingTop: Platform.OS === "ios" ? 8 : 4,
+    paddingBottom: Platform.OS === "ios" ? 8 : 4,
   },
   sendButton: {
     paddingLeft: 10,
-    paddingBottom: Platform.OS === 'ios' ? 6 : 4,
+    paddingBottom: Platform.OS === "ios" ? 6 : 4,
   },
 });
 

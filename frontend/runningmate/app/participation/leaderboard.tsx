@@ -119,7 +119,7 @@ const LeaderboardScreen = () => {
 
       {/* Podium Image */}
       <ImageBackground
-        source={require("../assets/images/podium.png")}
+        source={require("../../assets/images/podium.png")}
         style={styles.podiumBackground}
         imageStyle={styles.podiumImage}
       >
