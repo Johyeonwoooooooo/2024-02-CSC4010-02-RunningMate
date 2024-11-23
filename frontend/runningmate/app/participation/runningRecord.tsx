@@ -6,7 +6,7 @@ import { useNavigation } from "@react-navigation/native";
 
 const RunningScreen = () => {
   const [distance, setDistance] = useState(0);
-  const [previousLocation, setPreviousLocation] =
+  const [previousLocation, setPreviousLocation] = 
     useState<Location.LocationObject | null>(null);
   const [runningTime, setRunningTime] = useState(0);
   const [calories, setCalories] = useState(0);
@@ -19,7 +19,6 @@ const RunningScreen = () => {
   useEffect(() => {
     navigation.setOptions({
       headerShown: false,
-      //title: "", // 헤더의 제목을 빈 문자열로 설정
     });
   }, [navigation]);
 
@@ -50,6 +49,7 @@ const RunningScreen = () => {
     },
   ];
 
+  // Location tracking useEffect remains the same
   useEffect(() => {
     let locationSubscription: Location.LocationSubscription | undefined;
 
@@ -92,10 +92,41 @@ const RunningScreen = () => {
     };
   }, [previousLocation]);
 
+  // Updated useEffect with API call
   useEffect(() => {
     if (isRunning) {
-      timerRef.current = setInterval(() => {
+      timerRef.current = setInterval(async () => {
         setRunningTime((prevTime) => prevTime + 1);
+        
+        // Format running time as ISO 8601 duration
+        const hours = Math.floor(runningTime / 3600);
+        const minutes = Math.floor((runningTime % 3600) / 60);
+        const seconds = runningTime % 60;
+        const duration = `PT${hours}H${minutes}M${seconds}S`;
+
+        // Prepare data for API
+        const runningData = {
+          recordId: 1,
+          runningTime: duration,
+          calories: Math.round(calories),
+          distance: Number(distance.toFixed(2))
+        };
+
+        try {
+          const response = await fetch('/running/update', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(runningData)
+          });
+
+          if (!response.ok) {
+            console.error('Failed to update running data');
+          }
+        } catch (error) {
+          console.error('Error updating running data:', error);
+        }
       }, 1000);
     } else if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -106,8 +137,9 @@ const RunningScreen = () => {
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning]);
+  }, [isRunning, runningTime, calories, distance]);
 
+  // Rest of the component remains the same...
   interface Coordinates {
     latitude: number;
     longitude: number;
@@ -286,4 +318,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
 export default RunningScreen;
