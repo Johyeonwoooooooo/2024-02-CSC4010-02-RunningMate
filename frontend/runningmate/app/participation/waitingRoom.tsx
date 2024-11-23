@@ -151,7 +151,10 @@ const RunningWaitingRoom = () => {
     if (diff <= 0) {
       if (isActive) {
         setIsActive(false); // isActive를 false로 설정하여 한 번만 실행되도록 함
-        router.push("./runningRecord");
+        router.push({
+          pathname: "./runningRecord",
+          params: { recordId: recordId }
+        });
       }
       return "러닝 시작!";
     }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import * as Location from "expo-location";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 
 const RunningScreen = () => {
@@ -226,10 +226,15 @@ const RunningScreen = () => {
 
     return `${getHours}:${getMinutes}:${getSeconds}`;
   };
-
+  const params = useLocalSearchParams();
+  const { recordId } = params;
+  console.log(recordId, 'recordId');
   const handleStopRunning = () => {
     setIsRunning(false);
-    router.push("./leaderboard");
+    router.push({
+      pathname: "./leaderboard",
+      params: { recordId: recordId }
+    });
   };
 
   return (

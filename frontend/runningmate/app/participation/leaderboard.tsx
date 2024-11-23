@@ -10,10 +10,13 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from "@react-navigation/native";
+import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 
 const LeaderboardScreen = () => {
   const navigation = useNavigation();
-
+  const params = useLocalSearchParams();
+  const { recordId } = params;
+  console.log(recordId, 'recordId')
   // Dummy data
   const leaderboardData = [
     { username: "Davis Curtis", rank: 1, isMyRecord: false, distance: "15km" },
