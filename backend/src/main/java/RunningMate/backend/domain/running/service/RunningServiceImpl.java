@@ -68,9 +68,11 @@ public class RunningServiceImpl implements RunningService {
             throw new IllegalArgumentException("이미 해당 러닝방에 참여하셨습니다.");
         
         groupRepository.save(group);
+        Long ranking = Long.valueOf(leaderBoardRepository.findAllByGroup(group).size()) + 1;
+
         Record record = recordRepository.save(Record.builder().user(optionalUser.get())
                 .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
-        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(0L).build();
+        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(ranking).build();
         leaderBoardRepository.save(leaderBoard);
 
         return new RunningDTO.ParticipateGroupResponse(record);
@@ -169,7 +171,8 @@ public class RunningServiceImpl implements RunningService {
             record = recordRepository.save(Record.builder().user(optionalUser.get())
                 .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
 
-            LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(leaderBoardRepository.count() + 1).build();
+            Long ranking = Long.valueOf(leaderBoardRepository.findAllByGroup(group).size() + 1);
+            LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(ranking).build();
             leaderBoardRepository.save(leaderBoard);
 
             group.participateGroup();
