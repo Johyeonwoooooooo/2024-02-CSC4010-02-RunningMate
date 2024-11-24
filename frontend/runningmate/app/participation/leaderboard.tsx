@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,16 +7,28 @@ import {
   ScrollView,
   Image,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 
+const API_URL = "http://43.200.193.236:8080/running/leaderboard";
+
+interface LeaderboardRecord {
+  ranking: number;
+  userNickname: string;
+  yourRecord: boolean;
+  distance: number;
+}
+
 const LeaderboardScreen = () => {
+  const router = useRouter();
   const navigation = useNavigation();
+  const [leaderboard, setLeaderboard] = useState<LeaderboardRecord[]>([]);
   const params = useLocalSearchParams();
   const { recordId } = params;
-  console.log(recordId, 'recordId')
+  console.log(recordId, "recordId");
   // Dummy data
   const leaderboardData = [
     { username: "Davis Curtis", rank: 1, isMyRecord: false, distance: "15km" },
@@ -59,6 +71,7 @@ const LeaderboardScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       navigation.setOptions({
+        headerShown: false,
         headerStyle: { backgroundColor: "#8dccff" },
         headerTintColor: "#fff",
         headerTitleStyle: { fontWeight: "bold" },
@@ -68,56 +81,85 @@ const LeaderboardScreen = () => {
     }, [navigation])
   );
 
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await fetch(`${API_URL}?recordId=${recordId}`);
+        if (!response.ok) {
+          console.error(
+            `Failed to fetch leaderboard data: ${response.status} ${response.statusText}`
+          );
+          return;
+        }
+        const data = await response.json();
+        setLeaderboard(data);
+      } catch (error) {
+        console.error("Error fetching leaderboard data:", error);
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
   return (
     <View style={styles.container}>
       {/* Header */}
-      {/* <View style={styles.header}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.navigate("/running")}>
+          <Text style={styles.backButton}>{"<"}</Text>
+        </TouchableOpacity>
         <Text style={styles.headerText}>Leaderboard</Text>
-      </View> */}
+      </View>
 
       {/* Top 3 Section */}
       <View style={styles.topThreeContainer}>
         {/* Second Place */}
-        <View style={styles.secondUser}>
-          <View style={styles.circle}>
-            <Image
-              source={{
-                uri: "https://cdn-icons-png.flaticon.com/512/8847/8847419.png",
-              }}
-              style={styles.circleImage}
-            />
+        {leaderboard[1] && (
+          <View style={styles.secondUser}>
+            <View style={styles.circle}>
+              <Image
+                source={{
+                  uri: "https://cdn-icons-png.flaticon.com/512/8847/8847419.png",
+                }}
+                style={styles.circleImage}
+              />
+            </View>
+            <Text style={styles.name}>{leaderboard[1].userNickname}</Text>
+            <Text style={styles.distance}>{leaderboard[1].distance} km</Text>
           </View>
-          <Text style={styles.name}>{leaderboardData[1].username}</Text>
-          <Text style={styles.distance}>{leaderboardData[1].distance}</Text>
-        </View>
+        )}
 
         {/* First Place */}
-        <View style={[styles.firstUser]}>
-          <View style={styles.circle}>
-            <Image
-              source={{
-                uri: "https://cdn-icons-png.flaticon.com/512/8847/8847419.png",
-              }}
-              style={styles.circleImage}
-            />
+        {leaderboard[0] && (
+          <View style={[styles.firstUser]}>
+            <View style={styles.circle}>
+              <Image
+                source={{
+                  uri: "https://cdn-icons-png.flaticon.com/512/8847/8847419.png",
+                }}
+                style={styles.circleImage}
+              />
+            </View>
+            <Text style={styles.name}>{leaderboard[0].userNickname}</Text>
+            <Text style={styles.distance}>{leaderboard[0].distance} km</Text>
           </View>
-          <Text style={styles.name}>{leaderboardData[0].username}</Text>
-          <Text style={styles.distance}>{leaderboardData[0].distance}</Text>
-        </View>
+        )}
 
         {/* Third Place */}
-        <View style={styles.tirthUser}>
-          <View style={styles.circle}>
-            <Image
-              source={{
-                uri: "https://cdn-icons-png.flaticon.com/512/8847/8847419.png",
-              }}
-              style={styles.circleImage}
-            />
+        {leaderboard[2] && (
+          <View style={styles.thirdUser}>
+            <View style={styles.circle}>
+              <Image
+                source={{
+                  uri: "https://cdn-icons-png.flaticon.com/512/8847/8847419.png",
+                }}
+                style={styles.circleImage}
+              />
+            </View>
+            <Text style={styles.name}>{leaderboard[2].userNickname}</Text>
+            <Text style={styles.distance}>{leaderboard[2].distance} km</Text>
           </View>
-          <Text style={styles.name}>{leaderboardData[2].username}</Text>
-          <Text style={styles.distance}>{leaderboardData[2].distance}</Text>
-        </View>
+        )}
       </View>
 
       {/* Podium Image */}
@@ -129,18 +171,18 @@ const LeaderboardScreen = () => {
         <View style={styles.emptyContainer}></View>
         {/* List Section */}
         <ScrollView style={styles.listContainer}>
-          {leaderboardData.map((item, index) => (
+          {leaderboard.map((item, index) => (
             <View
               key={index}
               style={[
                 styles.listItem,
-                item.isMyRecord ? styles.currentUser : null,
+                item.yourRecord ? styles.currentUser : null,
               ]}
             >
-              <Text style={styles.rank}>{item.rank}</Text>
+              <Text style={styles.rank}>{item.ranking}</Text>
               <View style={styles.avatar} />
-              <Text style={styles.listName}>{item.username}</Text>
-              <Text style={styles.listDistance}>{item.distance}</Text>
+              <Text style={styles.listName}>{item.userNickname}</Text>
+              <Text style={styles.listDistance}>{item.distance} km</Text>
             </View>
           ))}
         </ScrollView>
@@ -157,12 +199,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    justifyContent: "space-between",
+    backgroundColor: "#8dccff",
+    paddingVertical: 10,
+  },
+  backButton: {
+    fontSize: 24,
+    color: "#fff",
   },
   headerText: {
     fontSize: 20,
     fontWeight: "bold",
+    color: "#fff",
+    textAlign: "center",
+    flex: 1,
   },
   topThreeContainer: {
     flexDirection: "row",
@@ -179,7 +231,7 @@ const styles = StyleSheet.create({
     marginBottom: -10,
     alignItems: "center",
   },
-  tirthUser: {
+  thirdUser: {
     marginBottom: -30,
     alignItems: "center",
   },

@@ -96,7 +96,7 @@ const CreateRunningRoom = () => {
       return "시간 오류";
     }
   };
-
+  console.log("timeData.startTime", timeData.startTime);
   // 시간 검증
   const validateTimes = (start, end) => {
     const currentTime = new Date();
