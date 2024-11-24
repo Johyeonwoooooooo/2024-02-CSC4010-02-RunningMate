@@ -141,7 +141,7 @@ const RunningScreen = () => {
         //console.log("Running data:", runningData);
         try {
           const response = await fetch(
-            "http://43.200.193.236:8080/running/update",
+            "http://localhost:8080/running/update",
             {
               method: "POST",
               headers: {

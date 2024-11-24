@@ -194,7 +194,7 @@ const CreateRunningRoom = () => {
       console.log("Request Data:", requestData);
 
       const response = await fetch(
-        "http://43.200.193.236:8080/running/create",
+        "http://localhost:8080/running/create",
         {
           method: "POST",
           headers: {

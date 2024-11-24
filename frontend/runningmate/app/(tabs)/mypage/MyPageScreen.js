@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import WeeklyStatsChart from "./WeeklyStatsChart";
 
@@ -59,30 +59,34 @@ export default function MyPageScreen() {
     const date = new Date(dateString);
     return date.toLocaleDateString('ko-KR');
   };
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await fetch(`${API_URL}/user/profile`, {
-          method: "GET",
-          //credentials: "include", // Include cookies for session
-        });
-        console.log("response:", response);
 
-        if (response.status === 200) {
-          const userData = await response.json();
-          setUser(userData);
-        } else {
-          const errorMessage = await response.text();
-          console.error("Error fetching user profile:", errorMessage);
-        }
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`${API_URL}/user/profile`, {
+        method: "GET",
+        //credentials: "include", // Include cookies for session
+      });
+      console.log("response:", response);
+
+      if (response.status === 200) {
+        const userData = await response.json();
+        setUser(userData);
+      } else {
+        const errorMessage = await response.text();
+        console.error("Error fetching user profile:", errorMessage);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
-    fetchUserProfile();
-  }, [API_URL]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchUserProfile();
+    }, [])
+  );
   /*
   useEffect(() => {
     const fetchData = async () => {

@@ -21,7 +21,7 @@ import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AlertModal from "../../components/modal/AlertModal";
 
-const API_URL = "http://43.200.193.236:8080";
+const API_URL = "http://localhost:8080";
 
 // CommentsModal 컴포넌트
 const CommentsModal = ({ visible, onClose, postId }) => {

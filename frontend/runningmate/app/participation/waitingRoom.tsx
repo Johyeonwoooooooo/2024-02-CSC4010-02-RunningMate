@@ -46,7 +46,7 @@ const RunningWaitingRoom = () => {
       console.log("Fetching participants for roomId:", numericRoomId);
 
       const response = await fetch(
-        `http://43.200.193.236:8080/running/${numericRoomId}/participants`
+        `http://localhost:8080/running/${numericRoomId}/participants`
       );
       console.log("API Response status:", response.status);
 
@@ -87,7 +87,7 @@ const RunningWaitingRoom = () => {
       });
 
       const response = await fetch(
-        "http://43.200.193.236:8080/running/cancel",
+        "http://localhost:8080/running/cancel",
         {
           method: "DELETE",
           headers: {
