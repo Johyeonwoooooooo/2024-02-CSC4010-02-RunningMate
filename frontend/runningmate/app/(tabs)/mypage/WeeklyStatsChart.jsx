@@ -1,148 +1,156 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Dimensions } from 'react-native';
-
-console.log('aa')
-const WeeklyStatsChart = () => {
+import { LineChart, BarChart } from "react-native-chart-kit";
+import { View, Text, Dimensions, StyleSheet } from 'react-native';
+console.log('1111')
+const WeeklyStatsChart = ({ records }) => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const screenWidth = Dimensions.get("window").width - 32;
+  console.log(data, 'grach')
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/user/records');
-        if (!response.ok) {
-          throw new Error('네트워크 응답이 올바르지 않습니다');
-        }
-        const jsonData = await response.json();
-        
-        const processedData = jsonData.map(item => ({
-          ...item,
-          date: new Date(item.recordDate).toLocaleDateString('ko-KR', {
-            month: 'numeric',
-            day: 'numeric'
-          }),
-          dayName: new Date(item.recordDate).toLocaleDateString('ko-KR', {
-            weekday: 'short'
-          })
-        })).sort((a, b) => new Date(a.recordDate) - new Date(b.recordDate));
-        
-        setData(processedData);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (records && records.length > 0) {
+      const processedData = records.map(item => ({
+        ...item,
+        date: new Date(item.recordDate).toLocaleDateString('ko-KR', {
+          month: 'numeric',
+          day: 'numeric'
+        }),
+        dayName: new Date(item.recordDate).toLocaleDateString('ko-KR', {
+          weekday: 'short'
+        })
+      })).sort((a, b) => new Date(a.recordDate) - new Date(b.recordDate));
+      console.log(processedData, 'ppppp')
+      setData(processedData);
+    }
+  }, [records]);
 
-    fetchData();
-  }, []);
+  // 차트 설정
+  const chartConfig = {
+    backgroundColor: '#ffffff',
+    backgroundGradientFrom: '#ffffff',
+    backgroundGradientTo: '#ffffff',
+    decimalPlaces: 1,
+    color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    style: {
+      borderRadius: 16,
+    },
+    propsForDots: {
+      r: "6",
+      strokeWidth: "2",
+      stroke: "#3b82f6"
+    }
+  };
 
-  if (loading) {
-    return (
-      <View style={{ padding: 20 }}>
-        <Text style={{ textAlign: 'center' }}>데이터를 불러오는 중...</Text>
-      </View>
-    );
-  }
+  // 거리 데이터
+  const distanceData = {
+    labels: data.map(item => item.dayName),
+    datasets: [{
+      data: data.map(item => item.dailyDistance || 0),
+    }],
+    legend: ["거리 (km)"]
+  };
 
-  if (error) {
-    return (
-      <View style={{ padding: 20 }}>
-        <Text style={{ textAlign: 'center', color: 'red' }}>에러: {error}</Text>
-      </View>
-    );
-  }
-
-  // 총계 계산
-  const totalDistance = data.reduce((acc, cur) => acc + cur.dailyDistance, 0);
-  const totalCalories = data.reduce((acc, cur) => acc + cur.weekCalories, 0);
+  // 칼로리 데이터
+  const caloriesData = {
+    labels: data.map(item => item.dayName),
+    datasets: [{
+      data: data.map(item => item.weekCalories || 0)
+    }],
+    legend: ["칼로리 (kcal)"]
+  };
 
   return (
-    <View style={{ padding: 16, backgroundColor: '#fff' }}>
-      <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>
-        주간 달리기 통계
-      </Text>
+    <View style={styles.chartContainer}>
+      {/* 거리 그래프 */}
+      <Text style={styles.chartTitle}>일일 달린 거리 (km)</Text>
+      {data.length > 0 && (
+        <LineChart
+          data={distanceData}
+          width={screenWidth}
+          height={220}
+          chartConfig={chartConfig}
+          bezier
+          style={{
+            marginVertical: 8,
+            borderRadius: 16
+          }}
+          fromZero
+          yAxisSuffix="km"
+        />
+      )}
 
-      {/* 차트 영역을 대체할 빈 컨테이너 */}
-      <View style={{
-        height: 220,
-        backgroundColor: '#f8fafc',
-        borderRadius: 16,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: '#e2e8f0'
-      }}>
-      </View>
+      {/* 칼로리 그래프 */}
+      <Text style={styles.chartTitle}>일일 소모 칼로리 (kcal)</Text>
+      {data.length > 0 && (
+        <BarChart
+          data={caloriesData}
+          width={screenWidth}
+          height={220}
+          chartConfig={{
+            ...chartConfig,
+            color: (opacity = 1) => `rgba(245, 158, 11, ${opacity})`,
+          }}
+          style={{
+            marginVertical: 8,
+            borderRadius: 16
+          }}
+          fromZero
+          yAxisSuffix="kcal"
+        />
+      )}
 
       {/* 일별 데이터 박스 */}
-      <View style={{ 
-        flexDirection: 'row', 
-        flexWrap: 'wrap', 
-        justifyContent: 'space-between', 
-        marginBottom: 16 
-      }}>
+      <View style={styles.dayBoxContainer}>
         {data.map((day, index) => (
           <View
             key={day.recordDate}
-            style={{
-              width: '13.5%',
-              backgroundColor: index === data.length - 1 ? '#3b82f6' : '#eff6ff',
-              padding: 8,
-              borderRadius: 8,
-              marginBottom: 8
-            }}
+            style={[
+              styles.dayBox,
+              { backgroundColor: index === data.length - 1 ? '#3b82f6' : '#eff6ff' }
+            ]}
           >
-            <Text style={{
-              textAlign: 'center',
-              fontWeight: 'bold',
-              color: index === data.length - 1 ? 'white' : 'black',
-              marginBottom: 4
-            }}>
+            <Text style={[
+              styles.dayBoxText,
+              styles.dayBoxTitle,
+              { color: index === data.length - 1 ? 'white' : 'black' }
+            ]}>
               {day.dayName}
             </Text>
-            <Text style={{
-              textAlign: 'center',
-              fontSize: 12,
-              color: index === data.length - 1 ? 'white' : 'black'
-            }}>
+            <Text style={[
+              styles.dayBoxText,
+              styles.dayBoxDate,
+              { color: index === data.length - 1 ? 'white' : 'black' }
+            ]}>
               {day.date}
             </Text>
-            <Text style={{
-              textAlign: 'center',
-              fontWeight: 'bold',
-              marginTop: 8,
-              color: index === data.length - 1 ? 'white' : 'black'
-            }}>
-              {day.dailyDistance}km
+            <Text style={[
+              styles.dayBoxText,
+              styles.dayBoxDistance,
+              { color: index === data.length - 1 ? 'white' : 'black' }
+            ]}>
+              {day.dailyDistance || 0}km
             </Text>
-            <Text style={{
-              textAlign: 'center',
-              fontSize: 12,
-              color: index === data.length - 1 ? 'white' : 'black'
-            }}>
-              {day.weekCalories}kcal
+            <Text style={[
+              styles.dayBoxText,
+              styles.dayBoxCalories,
+              { color: index === data.length - 1 ? 'white' : 'black' }
+            ]}>
+              {day.weekCalories || 0}kcal
             </Text>
           </View>
         ))}
       </View>
 
       {/* 총계 정보 */}
-      <View style={{
-        padding: 16,
-        backgroundColor: '#eff6ff',
-        borderRadius: 8,
-        flexDirection: 'row',
-        justifyContent: 'space-around'
-      }}>
-        <View>
-          <Text style={{ color: '#1e3a8a', fontSize: 14 }}>총 거리</Text>
-          <Text style={{ color: '#1e3a8a', fontSize: 18, fontWeight: 'bold' }}>
+      <View style={styles.totalInfoContainer}>
+        <View style={styles.totalInfoItem}>
+          <Text style={styles.totalInfoLabel}>총 거리</Text>
+          <Text style={styles.totalInfoValue}>
             {totalDistance.toFixed(2)} km
           </Text>
         </View>
-        <View>
-          <Text style={{ color: '#1e3a8a', fontSize: 14 }}>총 칼로리</Text>
-          <Text style={{ color: '#1e3a8a', fontSize: 18, fontWeight: 'bold' }}>
+        <View style={styles.totalInfoItem}>
+          <Text style={styles.totalInfoLabel}>총 칼로리</Text>
+          <Text style={styles.totalInfoValue}>
             {totalCalories.toFixed(2)} kcal
           </Text>
         </View>
@@ -150,5 +158,67 @@ const WeeklyStatsChart = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  chartContainer: {
+    padding: 16,
+    backgroundColor: '#fff',
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 16,
+    marginBottom: 8,
+    color: '#1a1a1a',
+  },
+  dayBoxContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 16
+  },
+  dayBox: {
+    width: '13.5%',
+    padding: 8,
+    borderRadius: 8,
+    marginBottom: 8
+  },
+  dayBoxText: {
+    textAlign: 'center',
+  },
+  dayBoxTitle: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  dayBoxDate: {
+    fontSize: 12,
+  },
+  dayBoxDistance: {
+    fontWeight: 'bold',
+    marginTop: 8,
+  },
+  dayBoxCalories: {
+    fontSize: 12,
+  },
+  totalInfoContainer: {
+    padding: 16,
+    backgroundColor: '#eff6ff',
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-around'
+  },
+  totalInfoItem: {
+    alignItems: 'center',
+  },
+  totalInfoLabel: {
+    color: '#1e3a8a',
+    fontSize: 14,
+  },
+  totalInfoValue: {
+    color: '#1e3a8a',
+    fontSize: 18,
+    fontWeight: 'bold',
+  }
+});
 
 export default WeeklyStatsChart;
