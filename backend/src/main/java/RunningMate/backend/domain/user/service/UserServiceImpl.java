@@ -73,8 +73,9 @@ public class UserServiceImpl implements UserService{
         if (optionalUser.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
 
-        if (userRepository.findUserByUserNickname(request.getUserNickname()).isPresent())
-            throw new IllegalArgumentException("중복된 닉네임입니다.");
+        if(!optionalUser.get().getUserNickname().equals(request.getUserNickname()))
+            if (userRepository.findUserByUserNickname(request.getUserNickname()).isPresent())
+                throw new IllegalArgumentException("중복된 닉네임입니다.");
 
         String userNickname = request.getUserNickname();
         Long userHeight = request.getUserHeight();
@@ -129,14 +130,14 @@ public class UserServiceImpl implements UserService{
 
         List<UserDTO.MyRecordResponse> responses = new ArrayList<>();
         long totalDistance = 0;
-        long totalCalories = 0;
+        double totalCalories = 0;
 
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             List<Record> dailyRecords = groupedRecords.getOrDefault(date, new ArrayList<>());
 
             // 하루 동안의 거리와 칼로리 계산
             long dailyDistance = dailyRecords.stream().mapToLong(Record::getDistance).sum();
-            long dailyCalories = dailyRecords.stream().mapToLong(Record::getCalories).sum();
+            Double dailyCalories = dailyRecords.stream().mapToDouble(Record::getCalories).sum();
 
             // 누적 거리 및 칼로리
             totalDistance += dailyDistance;

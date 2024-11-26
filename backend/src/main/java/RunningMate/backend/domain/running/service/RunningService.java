@@ -1,5 +1,6 @@
 package RunningMate.backend.domain.running.service;
 
+import RunningMate.backend.domain.running.entity.LeaderBoard;
 import RunningMate.backend.domain.user.entity.User;
 import RunningMate.backend.domain.running.dto.RunningDTO;
 import RunningMate.backend.domain.running.entity.GroupTag;
@@ -19,7 +20,7 @@ public interface RunningService {
     void deactivateRunningGroup();
     List<RunningDTO.MainPageGroupResponse> mainPageGroups();
     void autoCreateQuickRunningGroup();
-//    void autoDeleteRunningGroup();
     RunningDTO.WhileRunningResponse whileRunning(RunningDTO.WhileRunningRequest request, Optional<User> optionalUser);
+    String generateTTSMessage(Long recordId, Optional<User> optionalUser);
     List<RunningDTO.LeaderboardResponse> leaderboard(Long recordId, Optional<User> optionalUser);
 }

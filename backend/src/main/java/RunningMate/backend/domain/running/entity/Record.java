@@ -63,6 +63,6 @@ public class Record {
             met = 6.0;
         }
 
-        return met * this.user.getUserWeight() * (seconds / 3600.0);
+        return Math.round(met * this.user.getUserWeight() * (seconds / 3600.0) * 100) / 100.0;
     }
 }

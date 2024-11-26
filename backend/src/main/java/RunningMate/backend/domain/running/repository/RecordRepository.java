@@ -13,4 +13,5 @@ public interface RecordRepository extends JpaRepository<Record, Long> {
     void deleteRecordByRecordId(Long recordId);
     Record findByUserAndLeaderBoardGroup(Optional<User> user, RunningGroup group);
     List<Record> findAllByUser(Optional<User> user);
+    List<Record> findRecordByUserOrderByDistanceDesc(User user);
 }

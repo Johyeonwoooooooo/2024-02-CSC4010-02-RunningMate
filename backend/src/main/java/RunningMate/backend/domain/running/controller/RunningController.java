@@ -157,13 +157,28 @@ public class RunningController {
         }
     }
 
+    @Operation(summary = "tts 멘트 생성", description = "recordId를 입력받아 리더보드를 제공한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "리더보드 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "리더보드 조회 실패 ")
+    })
+    @GetMapping("/tts")
+    public ResponseEntity<?> tts(@RequestParam("recordId") Long recordId, HttpSession session) {
+        Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+        try {
+            return ResponseEntity.ok().body(runningService.generateTTSMessage(recordId, optionalUser));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @Operation(summary = "리더보드", description = "recordId를 입력받아 리더보드를 제공한다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "리더보드 조회 성공"),
             @ApiResponse(responseCode = "400", description = "리더보드 조회 실패 ")
     })
     @GetMapping("/leaderboard")
-    public ResponseEntity<?> leaderboard(@RequestParam Long recordId, HttpSession session) {
+    public ResponseEntity<?> leaderboard(@RequestParam("recordId") Long recordId, HttpSession session) {
         Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
         try {
             return ResponseEntity.ok().body(runningService.leaderboard(recordId, optionalUser));

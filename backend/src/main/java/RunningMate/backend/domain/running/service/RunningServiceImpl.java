@@ -71,8 +71,8 @@ public class RunningServiceImpl implements RunningService {
         Long ranking = Long.valueOf(leaderBoardRepository.findAllByGroup(group).size()) + 1;
 
         Record record = recordRepository.save(Record.builder().user(optionalUser.get())
-                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
-        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(ranking).build();
+                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0.0).distance(0L).build());
+        LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).currentRanking(ranking).preRanking(ranking).build();
         leaderBoardRepository.save(leaderBoard);
 
         return new RunningDTO.ParticipateGroupResponse(record);
@@ -169,10 +169,10 @@ public class RunningServiceImpl implements RunningService {
 
         if (record == null){
             record = recordRepository.save(Record.builder().user(optionalUser.get())
-                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0L).distance(0L).build());
+                .runningStartTime(LocalDate.now()).runningTime(Duration.ZERO).calories(0.0).distance(0L).build());
 
             Long ranking = Long.valueOf(leaderBoardRepository.findAllByGroup(group).size() + 1);
-            LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).ranking(ranking).build();
+            LeaderBoard leaderBoard = LeaderBoard.builder().group(group).record(record).currentRanking(ranking).preRanking(ranking).build();
             leaderBoardRepository.save(leaderBoard);
 
             group.participateGroup();
@@ -191,13 +191,6 @@ public class RunningServiceImpl implements RunningService {
         }
     }
 
-//    @Override
-//    @Scheduled(fixedRate = 1000)
-//    @Transactional
-//    public void autoDeleteRunningGroup() {
-//        groupRepository.deleteAllByEndTimeBefore(LocalDateTime.now().plusDays(1));
-//    }
-
     @Override
     @Transactional
     public RunningDTO.WhileRunningResponse whileRunning(RunningDTO.WhileRunningRequest request, Optional<User> optionalUser) {
@@ -211,7 +204,6 @@ public class RunningServiceImpl implements RunningService {
         if(userLeaderboard==null)
             throw new IllegalArgumentException("해당하는 리더보드를 찾을 수 없습니다.");
 
-        Long pre_ranking = userLeaderboard.getRanking();
         RunningGroup group = userLeaderboard.getGroup();
 
         record.updateRecord(request.getDistance(), request.getRunningTime());
@@ -219,21 +211,31 @@ public class RunningServiceImpl implements RunningService {
 
         List<LeaderBoard> newLeaderboard = sortByDistance(leaderBoardRepository.findAllByGroup(group));
 
-        Record newRecord = recordRepository.findRecordByRecordId(request.getRecordId());
-        Long new_rank = leaderBoardRepository.findLeaderBoardByRecord(newRecord).getRanking();
-        String rankChange = compareRanking(pre_ranking, new_rank);
-        String TTSMessage = generateTTSMessage(rankChange, new_rank, request.getDistance(), newLeaderboard, optionalUser);
-        return whileRunningResponse(newLeaderboard, new_rank, rankChange, TTSMessage);
+        String rankChange = compareRanking(userLeaderboard);
+        Long new_rank = leaderBoardRepository.findLeaderBoardByRecord(record).getCurrentRanking();
+        return whileRunningResponse(newLeaderboard, new_rank, rankChange);
     }
 
-    private String generateTTSMessage(String rankChange, Long new_rank, Long currentDistance,
-                                         List<LeaderBoard> newLeaderboard, Optional<User> optionalUser){
-        List<Record> recordList = optionalUser.get().getRecord();
-        Long userBestRecord = -1L;
-        for (Record record : recordList) {
-            if(record.getDistance() > userBestRecord)
-                userBestRecord = record.getDistance();
+
+    public String generateTTSMessage(Long recordId, Optional<User> optionalUser){
+        Record record = recordRepository.findRecordByRecordId(recordId);
+        LeaderBoard userLeaderBoard = leaderBoardRepository.findLeaderBoardByRecord(record);
+        List<LeaderBoard> newLeaderboard = leaderBoardRepository.findAllByGroup(userLeaderBoard.getGroup());
+        List<Record> records = new ArrayList<>();
+        for (LeaderBoard leaderBoard : newLeaderboard) {
+            records.add(leaderBoard.getRecord());
         }
+        records.sort((r1, r2) -> Double.compare(r2.getDistance(), r1.getDistance()));
+
+        String rankChange = compareRanking(userLeaderBoard);
+        Long currentDistance = record.getDistance();
+        Long new_rank = userLeaderBoard.getCurrentRanking();
+
+        Long userBestRecord = 0L;
+        Record bestRecord = recordRepository.findRecordByUserOrderByDistanceDesc(optionalUser.get()).get(0);
+
+        if(bestRecord != null)
+            userBestRecord = bestRecord.getDistance();
 
         if (currentDistance >= userBestRecord) {
             return "현재 러닝 최고 기록 갱신 중 입니다. 현재 " + currentDistance + "미터 입니다.";
@@ -241,15 +243,30 @@ public class RunningServiceImpl implements RunningService {
 
         if(rankChange.equals("up")) {
             int userIndex = new_rank.intValue()-1;
-            Long userDistance = newLeaderboard.get(userIndex).getRecord().getDistance();
+            Long userDistance = records.get(userIndex).getDistance();
             if(userIndex == 0) {
-                return "현재" + userDistance + "미터로 1등 입니다! 선두를 유지하세요.";
+                return "현재 " + userDistance + "미터로 1등이 되었습니다! 선두를 유지하세요.";
             }
-            Long leadingDistance = newLeaderboard.get(userIndex - 1).getRecord().getDistance();
+            Long leadingDistance = records.get(userIndex - 1).getDistance();
             long distanceGap = leadingDistance - userDistance;
             return new_rank + "등이 되었습니다. " + (new_rank - 1) + "등과 " + distanceGap + "미터 차이 입니다.";
         }
-        return "";
+        else if(rankChange.equals("same")){
+            int userIndex = new_rank.intValue()-1;
+            Long userDistance = records.get(userIndex).getDistance();
+            if(userIndex == 0){
+                if(newLeaderboard.size() > 1)
+                    return "현재 1등으로 선두입니다. 2등과는 " + (userDistance - records.get(userIndex + 1).getDistance()) + "미터 차이입니다.";
+                else
+                    return "현재 1등으로 선두입니다.";
+            }
+            else{
+                return "현재 " + new_rank + "등 입니다. " + (new_rank-1) + "등과는 " + (records.get(userIndex - 1).getDistance() - userDistance) + "미터 차이입니다.";
+            }
+        }
+        else{
+            return "현재 " + new_rank + "등이 되었습니다.";
+        }
     }
     private List<LeaderBoard> sortByDistance(List<LeaderBoard> records){
         if (!records.isEmpty()) {
@@ -260,16 +277,16 @@ public class RunningServiceImpl implements RunningService {
         }
         return leaderBoardRepository.saveAll(records);
     }
-    private String compareRanking(Long pre_rank, Long new_rank){
-        if(pre_rank > new_rank)
+    private String compareRanking(LeaderBoard leaderBoard){
+        if(leaderBoard.getPreRanking() > leaderBoard.getCurrentRanking())
             return "up";
-        else if(pre_rank < new_rank)
+        else if(leaderBoard.getPreRanking() < leaderBoard.getCurrentRanking())
             return "down";
         else
             return "same";
     }
 
-    private RunningDTO.WhileRunningResponse whileRunningResponse(List<LeaderBoard> newLeaderboard, Long new_rank, String rankChange, String ttsMessage){
+    private RunningDTO.WhileRunningResponse whileRunningResponse(List<LeaderBoard> newLeaderboard, Long new_rank, String rankChange){
         List<RunningDTO.WhileRunningLeaderboardResponse> response = new ArrayList<>();
         int tail = newLeaderboard.size();
         if(newLeaderboard.size() < 3) { 
@@ -301,7 +318,7 @@ public class RunningServiceImpl implements RunningService {
                 response.add(new RunningDTO.WhileRunningLeaderboardResponse(newLeaderboard.get(index+1), new_rank+1, "same"));
             }
         }
-        return RunningDTO.WhileRunningResponse.builder().leaderboardResponseList(response).ttsMessage(ttsMessage).build();
+        return RunningDTO.WhileRunningResponse.builder().leaderboardResponseList(response).build();
     }
     @Override
     public List<RunningDTO.LeaderboardResponse> leaderboard(Long recordId, Optional<User> optionalUser) {
@@ -316,7 +333,7 @@ public class RunningServiceImpl implements RunningService {
         if(group == null)
             throw new IllegalArgumentException("해당 리더보드를 찾을 수 없습니다.");
 
-        List<LeaderBoard> allRecord = leaderBoardRepository.findAllByGroupOrderByRankingAsc(group);
+        List<LeaderBoard> allRecord = leaderBoardRepository.findAllByGroupOrderByCurrentRankingAsc(group);
         if(allRecord.isEmpty())
             throw new IllegalArgumentException("해당 러닝방에 참가한 기록이 없습니다.");
 
