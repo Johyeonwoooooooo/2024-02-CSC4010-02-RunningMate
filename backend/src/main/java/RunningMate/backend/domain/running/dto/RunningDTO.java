@@ -113,7 +113,7 @@ public class RunningDTO {
     public static class WhileRunningRequest {
         private Long recordId;
         private Duration runningTime;
-        private Long calories;
+        private Double calories;
         private Long distance;
 
     }

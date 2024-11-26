@@ -214,7 +214,7 @@ public class RunningServiceImpl implements RunningService {
         Long pre_ranking = userLeaderboard.getRanking();
         RunningGroup group = userLeaderboard.getGroup();
 
-        record.updateRecord(request.getDistance(), request.getRunningTime(), request.getCalories());
+        record.updateRecord(request.getDistance(), request.getRunningTime());
         recordRepository.save(record);
 
         List<LeaderBoard> newLeaderboard = sortByDistance(leaderBoardRepository.findAllByGroup(group));
