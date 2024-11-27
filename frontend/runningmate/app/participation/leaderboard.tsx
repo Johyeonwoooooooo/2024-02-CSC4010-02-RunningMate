@@ -72,8 +72,8 @@ const LeaderboardScreen = () => {
     React.useCallback(() => {
       navigation.setOptions({
         headerShown: false,
-        headerStyle: { backgroundColor: "#fff" },
-        headerTintColor: "#fff",
+        headerStyle: { backgroundColor: "#000" },
+        headerTintColor: "#000",
         headerTitleStyle: { fontWeight: "bold" },
         headerTitleAlign: "center", // 타이틀 중앙 정렬
         title: "Leaderboard",
@@ -164,7 +164,9 @@ const LeaderboardScreen = () => {
 
       {/* Podium Image */}
       <ImageBackground
-        source={require("../../assets/images/podium.png")}
+        source={{
+          uri: "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/leaderboard.png",
+        }}
         style={styles.podiumBackground}
         imageStyle={styles.podiumImage}
       >
@@ -202,17 +204,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#8dccff",
+    backgroundColor: "#E9F4FF",
     paddingVertical: 10,
+    marginBottom: 20,
   },
   backButton: {
     fontSize: 24,
-    color: "#fff",
+    color: "#000",
   },
   headerText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#fff",
+    color: "#000",
     textAlign: "center",
     flex: 1,
   },

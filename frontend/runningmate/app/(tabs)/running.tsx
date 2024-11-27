@@ -301,7 +301,7 @@ const RunningMateSearch = () => {
   const handleQuickJoin = async () => {
     try {
       const response = await fetch(
-        "http://43.200.193.236:8080/running/quickrunning/participate",
+        "http://172.28.160.1:8080/running/quickrunning/participate",
         {
           method: "POST",
           headers: {
