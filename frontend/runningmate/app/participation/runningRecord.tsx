@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import * as Location from "expo-location";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
+import * as Speech from "expo-speech";
 
 const RunningScreen = () => {
   const [distance, setDistance] = useState(0);
@@ -14,7 +15,7 @@ const RunningScreen = () => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const router = useRouter();
   const [leaderboard, setLeaderboard] = useState<LeaderboardRecord[]>([]);
-
+  const ttsTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // 헤더 가리기
   const navigation = useNavigation();
   useEffect(() => {
@@ -141,7 +142,7 @@ const RunningScreen = () => {
         //console.log("Running data:", runningData);
         try {
           const response = await fetch(
-            "http://localhost:8080/running/update",
+            "http://172.28.160.1:8080/running/update",
             {
               method: "POST",
               headers: {
@@ -236,6 +237,32 @@ const RunningScreen = () => {
       params: { recordId: recordId },
     });
   };
+
+  // TTS 관련
+  useEffect(() => {
+    if (isRunning) {
+      ttsTimerRef.current = setInterval(async () => {
+        try {
+          const response = await fetch(
+            `http://172.28.160.1:8080/running/tts?recordId=${recordId}`
+          );
+          const ttsMessage = await response.text(); // 응답 본문을 문자열로 받음
+          if (ttsMessage) {
+            Speech.speak(ttsMessage, { language: "ko" });
+            console.log("TTS message:", ttsMessage);
+          }
+        } catch (error) {
+          console.error("Error fetching TTS message:", error);
+        }
+      }, 30000); // 30초 간격
+
+      return () => {
+        if (ttsTimerRef.current) {
+          clearInterval(ttsTimerRef.current);
+        }
+      };
+    }
+  }, [isRunning, recordId]);
 
   return (
     <View style={styles.container}>

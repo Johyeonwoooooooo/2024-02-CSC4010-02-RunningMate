@@ -1,35 +1,46 @@
 import React, { useState, useEffect } from "react";
-import { Image, Text, TextInput, StyleSheet, Alert, Platform } from "react-native";
+import {
+  Image,
+  Text,
+  TextInput,
+  StyleSheet,
+  Alert,
+  Platform,
+} from "react-native";
 import { useAuth } from "@/context/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import CustomButton from "@/components/CustomButton";
-import axios from 'axios';
+import axios from "axios";
 
 export default function EditProfileScreen() {
   const { user, login } = useAuth();
-  const [nickname, setNickname] = useState('');
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
+  const [nickname, setNickname] = useState("");
+  const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
 
   // 프로필 데이터 불러오기 함수
   const fetchProfileData = async () => {
     try {
-      const BASE_URL = 'http://localhost:8080';
-        
+      const BASE_URL = "http://172.28.160.1:8080";
+
       const response = await axios.get(`${BASE_URL}/user/profile`);
       if (response.data) {
-        setNickname(response.data.userNickname || '');
-        setHeight(response.data.userHeight ? response.data.userHeight.toString() : '');
-        setWeight(response.data.userWeight ? response.data.userWeight.toString() : '');
+        setNickname(response.data.userNickname || "");
+        setHeight(
+          response.data.userHeight ? response.data.userHeight.toString() : ""
+        );
+        setWeight(
+          response.data.userWeight ? response.data.userWeight.toString() : ""
+        );
         // 전역 상태 업데이트
         login(response.data);
-        console.log(response.data, 'ddd')
+        console.log(response.data, "ddd");
       }
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
+      console.error("Failed to fetch profile:", error);
     }
   };
 
@@ -43,63 +54,65 @@ export default function EditProfileScreen() {
   // 초기 데이터 설정
   useEffect(() => {
     if (user) {
-      setNickname(user.userNickname || '');
-      setHeight(user.userHeight ? user.userHeight.toString() : '');
-      setWeight(user.userWeight ? user.userWeight.toString() : '');
+      setNickname(user.userNickname || "");
+      setHeight(user.userHeight ? user.userHeight.toString() : "");
+      setWeight(user.userWeight ? user.userWeight.toString() : "");
     }
   }, [user]);
 
   const handleSave = async () => {
     if (!nickname || !height || !weight) {
-      Alert.alert('입력 오류', '모든 필드를 입력해주세요.');
+      Alert.alert("입력 오류", "모든 필드를 입력해주세요.");
       return;
     }
 
     try {
       setIsLoading(true);
-      
+
       const updateData = {
         userNickname: nickname,
         userWeight: parseInt(weight, 10),
-        userHeight: parseInt(height, 10)
+        userHeight: parseInt(height, 10),
       };
 
-      const BASE_URL = 'http://localhost:8080';
+      const BASE_URL = "http://172.28.160.1:8080";
 
       const response = await axios.post(
         `${BASE_URL}/user/profile/update`,
         updateData,
         {
           headers: {
-            'Content-Type': 'application/json',
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      console.log('Response:', response.data);
+      console.log("Response:", response.data);
 
       if (response.status === 200 || response.status === 201) {
         const updatedUser = {
           ...user,
-          ...updateData
+          ...updateData,
         };
         login(updatedUser);
         fetchProfileData(); // 데이터 새로고침
-        Alert.alert('성공', '프로필이 성공적으로 업데이트되었습니다.', [
-          { 
-            text: '확인', 
+        Alert.alert("성공", "프로필이 성공적으로 업데이트되었습니다.", [
+          {
+            text: "확인",
             onPress: () => {
               navigation.goBack();
-              
-            }
-          }
+            },
+          },
         ]);
       }
     } catch (error) {
-      console.error('Profile update error:', error.response?.data || error.message);
+      console.error(
+        "Profile update error:",
+        error.response?.data || error.message
+      );
       Alert.alert(
-        '오류',
-        '프로필 업데이트 중 오류가 발생했습니다. 다시 시도해주세요.'
+        "오류",
+        "프로필 업데이트 중 오류가 발생했습니다. 다시 시도해주세요."
       );
     } finally {
       setIsLoading(false);

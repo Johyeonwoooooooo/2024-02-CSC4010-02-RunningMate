@@ -13,7 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 
-const API_URL = "http://43.200.193.236:8080/running/leaderboard";
+const API_URL = "http://172.28.160.1:8080/running/leaderboard";
 
 interface LeaderboardRecord {
   ranking: number;
@@ -29,50 +29,50 @@ const LeaderboardScreen = () => {
   const params = useLocalSearchParams();
   const { recordId } = params;
   console.log(recordId, "recordId");
-  // Dummy data
-  const leaderboardData = [
-    { username: "Davis Curtis", rank: 1, isMyRecord: false, distance: "15km" },
-    { username: "Alena Donin", rank: 2, isMyRecord: false, distance: "13km" },
-    { username: "Craig Gouse", rank: 3, isMyRecord: false, distance: "12km" },
-    {
-      username: "Madelyn Dias",
-      rank: 4,
-      isMyRecord: false,
-      distance: "11.2km",
-    },
-    { username: "you", rank: 5, isMyRecord: true, distance: "10.9km" },
-    {
-      username: "Madelyn Dias",
-      rank: 6,
-      isMyRecord: false,
-      distance: "10.6km",
-    },
-    {
-      username: "Madelyn Dias",
-      rank: 7,
-      isMyRecord: false,
-      distance: "10.3km",
-    },
-    {
-      username: "Madelyn Dias",
-      rank: 8,
-      isMyRecord: false,
-      distance: "10.1km",
-    },
-    { username: "Madelyn Dias", rank: 9, isMyRecord: false, distance: "9.8km" },
-    {
-      username: "Madelyn Dias",
-      rank: 10,
-      isMyRecord: false,
-      distance: "9.5km",
-    },
-  ];
+  // // Dummy data
+  // const leaderboardData = [
+  //   { username: "Davis Curtis", rank: 1, isMyRecord: false, distance: "15km" },
+  //   { username: "Alena Donin", rank: 2, isMyRecord: false, distance: "13km" },
+  //   { username: "Craig Gouse", rank: 3, isMyRecord: false, distance: "12km" },
+  //   {
+  //     username: "Madelyn Dias",
+  //     rank: 4,
+  //     isMyRecord: false,
+  //     distance: "11.2km",
+  //   },
+  //   { username: "you", rank: 5, isMyRecord: true, distance: "10.9km" },
+  //   {
+  //     username: "Madelyn Dias",
+  //     rank: 6,
+  //     isMyRecord: false,
+  //     distance: "10.6km",
+  //   },
+  //   {
+  //     username: "Madelyn Dias",
+  //     rank: 7,
+  //     isMyRecord: false,
+  //     distance: "10.3km",
+  //   },
+  //   {
+  //     username: "Madelyn Dias",
+  //     rank: 8,
+  //     isMyRecord: false,
+  //     distance: "10.1km",
+  //   },
+  //   { username: "Madelyn Dias", rank: 9, isMyRecord: false, distance: "9.8km" },
+  //   {
+  //     username: "Madelyn Dias",
+  //     rank: 10,
+  //     isMyRecord: false,
+  //     distance: "9.5km",
+  //   },
+  // ];
 
   useFocusEffect(
     React.useCallback(() => {
       navigation.setOptions({
         headerShown: false,
-        headerStyle: { backgroundColor: "#8dccff" },
+        headerStyle: { backgroundColor: "#fff" },
         headerTintColor: "#fff",
         headerTitleStyle: { fontWeight: "bold" },
         headerTitleAlign: "center", // 타이틀 중앙 정렬

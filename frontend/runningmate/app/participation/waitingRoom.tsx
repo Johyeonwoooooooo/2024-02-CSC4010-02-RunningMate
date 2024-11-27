@@ -46,7 +46,7 @@ const RunningWaitingRoom = () => {
       console.log("Fetching participants for roomId:", numericRoomId);
 
       const response = await fetch(
-        `http://localhost:8080/running/${numericRoomId}/participants`
+        `http://172.28.160.1:8080/running/${numericRoomId}/participants`
       );
       console.log("API Response status:", response.status);
 
@@ -86,20 +86,17 @@ const RunningWaitingRoom = () => {
         recordId: numericRecordId,
       });
 
-      const response = await fetch(
-        "http://localhost:8080/running/cancel",
-        {
-          method: "DELETE",
-          headers: {
-            Accept: "*/*",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            groupId: numericRoomId,
-            recordId: numericRecordId,
-          }),
-        }
-      );
+      const response = await fetch("http://172.28.160.1:8080/running/cancel", {
+        method: "DELETE",
+        headers: {
+          Accept: "*/*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          groupId: numericRoomId,
+          recordId: numericRecordId,
+        }),
+      });
 
       // 응답 상태 및 데이터 로깅
       const responseText = await response.text();

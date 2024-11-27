@@ -17,7 +17,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 
-const API_URL = "http://localhost:8080";
+const API_URL = "http://172.28.160.1:8080";
 
 export default function FeedCreateScreen() {
   const [title, setTitle] = useState("");

@@ -23,30 +23,38 @@ const WeeklyStatsChart = ({ records }) => {
 
   useEffect(() => {
     if (records && records.length > 0) {
-      const processedData = records.map(item => ({
-        ...item,
-        date: new Date(item.recordDate).toLocaleDateString('ko-KR', {
-          month: 'numeric',
-          day: 'numeric'
-        }),
-        dayName: new Date(item.recordDate).toLocaleDateString('ko-KR', {
-          weekday: 'short'
-        })
-      })).sort((a, b) => new Date(a.recordDate) - new Date(b.recordDate));
-      
+      const processedData = records
+        .map((item) => ({
+          ...item,
+          date: new Date(item.recordDate).toLocaleDateString("ko-KR", {
+            month: "numeric",
+            day: "numeric",
+          }),
+          dayName: new Date(item.recordDate).toLocaleDateString("ko-KR", {
+            weekday: "short",
+          }),
+        }))
+        .sort((a, b) => new Date(a.recordDate) - new Date(b.recordDate));
+
       setData(processedData);
     }
   }, [records]);
 
-  const totalDistance = data.reduce((acc, cur) => acc + (cur.dailyDistance || 0), 0);
-  const totalCalories = data.reduce((acc, cur) => acc + (cur.weekCalories || 0), 0);
+  const totalDistance = data.reduce(
+    (acc, cur) => acc + (cur.dailyDistance || 0),
+    0
+  );
+  const totalCalories = data.reduce(
+    (acc, cur) => acc + (cur.weekCalories || 0),
+    0
+  );
 
   // 차트 설정
   const chartConfig = {
-    backgroundColor: '#ffffff',
-    backgroundGradientFrom: '#ffffff',
-    backgroundGradientTo: '#ffffff',
-    decimalPlaces: 0, 
+    backgroundColor: "#ffffff",
+    backgroundGradientFrom: "#ffffff",
+    backgroundGradientTo: "#ffffff",
+    decimalPlaces: 0,
     color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
     labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
     style: {
@@ -55,34 +63,37 @@ const WeeklyStatsChart = ({ records }) => {
     propsForDots: {
       r: "6",
       strokeWidth: "2",
-      stroke: "#3b82f6"
+      stroke: "#3b82f6",
     },
     // Y축 설정 추가
     formatYLabel: (value) => Math.round(value).toString(),
   };
-  
 
   // 거리 데이터
   const distanceData = {
-    labels: data.map(item => item.dayName),
-    datasets: [{
-      data: data.map(item => item.dailyDistance || 0),
-    }],
-    legend: ["거리 (km)"]
+    labels: data.map((item) => item.dayName),
+    datasets: [
+      {
+        data: data.map((item) => item.dailyDistance || 0),
+      },
+    ],
+    legend: ["거리 (km)"],
   };
 
   // 칼로리 데이터 최대값 계산
-  const maxCalories = Math.max(...data.map(item => item.weekCalories || 0));
+  const maxCalories = Math.max(...data.map((item) => item.weekCalories || 0));
   // Y축 최대값을 적절히 조정 (여유 공간 20% 추가)
-  const yAxisMaximum = Math.ceil(maxCalories * 1.2 / 100) * 100;
+  const yAxisMaximum = Math.ceil((maxCalories * 1.2) / 100) * 100;
 
   // 칼로리 데이터 준비 부분 수정
   const caloriesData = {
-    labels: data.map(item => item.dayName),
-    datasets: [{
-      data: data.map(item => item.weekCalories || 0),
-    }],
-    legend: ["칼로리 (kcal)"]
+    labels: data.map((item) => item.dayName),
+    datasets: [
+      {
+        data: data.map((item) => item.weekCalories || 0),
+      },
+    ],
+    legend: ["칼로리 (kcal)"],
   };
 
   return (
@@ -98,7 +109,7 @@ const WeeklyStatsChart = ({ records }) => {
           bezier
           style={{
             marginVertical: 8,
-            borderRadius: 16
+            borderRadius: 16,
           }}
           fromZero
           yAxisSuffix="km"
@@ -118,7 +129,7 @@ const WeeklyStatsChart = ({ records }) => {
           }}
           style={{
             marginVertical: 8,
-            borderRadius: 16
+            borderRadius: 16,
           }}
           fromZero
           yAxisSuffix="kcal"
@@ -136,35 +147,46 @@ const WeeklyStatsChart = ({ records }) => {
             key={day.recordDate}
             style={[
               styles.dayBox,
-              { backgroundColor: index === data.length - 1 ? '#3b82f6' : '#eff6ff' }
+              {
+                backgroundColor:
+                  index === data.length - 1 ? "#3b82f6" : "#eff6ff",
+              },
             ]}
           >
-            <Text style={[
-              styles.dayBoxText,
-              styles.dayBoxTitle,
-              { color: index === data.length - 1 ? 'white' : 'black' }
-            ]}>
+            <Text
+              style={[
+                styles.dayBoxText,
+                styles.dayBoxTitle,
+                { color: index === data.length - 1 ? "white" : "black" },
+              ]}
+            >
               {day.dayName}
             </Text>
-            <Text style={[
-              styles.dayBoxText,
-              styles.dayBoxDate,
-              { color: index === data.length - 1 ? 'white' : 'black' }
-            ]}>
+            <Text
+              style={[
+                styles.dayBoxText,
+                styles.dayBoxDate,
+                { color: index === data.length - 1 ? "white" : "black" },
+              ]}
+            >
               {day.date}
             </Text>
-            <Text style={[
-              styles.dayBoxText,
-              styles.dayBoxDistance,
-              { color: index === data.length - 1 ? 'white' : 'black' }
-            ]}>
+            <Text
+              style={[
+                styles.dayBoxText,
+                styles.dayBoxDistance,
+                { color: index === data.length - 1 ? "white" : "black" },
+              ]}
+            >
               {day.dailyDistance || 0}km
             </Text>
-            <Text style={[
-              styles.dayBoxText,
-              styles.dayBoxCalories,
-              { color: index === data.length - 1 ? 'white' : 'black' }
-            ]}>
+            <Text
+              style={[
+                styles.dayBoxText,
+                styles.dayBoxCalories,
+                { color: index === data.length - 1 ? "white" : "black" },
+              ]}
+            >
               {day.weekCalories || 0}kcal
             </Text>
           </View>
@@ -206,7 +228,7 @@ export default function MyPageScreen() {
     try {
       // 프로필 데이터 새로고침
       await fetchUserProfile();
-      
+
       // 선택된 탭에 따라 데이터 새로고침
       if (selectedTab === "runningStats") {
         await fetchRecords();
@@ -219,7 +241,6 @@ export default function MyPageScreen() {
       setRefreshing(false);
     }
   }, [selectedTab]);
-
 
   const fetchUserProfile = async () => {
     try {
@@ -248,15 +269,15 @@ export default function MyPageScreen() {
         setUserPosts(data);
       }
     } catch (error) {
-      console.error('Error fetching user posts:', error);
+      console.error("Error fetching user posts:", error);
     }
   };
 
   const fetchRecords = async () => {
     try {
-      const response = await fetch('http://localhost:8080/user/records');
+      const response = await fetch("http://172.28.160.1:8080/user/records");
       if (!response.ok) {
-        throw new Error('네트워크 응답이 올바르지 않습니다');
+        throw new Error("네트워크 응답이 올바르지 않습니다");
       }
       const data = await response.json();
       setRecords(data);
@@ -281,7 +302,7 @@ export default function MyPageScreen() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR');
+    return date.toLocaleDateString("ko-KR");
   };
 
   if (loading) {
@@ -312,7 +333,7 @@ export default function MyPageScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContainer}
         refreshControl={
           <RefreshControl
@@ -405,9 +426,11 @@ export default function MyPageScreen() {
               userPosts.map((post) => (
                 <View key={post.postId} style={styles.postContainer}>
                   <Text style={styles.postTitle}>{post.postTitle}</Text>
-                  <Text style={styles.postDate}>{formatDate(post.postDate)}</Text>
+                  <Text style={styles.postDate}>
+                    {formatDate(post.postDate)}
+                  </Text>
                   {post.postImages && post.postImages.length > 0 && (
-                    <Image 
+                    <Image
                       source={{ uri: post.postImages[0] }}
                       style={styles.postImage}
                       resizeMode="cover"
@@ -437,13 +460,13 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   messageContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   profileContainer: {
@@ -499,11 +522,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   statsContainer: {
-    width: '100%',
-    backgroundColor: '#fff',
+    width: "100%",
+    backgroundColor: "#fff",
     borderRadius: 8,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -514,47 +537,47 @@ const styles = StyleSheet.create({
   },
   statsTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 16,
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   chartContainer: {
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   chartPlaceholder: {
     height: 220,
-    backgroundColor: '#f8fafc',
+    backgroundColor: "#f8fafc",
     borderRadius: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0'
+    borderColor: "#e2e8f0",
   },
   dayBoxContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 16
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 16,
   },
   dayBox: {
-    width: '13.5%',
+    width: "13.5%",
     padding: 8,
     borderRadius: 8,
-    marginBottom: 8
+    marginBottom: 8,
   },
   dayBoxText: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   dayBoxTitle: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
   },
   dayBoxDate: {
     fontSize: 12,
   },
   dayBoxDistance: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 8,
   },
   dayBoxCalories: {
@@ -562,22 +585,22 @@ const styles = StyleSheet.create({
   },
   totalInfoContainer: {
     padding: 16,
-    backgroundColor: '#eff6ff',
+    backgroundColor: "#eff6ff",
     borderRadius: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-around'
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   totalInfoItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   totalInfoLabel: {
-    color: '#1e3a8a',
+    color: "#1e3a8a",
     fontSize: 14,
   },
   totalInfoValue: {
-    color: '#1e3a8a',
+    color: "#1e3a8a",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   contentContainer: {
     flex: 1,
@@ -586,11 +609,11 @@ const styles = StyleSheet.create({
   postContainer: {
     marginBottom: 16,
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
-    shadowColor: '#000',
+    borderColor: "#ddd",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -598,78 +621,78 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   postTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
   },
   postDate: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
   },
   postContent: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
     lineHeight: 20,
   },
   postImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: 8,
     marginBottom: 12,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
   },
   emptyText: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginTop: 32,
   },
   message: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginBottom: 20,
   },
   loginButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
   },
   loginButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   // 추가적인 통계 관련 스타일
   emptyStatsContainer: {
     height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   statsSummary: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: "#eee",
   },
   statItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   statLabel: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 4,
   },
   statValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#3b82f6',
+    fontWeight: "bold",
+    color: "#3b82f6",
   },
   // 목록 관련 스타일
   listContainer: {
@@ -677,90 +700,90 @@ const styles = StyleSheet.create({
   },
   // 데이터 로딩 관련 스타일
   loadingText: {
-    textAlign: 'center',
-    color: '#666',
+    textAlign: "center",
+    color: "#666",
     marginTop: 20,
   },
   errorText: {
-    textAlign: 'center',
-    color: 'red',
+    textAlign: "center",
+    color: "red",
     marginTop: 20,
   },
   // 탭 컨테이너 추가 스타일
   tabButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: "#e2e8f0",
   },
   // 날짜 박스 스타일 보강
   dateBoxContainer: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: "#f8fafc",
     padding: 8,
     borderRadius: 6,
     marginBottom: 4,
   },
   dateText: {
     fontSize: 12,
-    color: '#64748b',
-    textAlign: 'center',
+    color: "#64748b",
+    textAlign: "center",
   },
   // 모달 관련 스타일 (필요한 경우)
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 20,
     borderRadius: 8,
-    width: '80%',
+    width: "80%",
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 15,
   },
   modalButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     padding: 10,
     borderRadius: 5,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 10,
   },
   modalButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
   },
   // 새로고침 관련 스타일
   refreshControl: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   // 프로필 이미지 컨테이너 스타일 보강
   profileImageContainer: {
-    position: 'relative',
+    position: "relative",
   },
   editProfileButton: {
-    position: 'absolute',
+    position: "absolute",
     right: -8,
     bottom: -8,
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     borderRadius: 15,
     width: 30,
     height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   // 통계 카드 스타일 보강
   statsCard: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -770,14 +793,14 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   statsCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
   statsCardTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
+    fontWeight: "600",
+    color: "#1a1a1a",
   },
 });
