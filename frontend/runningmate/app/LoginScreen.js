@@ -86,7 +86,9 @@ const LoginScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         {/* 로고 */}
         <Image
-          source={require("../assets/icons/loginLogo.png")}
+          source={{
+            uri: "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/logo.png",
+          }}
           style={styles.logo}
         />
 
