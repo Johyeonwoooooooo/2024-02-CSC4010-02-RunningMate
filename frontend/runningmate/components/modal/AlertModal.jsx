@@ -36,8 +36,13 @@ const AlertModal = ({ visible, onClose, onConfirm, title, message }) => {
                   style={[styles.button, styles.cancelButton]}
                   onPress={onClose}
                 >
-                  ㅈ
-                  <ThemedText style={styles.cancelButtonText}>확인</ThemedText>
+                  <ThemedText style={styles.cancelButtonText}>취소</ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.confirmButton]}
+                  onPress={onConfirm}
+                >
+                  <ThemedText style={styles.confirmButtonText}>확인</ThemedText>
                 </TouchableOpacity>
               </View>
             </View>
@@ -77,12 +82,12 @@ const styles = StyleSheet.create({
     }),
   },
   iconContainer: {
-    marginBottom: 4,
+    marginBottom: 15,
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: 8,
     textAlign: "center",
   },
   message: {
