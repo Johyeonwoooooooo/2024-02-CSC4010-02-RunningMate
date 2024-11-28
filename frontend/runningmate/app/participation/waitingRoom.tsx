@@ -45,11 +45,12 @@ const RunningWaitingRoom = () => {
   const fetchParticipants = async () => {
     try {
       const numericRecordId = parseInt(recordId, 10); // roomId를 숫자로 변환
-      console.log("Fetching participants for roomId:", numericRecordId);
+      console.log("Fetching participants for recordId:", numericRecordId);
 
       const response = await fetch(
         `http://43.200.193.236:8080/running/participants?recordId=${numericRecordId}`
       );
+      console.log(response);
       console.log("API Response status:", response.status);
 
       if (!response.ok) {
@@ -170,7 +171,7 @@ const RunningWaitingRoom = () => {
 
   // 참가자 목록 주기적 업데이트
   useEffect(() => {
-    if (roomId) {
+    if (recordId) {
       // roomId로 조건 변경
       fetchParticipants();
 

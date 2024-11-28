@@ -217,6 +217,7 @@ const CreateRunningRoom = () => {
       console.log("Success data:", data);
 
       // 성공 시 대기실로 이동
+      console.log("생성된 recordID : ", data.recordId?.toString());
       router.push({
         pathname: "/participation/waitingRoom",
         params: {
