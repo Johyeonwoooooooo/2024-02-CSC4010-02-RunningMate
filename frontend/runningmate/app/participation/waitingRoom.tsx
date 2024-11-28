@@ -44,11 +44,11 @@ const RunningWaitingRoom = () => {
   // 참가자 목록 조회 함수
   const fetchParticipants = async () => {
     try {
-      const numericRoomId = parseInt(roomId, 10); // roomId를 숫자로 변환
-      console.log("Fetching participants for roomId:", numericRoomId);
+      const numericRecordId = parseInt(recordId, 10); // roomId를 숫자로 변환
+      console.log("Fetching participants for roomId:", numericRecordId);
 
       const response = await fetch(
-        `http://43.200.193.236:8080/running/${numericRoomId}/participants`
+        `http://43.200.193.236:8080/running/participants?recordId=${numericRecordId}`
       );
       console.log("API Response status:", response.status);
 
@@ -80,16 +80,15 @@ const RunningWaitingRoom = () => {
   const cancelParticipation = async () => {
     setIsLoading(true);
     try {
-      const numericRoomId = parseInt(roomId, 10);
+      // const numericRoomId = parseInt(roomId, 10);
       const numericRecordId = parseInt(recordId, 10);
 
       console.log("Sending cancel request with:", {
-        groupId: numericRoomId,
         recordId: numericRecordId,
       });
 
       const response = await fetch(
-        "http://43.200.193.236:8080/running/cancel",
+        `http://43.200.193.236:8080/running/cancel?recordId=${numericRecordId}`,
         {
           method: "DELETE",
           headers: {
@@ -97,7 +96,6 @@ const RunningWaitingRoom = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            groupId: numericRoomId,
             recordId: numericRecordId,
           }),
         }

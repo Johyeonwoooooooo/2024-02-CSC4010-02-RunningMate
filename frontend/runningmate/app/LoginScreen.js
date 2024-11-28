@@ -34,20 +34,20 @@ const LoginScreen = () => {
       return;
     }
 
-    /* input error 검증 */
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 이메일 형식 정규식
+    // /* input error 검증 */
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 이메일 형식 정규식
     // 입력값 검증
     if (email === "" || password === "") {
       setModalMessage("모든 항목을 입력해주세요.");
       setModalVisible(true);
       return;
     }
-    // 이메일 형식 검증
-    if (!emailRegex.test(email)) {
-      setModalMessage("이메일 형식이 올바르지 않습니다.");
-      setModalVisible(true);
-      return;
-    }
+    // // 이메일 형식 검증
+    // if (!emailRegex.test(email)) {
+    //   setModalMessage("이메일 형식이 올바르지 않습니다.");
+    //   setModalVisible(true);
+    //   return;
+    // }
 
     /* 서버에 로그인 요청 */
     try {
