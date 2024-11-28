@@ -32,6 +32,8 @@ const RunningWaitingRoom = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [maxParticipantsNow, setMaxParticipantsNow] = useState(maxParticipants);
+
   useEffect(() => {
     navigation.setOptions({
       headerShown: false, // 헤더를 가리기
@@ -62,7 +64,7 @@ const RunningWaitingRoom = () => {
           id: index + 1,
           name: name,
         }));
-
+        setMaxParticipantsNow(data.maxParticipants);
         setParticipants(formattedParticipants);
         setError(null);
       } else {
@@ -250,7 +252,7 @@ const RunningWaitingRoom = () => {
 
         <View style={styles.participantsHeader}>
           <Text style={styles.participantsTitle}>
-            참가자 ({participants.length}/{maxParticipants})
+            참가자 ({participants.length}/{maxParticipantsNow})
           </Text>
           <View style={[styles.levelBadge, styles[`level${selectedType}`]]}>
             <Text style={styles.levelBadgeText}>{selectedType}</Text>
