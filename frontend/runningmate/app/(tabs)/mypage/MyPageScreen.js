@@ -222,6 +222,31 @@ export default function MyPageScreen() {
   const [userPosts, setUserPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false); // 새로고침 상태 추가
+
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://43.200.193.236:8080/user/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        // 로그아웃 성공 시
+        logout();
+        router.replace("/LoginScreen");
+      } else {
+        // 로그아웃 실패 시
+        Alert.alert("오류", "로그아웃에 실패했습니다.");
+      }
+    } catch (error) {
+      //console.error("Error during logout:", error);
+      Alert.alert("오류", "로그아웃 중 통신 오류가 발생했습니다.");
+    }
+  };
   // 데이터 새로고침 함수
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -373,6 +398,9 @@ export default function MyPageScreen() {
               </TouchableOpacity>
             </View>
           </View>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>로그아웃</Text>
+          </TouchableOpacity>
         </View>
 
         {/* 탭 섹션 */}
@@ -450,6 +478,18 @@ export default function MyPageScreen() {
 }
 
 const styles = StyleSheet.create({
+  logoutButton: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+  },
+  logoutText: {
+    fontSize: 14,
+    color: "#000",
+    textDecorationLine: "underline",
+    backgroundColor: "#fff",
+    padding: 4,
+  },
   safeArea: {
     flex: 1,
     backgroundColor: "#fff",
