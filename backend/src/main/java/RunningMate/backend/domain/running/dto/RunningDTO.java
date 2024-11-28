@@ -101,15 +101,6 @@ public class RunningDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CancelParticipationRequest{
-        private Long groupId;
-        private Long recordId;
-    }
-
-    @Builder
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class WhileRunningRequest {
         private Long recordId;
         private Duration runningTime;

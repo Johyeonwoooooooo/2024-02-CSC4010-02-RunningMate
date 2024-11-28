@@ -53,10 +53,10 @@ public class RunningController {
             @ApiResponse(responseCode = "400", description = "러닝 방 참가 실패")
     })
     @PostMapping("/{groupId}/participate")
-    public ResponseEntity<?> participateGroup(@PathVariable("groupId") Long groupId, HttpSession session){
+    public ResponseEntity<?> participateGroup(@PathVariable("groupId") Long recordId, HttpSession session){
         try{
             Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
-            return ResponseEntity.ok(runningService.participateGroup(groupId, optionalUser));
+            return ResponseEntity.ok(runningService.participateGroup(recordId, optionalUser));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -68,9 +68,9 @@ public class RunningController {
             @ApiResponse(responseCode = "400", description = "참가 취소 실패")
     })
     @DeleteMapping("/cancel")
-    public ResponseEntity<?> cancelParticipation(@RequestBody RunningDTO.CancelParticipationRequest request){
+    public ResponseEntity<?> cancelParticipation(@RequestParam("recordId") Long recordId){
         try{
-            runningService.cancelParticipation(request);
+            runningService.cancelParticipation(recordId);
             return ResponseEntity.ok().body("정상적으로 참가취소되었습니다.");
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -127,10 +127,10 @@ public class RunningController {
             @ApiResponse(responseCode = "200", description = "참가자 조회 성공"),
             @ApiResponse(responseCode = "400", description = "생성된 러닝방이 없는 경우")
     })
-    @GetMapping("/{groupId}/participants")
-    public ResponseEntity<?> viewParticipants(@PathVariable("groupId") Long groupId){
+    @GetMapping("/participants")
+    public ResponseEntity<?> viewParticipants(@RequestParam("recordId") Long recordId){
         try{
-            return ResponseEntity.ok().body(runningService.groupParticipants(groupId));
+            return ResponseEntity.ok().body(runningService.groupParticipants(recordId));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }

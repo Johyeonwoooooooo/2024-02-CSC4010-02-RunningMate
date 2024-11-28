@@ -80,18 +80,19 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     @Transactional
-    public void cancelParticipation(RunningDTO.CancelParticipationRequest request) {
-        RunningGroup group = groupRepository.findByGroupId(request.getGroupId());
+    public void cancelParticipation(Long recordId) {
+        Record record = recordRepository.findRecordByRecordId(recordId);
+        LeaderBoard userLeaderboard = leaderBoardRepository.findLeaderBoardByRecord(record);
+        RunningGroup group = userLeaderboard.getGroup();
         if(group == null)
             throw new IllegalArgumentException("해당 러닝방이 존재하지 않습니다.");
-        Record record = recordRepository.findRecordByRecordId(request.getRecordId());
         if(group == null)
             throw new IllegalArgumentException("해당 기록이 존재하지 않습니다.");
 
         if(!group.leaveGroup())
             throw new IllegalArgumentException("이미 참가자가 없습니다.");
         leaderBoardRepository.deleteLeaderBoardByGroupAndRecord(group, record);
-        recordRepository.deleteRecordByRecordId(request.getRecordId());
+        recordRepository.deleteRecordByRecordId(recordId);
     }
 
     @Override
@@ -114,8 +115,11 @@ public class RunningServiceImpl implements RunningService {
     }
 
     @Override
-    public RunningDTO.groupParticipantResponse groupParticipants(Long groupId) {
-        RunningGroup group = groupRepository.findByGroupId(groupId);
+    public RunningDTO.groupParticipantResponse groupParticipants(Long recordId) {
+        Record record = recordRepository.findRecordByRecordId(recordId);
+        LeaderBoard userLeaderboard = leaderBoardRepository.findLeaderBoardByRecord(record);
+        RunningGroup group = userLeaderboard.getGroup();
+
         if(group == null)
             throw new IllegalArgumentException("해당 러닝방이 존재하지 않습니다.");
 
