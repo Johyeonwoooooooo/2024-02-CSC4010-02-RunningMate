@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface LeaderBoardRepository extends JpaRepository<LeaderBoard, Long> {
     List<LeaderBoard> findAllByGroup(RunningGroup group);
-    List<LeaderBoard> findAllByGroupOrderByRankingAsc(RunningGroup group);
+    List<LeaderBoard> findAllByGroupOrderByCurrentRankingAsc(RunningGroup group);
     void deleteLeaderBoardByGroupAndRecord(RunningGroup group, Record record);
     LeaderBoard findLeaderBoardByRecord(Record record);
     boolean existsByGroupAndRecordUser(RunningGroup group, Optional<User> user);

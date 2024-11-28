@@ -72,13 +72,13 @@ public class UserDTO {
         private LocalDateTime recordDate;
         private Long dailyDistance;
         private Long weekDistance; // 총 거리
-        private Long weekCalories; // 총 칼로리
+        private Double weekCalories; // 총 칼로리
 
         public MyRecordResponse(Record record) {
             this.recordDate = record.getRunningStartTime().atStartOfDay(); // LocalDate to LocalDateTime
             this.dailyDistance = record.getDistance();
             this.weekDistance = 0L; // 계산 후 세팅
-            this.weekCalories = 0L; // 계산 후 세팅
+            this.weekCalories = 0.0; // 계산 후 세팅
         }
     }
 }

@@ -26,9 +26,12 @@ public class LeaderBoard {
     private Record record;
 
     @Column(nullable = false)
-    private Long ranking;
+    private Long currentRanking;
 
+    @Column(nullable = false)
+    private Long preRanking;
     public void updateRanking(Long ranking){
-        this.ranking = ranking;
+        this.preRanking = this.currentRanking;
+        this.currentRanking = ranking;
     }
 }

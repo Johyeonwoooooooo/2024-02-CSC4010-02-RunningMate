@@ -57,6 +57,22 @@ public class UserController {
         }
     }
 
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃", description = "사용자에게 요청을 받아 로그아웃을 실행해준다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "400", description = "로그아웃 실패")
+    })
+    public ResponseEntity<?> logout(HttpSession session) {
+        try {
+            Optional<User> optionalUser = sessionUtils.getUserFromSession(session);
+            session.invalidate();
+            return ResponseEntity.ok().body(optionalUser.get().getUserNickname() + " 님 안녕히 가십쇼!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/profile")
     @Operation(summary = "프로필", description = "사용자의 프로필을 제공한다.")
     @ApiResponses({

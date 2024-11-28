@@ -57,7 +57,7 @@ public class RunningDTO {
         private Long recordId;
         private Long targetDistance;
         private Duration runningTime;
-        private Long calories;
+        private Double calories;
 
         public ParticipateGroupResponse(Record record){
             this.recordId = record.getRecordId();
@@ -89,7 +89,7 @@ public class RunningDTO {
     public static class ParticipateQuickRunningResponse {
         private Long recordId;
         private Duration runningTime;
-        private Long calories;
+        private Double calories;
         public ParticipateQuickRunningResponse(Record record){
             this.recordId = record.getRecordId();
             this.runningTime = record.getRunningTime();
@@ -101,19 +101,10 @@ public class RunningDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CancelParticipationRequest{
-        private Long groupId;
-        private Long recordId;
-    }
-
-    @Builder
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class WhileRunningRequest {
         private Long recordId;
         private Duration runningTime;
-        private Long calories;
+        private Double calories;
         private Long distance;
 
     }
@@ -124,7 +115,6 @@ public class RunningDTO {
     @AllArgsConstructor
     public static class WhileRunningResponse{
         private List<WhileRunningLeaderboardResponse> leaderboardResponseList;
-        private String ttsMessage;
     }
 
     @Getter
@@ -139,7 +129,7 @@ public class RunningDTO {
 
         public WhileRunningLeaderboardResponse(LeaderBoard leaderBoard, Long rank, String rankChange){
             this.userNickname = leaderBoard.getRecord().getUser().getUserNickname();
-            this.rank = leaderBoard.getRanking();
+            this.rank = leaderBoard.getCurrentRanking();
             this.isMyRecord = false;
             if(this.rank.equals(rank))
                 this.isMyRecord = true;
@@ -162,7 +152,7 @@ public class RunningDTO {
         private Long distance;
 
         public LeaderboardResponse(LeaderBoard leaderBoard, boolean yourRecord){
-            this.ranking = leaderBoard.getRanking();
+            this.ranking = leaderBoard.getCurrentRanking();
             this.userNickname = leaderBoard.getRecord().getUser().getUserNickname();
             this.distance = leaderBoard.getRecord().getDistance();
             this.yourRecord = yourRecord;
