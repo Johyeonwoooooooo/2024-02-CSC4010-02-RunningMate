@@ -13,4 +13,5 @@ public interface UserService {
     User updateProfile(UserDTO.UpdateProfileRequest request, Optional<User> optionalUser);
     List<UserDTO.MyPostResponse> viewMyPost(Optional<User> user);
     List<UserDTO.MyRecordResponse> viewMyRecord(Optional<User> user);
+    void logout(Optional<User> optionalUser);
 }

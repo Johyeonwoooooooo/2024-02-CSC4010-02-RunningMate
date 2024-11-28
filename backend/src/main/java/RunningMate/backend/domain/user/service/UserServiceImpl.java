@@ -56,6 +56,11 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public void logout(Optional<User> optionalUser) {
+
+    }
+
+    @Override
     public UserDTO.GetProfileResponse profile(Optional<User> optionalUser) {
         if(optionalUser.isEmpty())
             throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
