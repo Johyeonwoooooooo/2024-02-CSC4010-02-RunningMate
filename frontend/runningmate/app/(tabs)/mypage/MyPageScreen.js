@@ -275,7 +275,7 @@ export default function MyPageScreen() {
 
   const fetchRecords = async () => {
     try {
-      const response = await fetch("http://172.28.160.1:8080/user/records");
+      const response = await fetch("http://43.200.193.236:8080/user/records");
       if (!response.ok) {
         throw new Error("네트워크 응답이 올바르지 않습니다");
       }

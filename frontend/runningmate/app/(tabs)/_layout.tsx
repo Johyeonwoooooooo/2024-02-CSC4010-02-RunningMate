@@ -18,11 +18,11 @@ export default function TabLayout() {
           title: "홈",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              source={
-                focused
-                  ? require("../../assets/icons/home_color.png")
-                  : require("../../assets/icons/home.png")
-              }
+              source={{
+                uri: focused
+                  ? "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/KakaoTalk_20241128_160545855_01.png"
+                  : "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/KakaoTalk_20241128_160545855.png",
+              }}
               style={{ tintColor: color }}
             />
           ),
@@ -35,11 +35,11 @@ export default function TabLayout() {
           title: "러닝",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              source={
-                focused
-                  ? require("../../assets/icons/running_color.png")
-                  : require("../../assets/icons/running.png")
-              }
+              source={{
+                uri: focused
+                  ? "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/KakaoTalk_20241128_160545855_05.png"
+                  : "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/KakaoTalk_20241128_160545855_04.png",
+              }}
               style={{ tintColor: color }}
             />
           ),
@@ -52,11 +52,11 @@ export default function TabLayout() {
           title: "커뮤니티",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              source={
-                focused
-                  ? require("../../assets/icons/community_color.png")
-                  : require("../../assets/icons/community.png")
-              }
+              source={{
+                uri: focused
+                  ? "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/KakaoTalk_20241128_160545855_07.png"
+                  : "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/KakaoTalk_20241128_160545855_06.png",
+              }}
               style={{ tintColor: color }}
             />
           ),
@@ -69,11 +69,11 @@ export default function TabLayout() {
           title: "마이페이지",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              source={
-                focused
-                  ? require("../../assets/icons/mypage_color.png")
-                  : require("../../assets/icons/mypage.png")
-              }
+              source={{
+                uri: focused
+                  ? "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/KakaoTalk_20241128_160545855_03.png"
+                  : "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/KakaoTalk_20241128_160545855_02.png",
+              }}
               style={{ tintColor: color }}
             />
           ),

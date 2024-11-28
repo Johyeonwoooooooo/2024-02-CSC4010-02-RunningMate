@@ -19,14 +19,17 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icons/logo.png",
         "backgroundColor": "#8DCCFF"
-      }
+      },
+      "package": "com.dgucsc4010runningmate.runningmate"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/icons/logo.png"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true
     },

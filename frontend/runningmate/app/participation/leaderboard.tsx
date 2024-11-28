@@ -13,7 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 
-const API_URL = "http://172.28.160.1:8080/running/leaderboard";
+const API_URL = "http://43.200.193.236:8080/running/leaderboard";
 
 interface LeaderboardRecord {
   ranking: number;

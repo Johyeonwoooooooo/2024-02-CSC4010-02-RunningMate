@@ -193,14 +193,17 @@ const CreateRunningRoom = () => {
 
       console.log("Request Data:", requestData);
 
-      const response = await fetch("http://172.28.160.1:8080/running/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
+      const response = await fetch(
+        "http://43.200.193.236:8080/running/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
 
       console.log("Response status:", response.status);
       const responseText = await response.text();

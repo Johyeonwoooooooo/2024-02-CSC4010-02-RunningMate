@@ -142,7 +142,7 @@ const RunningScreen = () => {
         //console.log("Running data:", runningData);
         try {
           const response = await fetch(
-            "http://172.28.160.1:8080/running/update",
+            "http://43.200.193.236:8080/running/update",
             {
               method: "POST",
               headers: {
@@ -244,7 +244,7 @@ const RunningScreen = () => {
       ttsTimerRef.current = setInterval(async () => {
         try {
           const response = await fetch(
-            `http://172.28.160.1:8080/running/tts?recordId=${recordId}`
+            `http://43.200.193.236:8080/running/tts?recordId=${recordId}`
           );
           const ttsMessage = await response.text(); // 응답 본문을 문자열로 받음
           if (ttsMessage) {

@@ -66,7 +66,7 @@ const RunningMateSearch = () => {
   const fetchRunningRooms = async () => {
     setLoading(true);
     try {
-      let url = "http://172.28.160.1:8080/running";
+      let url = "http://43.200.193.236:8080/running";
 
       if (selectedLevel || searchQuery.trim()) {
         const params = new URLSearchParams();
@@ -79,7 +79,7 @@ const RunningMateSearch = () => {
           params.append("searchWord", searchQuery.trim());
         }
 
-        url = `http://172.28.160.1:8080/running/filtering?${params.toString()}`;
+        url = `http://43.200.193.236:8080/running/filtering?${params.toString()}`;
       }
 
       console.log("Fetching URL:", url);
@@ -134,7 +134,7 @@ const RunningMateSearch = () => {
     setJoiningRoom(true);
     try {
       const response = await fetch(
-        `http://172.28.160.1:8080/running/${room.id}/participate`,
+        `http://43.200.193.236:8080/running/${room.id}/participate`,
         {
           method: "POST",
           headers: {
@@ -192,7 +192,7 @@ const RunningMateSearch = () => {
     setSelectedLevel(newLevel);
 
     try {
-      let url = "http://172.28.160.1:8080/running";
+      let url = "http://43.200.193.236:8080/running";
 
       // 검색어나 레벨 필터가 있는 경우에만 필터링 URL 사용
       if (newLevel || searchQuery.trim()) {
@@ -206,7 +206,7 @@ const RunningMateSearch = () => {
           params.append("searchWord", searchQuery.trim());
         }
 
-        url = `http://172.28.160.1:8080/running/filtering?${params.toString()}`;
+        url = `http://43.200.193.236:8080/running/filtering?${params.toString()}`;
       }
 
       console.log("Fetching URL after level select:", url); // URL 로깅
@@ -301,7 +301,7 @@ const RunningMateSearch = () => {
   const handleQuickJoin = async () => {
     try {
       const response = await fetch(
-        "http://172.28.160.1:8080/running/quickrunning/participate",
+        "http://43.200.193.236:8080/running/quickrunning/participate",
         {
           method: "POST",
           headers: {
