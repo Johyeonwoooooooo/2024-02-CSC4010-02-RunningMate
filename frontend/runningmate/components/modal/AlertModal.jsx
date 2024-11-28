@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Modal,
   StyleSheet,
@@ -6,17 +6,11 @@ import {
   View,
   TouchableOpacity,
   Platform,
-} from 'react-native';
-import { ThemedText } from "../ThemedText";  // 상대 경로로 변경
+} from "react-native";
+import { ThemedText } from "../ThemedText"; // 상대 경로로 변경
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-const AlertModal = ({
-  visible,
-  onClose,
-  onConfirm,
-  title,
-  message
-}) => {
+const AlertModal = ({ visible, onClose, onConfirm, title, message }) => {
   return (
     <Modal
       transparent={true}
@@ -29,22 +23,21 @@ const AlertModal = ({
           <TouchableWithoutFeedback>
             <View style={styles.content}>
               <View style={styles.iconContainer}>
-                <Ionicons name="information-circle-outline" size={28} color="#666" />
+                <Ionicons
+                  name="information-circle-outline"
+                  size={28}
+                  color="#666"
+                />
               </View>
               <ThemedText style={styles.title}>{title}</ThemedText>
               <ThemedText style={styles.message}>{message}</ThemedText>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.button, styles.cancelButton]}
                   onPress={onClose}
                 >
-                  <ThemedText style={styles.cancelButtonText}>취소</ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.button, styles.confirmButton]}
-                  onPress={onConfirm}
-                >
-                  <ThemedText style={styles.confirmButtonText}>확인</ThemedText>
+                  ㅈ
+                  <ThemedText style={styles.cancelButtonText}>확인</ThemedText>
                 </TouchableOpacity>
               </View>
             </View>
@@ -58,19 +51,19 @@ const AlertModal = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   content: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 15,
     padding: 20,
-    width: '80%',
-    alignItems: 'center',
+    width: "80%",
+    alignItems: "center",
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: {
           width: 0,
           height: 2,
@@ -84,46 +77,46 @@ const styles = StyleSheet.create({
     }),
   },
   iconContainer: {
-    marginBottom: 15,
+    marginBottom: 4,
   },
   title: {
     fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    textAlign: 'center',
+    fontWeight: "600",
+    marginBottom: 4,
+    textAlign: "center",
   },
   message: {
     fontSize: 13,
-    color: '#666',
+    color: "#666",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    width: '100%',
+    flexDirection: "row",
+    width: "100%",
     gap: 10,
   },
   button: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   cancelButton: {
-    backgroundColor: '#f1f1f1',
+    backgroundColor: "#f1f1f1",
   },
   confirmButton: {
-    backgroundColor: '#ADD8E6',
+    backgroundColor: "#ADD8E6",
   },
   cancelButtonText: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   confirmButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
 
