@@ -20,7 +20,7 @@ import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AlertModal from "../../components/modal/AlertModal";
 
-const API_URL = "http://43.200.193.236:8080";
+const API_URL = "http://localhost:8080";
 
 // 댓글 모달 컴포넌트
 const CommentsModal = ({ visible, onClose, postId }) => {
@@ -39,8 +39,8 @@ const CommentsModal = ({ visible, onClose, postId }) => {
       setComments(data);
       setError(null);
     } catch (error) {
-      console.error("Error fetching comments:", error);
-      setError("댓글을 불러오는데 실패했습니다.");
+      // console.error("Error fetching comments:", error);
+      setError("댓글이 존재하지 않아요.");
     } finally {
       setLoading(false);
     }
@@ -179,7 +179,7 @@ const FloatingActionButton = () => {
 const PostCard = ({ post, onDelete }) => {
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const [isLove, setIsLove] = useState(false);
+  const [isLove, setIsLove] = useState(post.isLikedByUser);
   const [likeCount, setLikeCount] = useState(post.likeCount);
 
   const handleDelete = async () => {
