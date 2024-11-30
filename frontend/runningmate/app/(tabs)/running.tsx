@@ -66,7 +66,7 @@ const RunningMateSearch = () => {
   const fetchRunningRooms = async () => {
     setLoading(true);
     try {
-      let url = "http://localhost:8080/running";
+      let url = "http:localhost:8080/running";
 
       if (selectedLevel || searchQuery.trim()) {
         const params = new URLSearchParams();
@@ -79,7 +79,7 @@ const RunningMateSearch = () => {
           params.append("searchWord", searchQuery.trim());
         }
 
-        url = `http://localhost:8080/running/filtering?${params.toString()}`;
+        url = `http:localhost:8080/running/filtering?${params.toString()}`;
       }
 
       console.log("Fetching URL:", url);
@@ -120,7 +120,7 @@ const RunningMateSearch = () => {
 
       setRunningRooms(formattedRooms);
     } catch (error) {
-      console.error("Error fetching running rooms:", error);
+      // console.error("Error fetching running rooms:", error);
       setRunningRooms([]);
       Alert.alert("오류", "러닝방 목록을 불러오는데 실패했습니다.");
     } finally {
@@ -134,7 +134,7 @@ const RunningMateSearch = () => {
     setJoiningRoom(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/running/${room.id}/participate`,
+        `http:localhost:8080/running/${room.id}/participate`,
         {
           method: "POST",
           headers: {
@@ -192,7 +192,7 @@ const RunningMateSearch = () => {
     setSelectedLevel(newLevel);
 
     try {
-      let url = "http://localhost:8080/running";
+      let url = "http:localhost:8080/running";
 
       // 검색어나 레벨 필터가 있는 경우에만 필터링 URL 사용
       if (newLevel || searchQuery.trim()) {
@@ -206,7 +206,7 @@ const RunningMateSearch = () => {
           params.append("searchWord", searchQuery.trim());
         }
 
-        url = `http://localhost:8080/running/filtering?${params.toString()}`;
+        url = `http:localhost:8080/running/filtering?${params.toString()}`;
       }
 
       console.log("Fetching URL after level select:", url); // URL 로깅
@@ -301,7 +301,7 @@ const RunningMateSearch = () => {
   const handleQuickJoin = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8080/running/quickrunning/participate",
+        "http:localhost:8080/running/quickrunning/participate",
         {
           method: "POST",
           headers: {

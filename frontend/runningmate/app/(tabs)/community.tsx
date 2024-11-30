@@ -20,7 +20,7 @@ import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AlertModal from "../../components/modal/AlertModal";
 
-const API_URL = "http://localhost:8080";
+const API_URL = "http:localhost:8080";
 
 // 댓글 모달 컴포넌트
 const CommentsModal = ({ visible, onClose, postId }) => {
@@ -76,7 +76,7 @@ const CommentsModal = ({ visible, onClose, postId }) => {
         Alert.alert("오류", "댓글 등록에 실패했습니다.");
       }
     } catch (error) {
-      console.error("Error posting comment:", error);
+      // console.error("Error posting comment:", error);
       Alert.alert("오류", "네트워크 오류가 발생했습니다.");
     }
   };
@@ -198,10 +198,10 @@ const PostCard = ({ post, onDelete }) => {
         onDelete(post.postId);
         Alert.alert("성공", "게시글이 삭제되었습니다.");
       } else {
-        Alert.alert("오류", "게시글 삭제에 실패했습니다.");
+        Alert.alert("오류", "게시글 삭제 권한이 없습니다.");
       }
     } catch (error) {
-      console.error("Error deleting post:", error);
+      // console.error("Error deleting post:", error);
       Alert.alert("오류", "네트워크 오류가 발생했습니다.");
     } finally {
       setIsDeleteModalVisible(false);

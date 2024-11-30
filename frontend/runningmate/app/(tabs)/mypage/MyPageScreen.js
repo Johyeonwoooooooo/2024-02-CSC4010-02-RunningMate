@@ -227,7 +227,7 @@ export default function MyPageScreen() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:8080/user/logout", {
+      const response = await fetch("http:localhost:8080/user/logout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -300,7 +300,7 @@ export default function MyPageScreen() {
 
   const fetchRecords = async () => {
     try {
-      const response = await fetch("http://localhost:8080/user/records");
+      const response = await fetch("http:localhost:8080/user/records");
       if (!response.ok) {
         throw new Error("네트워크 응답이 올바르지 않습니다");
       }

@@ -51,11 +51,16 @@ const CreateRunningRoom = () => {
     maxParticipants: "",
   });
 
-  const [timeData, setTimeData] = useState({
-    startTime: initTimes.defaultStartTime,
-    endTime: initTimes.defaultEndTime,
-    showStartPicker: false,
-    showEndPicker: false,
+  const [timeData, setTimeData] = useState(() => {
+    const now = new Date();
+    now.setHours(now.getHours() + 9); // KST로 변환
+    const endTime = new Date(now.getTime() + 60 * 60 * 1000);
+    return {
+      startTime: now,
+      endTime: endTime,
+      showStartPicker: false,
+      showEndPicker: false,
+    };
   });
 
   const [errors, setErrors] = useState({
@@ -83,20 +88,23 @@ const CreateRunningRoom = () => {
 
   // 시간 포맷팅
   const formatTime = (date) => {
-    if (!date || !(date instanceof Date)) return "시간 선택";
-
+    if (!date || !(date instanceof Date) || isNaN(date)) return "시간 선택";
+    
     try {
-      return date.toLocaleTimeString("ko-KR", {
+      // 9시간을 빼서 KST로 변환 (기존에 더했던 9시간을 상쇄)
+      const kstDate = new Date(date.getTime() - (9 * 60 * 60 * 1000));
+      return kstDate.toLocaleTimeString("ko-KR", {
         hour: "2-digit",
         minute: "2-digit",
-        hour12: false,
+        hour12: false
       });
     } catch (error) {
       console.error("Time formatting error:", error);
       return "시간 오류";
     }
   };
-  console.log("timeData.startTime", timeData.startTime);
+  console.log("startTime", timeData.startTime);
+  console.log("endTime", timeData.endTime);
   // 시간 검증
   const validateTimes = (start, end) => {
     const currentTime = new Date();
@@ -121,47 +129,51 @@ const CreateRunningRoom = () => {
     if (Platform.OS === "android") {
       setTimeData((prev) => ({ ...prev, showStartPicker: false }));
     }
-
+   
     if (selectedDate) {
-      console.log("Selected start time:", selectedDate);
-
-      const timeErrors = validateTimes(selectedDate, timeData.endTime);
+      const localDate = new Date(selectedDate);
+      localDate.setHours(localDate.getHours() + 9); // KST 적용
+      console.log("Selected start time:", localDate);
+   
+      const timeErrors = validateTimes(localDate, timeData.endTime);
       if (timeErrors.startTime) {
         Alert.alert("시간 오류", timeErrors.startTime);
         return;
       }
-
-      const newEndTime = new Date(selectedDate.getTime() + 60 * 60 * 1000);
+   
+      const newEndTime = new Date(localDate.getTime() + 60 * 60 * 1000);
       setTimeData((prev) => ({
         ...prev,
-        startTime: selectedDate,
+        startTime: localDate,
         endTime: newEndTime,
         showStartPicker: false,
       }));
     }
-  };
-
-  const handleEndTimeChange = (event, selectedDate) => {
+   };
+   
+   const handleEndTimeChange = (event, selectedDate) => {
     if (Platform.OS === "android") {
       setTimeData((prev) => ({ ...prev, showEndPicker: false }));
     }
-
+   
     if (selectedDate) {
-      console.log("Selected end time:", selectedDate);
-
-      const timeErrors = validateTimes(timeData.startTime, selectedDate);
+      const localDate = new Date(selectedDate);
+      localDate.setHours(localDate.getHours() + 9); // KST 적용
+      console.log("Selected end time:", localDate);
+   
+      const timeErrors = validateTimes(timeData.startTime, localDate);
       if (timeErrors.endTime) {
         Alert.alert("시간 오류", timeErrors.endTime);
         return;
       }
-
+   
       setTimeData((prev) => ({
         ...prev,
-        endTime: selectedDate,
+        endTime: localDate,
         showEndPicker: false,
       }));
     }
-  };
+   };
 
   // 방 생성 핸들러
   const handleCreateRoom = async () => {
@@ -194,7 +206,7 @@ const CreateRunningRoom = () => {
       console.log("Request Data:", requestData);
 
       const response = await fetch(
-        "http://localhost:8080/running/create",
+        "http:localhost:8080/running/create",
         {
           method: "POST",
           headers: {

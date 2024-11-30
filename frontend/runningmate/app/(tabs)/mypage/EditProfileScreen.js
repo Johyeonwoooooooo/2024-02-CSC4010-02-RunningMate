@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import CustomButton from "@/components/CustomButton";
+import AlertModal from "../../../components/modal/AlertModal";
 import axios from "axios";
 
 export default function EditProfileScreen() {
@@ -20,11 +21,17 @@ export default function EditProfileScreen() {
   const [weight, setWeight] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  // modal(alert) 닫을 때 로그인 스크린으로 이동
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
+  
   // 프로필 데이터 불러오기 함수
   const fetchProfileData = async () => {
     try {
-      const BASE_URL = "http://localhost:8080";
+      const BASE_URL = "http:localhost:8080";
 
       const response = await axios.get(`${BASE_URL}/user/profile`);
       if (response.data) {
@@ -65,7 +72,18 @@ export default function EditProfileScreen() {
       Alert.alert("입력 오류", "모든 필드를 입력해주세요.");
       return;
     }
-
+    if (
+      isNaN(height) ||
+      isNaN(height) ||
+      height <= 0 ||
+      height >= 300 ||
+      weight <= 0 ||
+      weight >= 300
+    ) {
+      setModalMessage("올바른 체형 정보를 입력해주세요.");
+      setModalVisible(true);
+      return;
+    }
     try {
       setIsLoading(true);
 
@@ -75,7 +93,7 @@ export default function EditProfileScreen() {
         userHeight: parseInt(height, 10),
       };
 
-      const BASE_URL = "http://localhost:8080";
+      const BASE_URL = "http:localhost:8080";
 
       const response = await axios.post(
         `${BASE_URL}/user/profile/update`,
@@ -106,13 +124,13 @@ export default function EditProfileScreen() {
         ]);
       }
     } catch (error) {
-      console.error(
-        "Profile update error:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Profile update error:",
+      //   error.response?.data || error.message
+      // );
       Alert.alert(
         "오류",
-        "프로필 업데이트 중 오류가 발생했습니다. 다시 시도해주세요."
+        `${error.response?.data}`
       );
     } finally {
       setIsLoading(false);
@@ -156,6 +174,14 @@ export default function EditProfileScreen() {
         onPress={handleSave}
         buttonStyle="skyblue"
         disabled={isLoading}
+      />
+
+      {/* 알림창 (input error 등) */}
+      <AlertModal
+        visible={modalVisible}
+        message={modalMessage}
+        onClose={handleModalClose}
+        onConfirm={handleModalClose}
       />
     </SafeAreaView>
   );

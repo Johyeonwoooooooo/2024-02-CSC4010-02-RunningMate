@@ -15,7 +15,7 @@ import { useRouter } from "expo-router";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const COURSE_ITEM_WIDTH = SCREEN_WIDTH - 50;
-const API_URL = "http://localhost:8080";
+const API_URL = "http:localhost:8080";
 
 // 더미 데이터 정의
 const DUMMY_COURSES = [
