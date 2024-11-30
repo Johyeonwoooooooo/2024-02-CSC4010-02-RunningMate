@@ -38,8 +38,8 @@ public class RunningServiceImpl implements RunningService {
 
         return groupRepository.save(RunningGroup.builder().groupTitle(request.getGroupTitle())
                                                             .groupTag(request.getGroupTag())
-                                                            .startTime(request.getStartTime())
-                                                            .endTime(request.getEndTime())
+                                                            .startTime(request.getStartTime().minusHours(9))
+                                                            .endTime(request.getEndTime().minusHours(9))
                                                             .currentParticipants(0)
                                                             .maxParticipants(request.getMaxParticipants())
                                                             .targetDistance(request.getTargetDistance())
