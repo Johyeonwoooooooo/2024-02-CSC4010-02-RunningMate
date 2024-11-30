@@ -90,10 +90,12 @@ public class RunningDTO {
         private Long recordId;
         private Duration runningTime;
         private Double calories;
+        private Double distance;
         public ParticipateQuickRunningResponse(Record record){
             this.recordId = record.getRecordId();
             this.runningTime = record.getRunningTime();
             this.calories = record.getCalories();
+            this.distance = Double.valueOf(record.getDistance()) / 1000;
         }
     }
 
