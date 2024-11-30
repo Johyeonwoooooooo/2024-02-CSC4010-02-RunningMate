@@ -60,6 +60,8 @@ const CreateRunningRoom = () => {
       endTime: endTime,
       showStartPicker: false,
       showEndPicker: false,
+      tempStartTime: now,        // 추가
+      tempEndTime: endTime,      // 추가
     };
   });
 
@@ -89,20 +91,16 @@ const CreateRunningRoom = () => {
   // 시간 포맷팅
   const formatTime = (date) => {
     if (!date || !(date instanceof Date) || isNaN(date)) return "시간 선택";
-    
-    try {
-      // 9시간을 빼서 KST로 변환 (기존에 더했던 9시간을 상쇄)
-      const kstDate = new Date(date.getTime() - (9 * 60 * 60 * 1000));
-      return kstDate.toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      });
-    } catch (error) {
-      console.error("Time formatting error:", error);
-      return "시간 오류";
-    }
+    // 시뮬레이터 표시용으로 9시간을 빼서 보여줌
+    const displayDate = new Date(date.getTime());
+    displayDate.setHours(displayDate.getHours() - 9);
+    const hours = displayDate.getHours().toString().padStart(2, '0');
+    const minutes = displayDate.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
+
+
+
   console.log("startTime", timeData.startTime);
   console.log("endTime", timeData.endTime);
   // 시간 검증
@@ -129,51 +127,59 @@ const CreateRunningRoom = () => {
     if (Platform.OS === "android") {
       setTimeData((prev) => ({ ...prev, showStartPicker: false }));
     }
-   
+    
     if (selectedDate) {
-      const localDate = new Date(selectedDate);
-      localDate.setHours(localDate.getHours() + 9); // KST 적용
-      console.log("Selected start time:", localDate);
-   
-      const timeErrors = validateTimes(localDate, timeData.endTime);
-      if (timeErrors.startTime) {
-        Alert.alert("시간 오류", timeErrors.startTime);
-        return;
-      }
-   
-      const newEndTime = new Date(localDate.getTime() + 60 * 60 * 1000);
-      setTimeData((prev) => ({
+      setTimeData(prev => ({
         ...prev,
-        startTime: localDate,
-        endTime: newEndTime,
-        showStartPicker: false,
+        tempStartTime: selectedDate,  // 임시값에 저장
       }));
     }
-   };
-   
-   const handleEndTimeChange = (event, selectedDate) => {
-    if (Platform.OS === "android") {
-      setTimeData((prev) => ({ ...prev, showEndPicker: false }));
+};
+
+// 확인 버튼 핸들러 추가
+const handleConfirmStartTime = () => {
+    const timeErrors = validateTimes(timeData.tempStartTime, timeData.endTime);
+    if (timeErrors.startTime) {
+      Alert.alert("시간 오류", timeErrors.startTime);
+      return;
     }
+
+    const newEndTime = new Date(timeData.tempStartTime.getTime() + 60 * 60 * 1000);
+    setTimeData(prev => ({
+      ...prev,
+      startTime: prev.tempStartTime,
+      endTime: newEndTime,
+      tempEndTime: newEndTime,
+      showStartPicker: false,
+    }));
+};
    
-    if (selectedDate) {
-      const localDate = new Date(selectedDate);
-      localDate.setHours(localDate.getHours() + 9); // KST 적용
-      console.log("Selected end time:", localDate);
-   
-      const timeErrors = validateTimes(timeData.startTime, localDate);
-      if (timeErrors.endTime) {
-        Alert.alert("시간 오류", timeErrors.endTime);
-        return;
-      }
-   
-      setTimeData((prev) => ({
-        ...prev,
-        endTime: localDate,
-        showEndPicker: false,
-      }));
-    }
-   };
+const handleEndTimeChange = (event, selectedDate) => {
+  if (Platform.OS === "android") {
+    setTimeData((prev) => ({ ...prev, showEndPicker: false }));
+  }
+  
+  if (selectedDate) {
+    setTimeData(prev => ({
+      ...prev,
+      tempEndTime: selectedDate,  // 임시값에만 저장
+    }));
+  }
+};
+
+const handleConfirmEndTime = () => {
+  const timeErrors = validateTimes(timeData.startTime, timeData.tempEndTime);
+  if (timeErrors.endTime) {
+    Alert.alert("시간 오류", timeErrors.endTime);
+    return;
+  }
+
+  setTimeData(prev => ({
+    ...prev,
+    endTime: prev.tempEndTime,
+    showEndPicker: false,
+  }));
+};
 
   // 방 생성 핸들러
   const handleCreateRoom = async () => {
@@ -383,6 +389,7 @@ const CreateRunningRoom = () => {
                       setTimeData((prev) => ({
                         ...prev,
                         showStartPicker: false,
+                        tempStartTime: prev.startTime,  // 취소 시 이전 값으로 복원
                       }))
                     }
                   >
@@ -390,12 +397,7 @@ const CreateRunningRoom = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.modalButton, styles.modalButtonConfirm]}
-                    onPress={() =>
-                      setTimeData((prev) => ({
-                        ...prev,
-                        showStartPicker: false,
-                      }))
-                    }
+                    onPress={handleConfirmStartTime}
                   >
                     <Text style={styles.modalButtonTextConfirm}>확인</Text>
                   </TouchableOpacity>
