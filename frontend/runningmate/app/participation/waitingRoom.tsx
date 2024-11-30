@@ -237,13 +237,13 @@ const RunningWaitingRoom = () => {
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>러닝 시간</Text>
             <Text style={styles.infoValue}>
-            {new Date(startTime).toLocaleTimeString("ko-KR", {
+            {new Date(new Date(startTime).getTime() - 9 * 60 * 60 * 1000).toLocaleTimeString("ko-KR", {
               hour: "2-digit",
               minute: "2-digit",
               hour12: true, // 오전/오후 표시
               timeZone: "Asia/Seoul"
             })} ~
-            {new Date(endTime).toLocaleTimeString("ko-KR", {
+            {new Date(new Date(endTime).getTime() - 9 * 60 * 60 * 1000).toLocaleTimeString("ko-KR", {
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,

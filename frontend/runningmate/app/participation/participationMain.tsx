@@ -52,16 +52,17 @@ const CreateRunningRoom = () => {
   });
 
   const [timeData, setTimeData] = useState(() => {
-    const now = new Date();
-    now.setHours(now.getHours() + 9); // KST로 변환
-    const endTime = new Date(now.getTime() + 60 * 60 * 1000);
+    const today = new Date();
+    const now = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+    const endTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+    console.log(now, '하씨발')
     return {
-      startTime: now,
-      endTime: endTime,
-      showStartPicker: false,
-      showEndPicker: false,
-      tempStartTime: now,        // 추가
-      tempEndTime: endTime,      // 추가
+        startTime: now,
+        endTime: endTime,
+        showStartPicker: false,
+        showEndPicker: false,
+        tempStartTime: now,
+        tempEndTime: endTime,
     };
   });
 
@@ -91,13 +92,14 @@ const CreateRunningRoom = () => {
   // 시간 포맷팅
   const formatTime = (date) => {
     if (!date || !(date instanceof Date) || isNaN(date)) return "시간 선택";
-    // 시뮬레이터 표시용으로 9시간을 빼서 보여줌
+    
     const displayDate = new Date(date.getTime());
-    displayDate.setHours(displayDate.getHours() - 9);
+    displayDate.setHours(displayDate.getHours() - 9);  // 현재 시간에서 9시간을 뺌
     const hours = displayDate.getHours().toString().padStart(2, '0');
     const minutes = displayDate.getMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
-  };
+};
+
 
 
 
@@ -106,17 +108,17 @@ const CreateRunningRoom = () => {
   // 시간 검증
   const validateTimes = (start, end) => {
     const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9); // 현재 시간을 KST로 변환
     const errors = {};
 
-    const minStartTime = new Date(currentTime.getTime());
+    const minStartTime = currentTime;
     if (start < minStartTime) {
-      errors.startTime = "시작 시간은 현재 시간 이후여야 합니다.";
+        errors.startTime = "시작 시간은 현재 시간 이후여야 합니다.";
     }
 
     const minEndTime = new Date(start.getTime() + 30 * 60 * 1000);
     if (end < minEndTime) {
-      errors.endTime =
-        "종료 시간은 시작 시간으로부터 최소 30분 이후여야 합니다.";
+        errors.endTime = "종료 시간은 시작 시간으로부터 최소 30분 이후여야 합니다.";
     }
 
     return errors;
@@ -125,47 +127,55 @@ const CreateRunningRoom = () => {
   // 시간 선택 핸들러
   const handleStartTimeChange = (event, selectedDate) => {
     if (Platform.OS === "android") {
-      setTimeData((prev) => ({ ...prev, showStartPicker: false }));
+        setTimeData((prev) => ({ ...prev, showStartPicker: false }));
     }
     
     if (selectedDate) {
-      setTimeData(prev => ({
-        ...prev,
-        tempStartTime: selectedDate,  // 임시값에 저장
-      }));
+        // 선택된 시간에 9시간을 더해서 KST로 저장
+        const kstDate = new Date(selectedDate.getTime() + 9 * 60 * 60 * 1000);
+        setTimeData(prev => ({
+            ...prev,
+            tempStartTime: kstDate,
+        }));
     }
-};
+  };
 
-// 확인 버튼 핸들러 추가
-const handleConfirmStartTime = () => {
+
+  // 확인 버튼 핸들러 추가
+  const handleConfirmStartTime = () => {
     const timeErrors = validateTimes(timeData.tempStartTime, timeData.endTime);
     if (timeErrors.startTime) {
-      Alert.alert("시간 오류", timeErrors.startTime);
-      return;
+        Alert.alert("시간 오류", timeErrors.startTime);
+        return;
     }
 
-    const newEndTime = new Date(timeData.tempStartTime.getTime() + 60 * 60 * 1000);
+    // 종료 시간도 KST 기준으로 설정
+    const newEndTime = new Date(timeData.tempStartTime);
+    newEndTime.setHours(newEndTime.getHours() + 1);
+
     setTimeData(prev => ({
-      ...prev,
-      startTime: prev.tempStartTime,
-      endTime: newEndTime,
-      tempEndTime: newEndTime,
-      showStartPicker: false,
+        ...prev,
+        startTime: prev.tempStartTime,
+        endTime: newEndTime,
+        tempEndTime: newEndTime,
+        showStartPicker: false,
     }));
-};
+  };
    
-const handleEndTimeChange = (event, selectedDate) => {
-  if (Platform.OS === "android") {
-    setTimeData((prev) => ({ ...prev, showEndPicker: false }));
-  }
-  
-  if (selectedDate) {
-    setTimeData(prev => ({
-      ...prev,
-      tempEndTime: selectedDate,  // 임시값에만 저장
-    }));
-  }
-};
+  const handleEndTimeChange = (event, selectedDate) => {
+    if (Platform.OS === "android") {
+        setTimeData((prev) => ({ ...prev, showEndPicker: false }));
+    }
+    
+    if (selectedDate) {
+        // 선택된 시간에 9시간을 더해서 KST로 저장
+        const kstDate = new Date(selectedDate.getTime() + 9 * 60 * 60 * 1000);
+        setTimeData(prev => ({
+            ...prev,
+            tempEndTime: kstDate,
+        }));
+    }
+  };
 
 const handleConfirmEndTime = () => {
   const timeErrors = validateTimes(timeData.startTime, timeData.tempEndTime);
@@ -300,7 +310,7 @@ const handleConfirmEndTime = () => {
             >
               <Ionicons name="time-outline" size={24} color="#666" />
               <Text style={styles.timeSelectorText}>
-                시작 시간: {formatTime(timeData.startTime)}
+                시작 시간: {formatTime(new Date(timeData.startTime.getTime()))}
               </Text>
             </TouchableOpacity>
 
@@ -316,7 +326,7 @@ const handleConfirmEndTime = () => {
                 color="#666"
               />
               <Text style={styles.timeSelectorText}>
-                종료 시간: {formatTime(timeData.endTime)}
+                종료 시간: {formatTime(new Date(timeData.endTime.getTime()))}
               </Text>
             </TouchableOpacity>
           </View>
@@ -376,11 +386,12 @@ const handleConfirmEndTime = () => {
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
                 <DateTimePicker
-                  value={timeData.startTime}
+                  value={new Date(timeData.startTime.getTime() - 9 * 60 * 60 * 1000)}
                   mode="time"
                   display="spinner"
                   onChange={handleStartTimeChange}
                   minuteInterval={5}
+                  timeZoneName="Asia/Seoul"
                 />
                 <View style={styles.modalButtons}>
                   <TouchableOpacity
@@ -407,12 +418,13 @@ const handleConfirmEndTime = () => {
           </Modal>
         ) : (
           <DateTimePicker
-            value={timeData.startTime}
+            value={new Date(timeData.startTime.getTime() - 9 * 60 * 60 * 1000)}
             mode="time"
             is24Hour={true}
             display="default"
             onChange={handleStartTimeChange}
             minuteInterval={5}
+            timeZoneName="Asia/Seoul"
           />
         ))}
 
@@ -426,11 +438,12 @@ const handleConfirmEndTime = () => {
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
                 <DateTimePicker
-                  value={timeData.endTime}
+                  value={new Date(timeData.endTime.getTime() - 9 * 60 * 60 * 1000)}
                   mode="time"
                   display="spinner"
                   onChange={handleEndTimeChange}
                   minuteInterval={5}
+                  timeZoneName="Asia/Seoul"
                 />
                 <View style={styles.modalButtons}>
                   <TouchableOpacity
@@ -455,12 +468,13 @@ const handleConfirmEndTime = () => {
           </Modal>
         ) : (
           <DateTimePicker
-            value={timeData.endTime}
+            value={new Date(timeData.endTime.getTime() - 9 * 60 * 60 * 1000)}
             mode="time"
             is24Hour={true}
             display="default"
             onChange={handleEndTimeChange}
             minuteInterval={5}
+            timeZoneName="Asia/Seoul"
           />
         ))}
 
