@@ -1,6 +1,5 @@
 package RunningMate.backend.domain.community.entity;
 
-import RunningMate.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,16 +8,20 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class PostLike {
+public class PostImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long likeId;
+    private Long imageId;
+
+    @Column(nullable = false)
+    private String imageURL;
+
+    @Column(nullable = false)
+    private String imageKey;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="postId")
+    @Setter
     private Post post;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="userId")
-    private User user;
 }

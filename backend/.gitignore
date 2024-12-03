@@ -1,1 +1,6 @@
 *.yml
+
+# 캐시파일 ignore 설정
+.gradle/
+.idea/
+build/
