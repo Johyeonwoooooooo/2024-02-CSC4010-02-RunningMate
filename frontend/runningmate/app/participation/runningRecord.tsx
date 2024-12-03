@@ -229,7 +229,6 @@ const RunningScreen = () => {
   };
   const params = useLocalSearchParams();
   const { recordId } = params;
-  console.log(recordId, "recordId");
   const handleStopRunning = () => {
     setIsRunning(false);
     router.push({

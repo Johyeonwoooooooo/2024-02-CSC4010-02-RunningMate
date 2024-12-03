@@ -39,8 +39,8 @@ const CommentsModal = ({ visible, onClose, postId }) => {
       setComments(data);
       setError(null);
     } catch (error) {
-      console.error("Error fetching comments:", error);
-      setError("댓글을 불러오는데 실패했습니다.");
+      // console.error("Error fetching comments:", error);
+      setError("댓글이 존재하지 않아요.");
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ const CommentsModal = ({ visible, onClose, postId }) => {
         Alert.alert("오류", "댓글 등록에 실패했습니다.");
       }
     } catch (error) {
-      console.error("Error posting comment:", error);
+      // console.error("Error posting comment:", error);
       Alert.alert("오류", "네트워크 오류가 발생했습니다.");
     }
   };
@@ -179,7 +179,7 @@ const FloatingActionButton = () => {
 const PostCard = ({ post, onDelete }) => {
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const [isLove, setIsLove] = useState(false);
+  const [isLove, setIsLove] = useState(post.isLikedByUser);
   const [likeCount, setLikeCount] = useState(post.likeCount);
 
   const handleDelete = async () => {
@@ -198,10 +198,10 @@ const PostCard = ({ post, onDelete }) => {
         onDelete(post.postId);
         Alert.alert("성공", "게시글이 삭제되었습니다.");
       } else {
-        Alert.alert("오류", "게시글 삭제에 실패했습니다.");
+        Alert.alert("오류", "게시글 삭제 권한이 없습니다.");
       }
     } catch (error) {
-      console.error("Error deleting post:", error);
+      // console.error("Error deleting post:", error);
       Alert.alert("오류", "네트워크 오류가 발생했습니다.");
     } finally {
       setIsDeleteModalVisible(false);

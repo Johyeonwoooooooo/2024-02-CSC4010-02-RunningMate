@@ -75,8 +75,8 @@ const LoginScreen = () => {
         setModalVisible(true);
       }
     } catch (error) {
-      console.error("Error during login:", error);
-      setModalMessage("로그인 중 통신 오류가 발생했습니다.");
+      // console.error("Error during login:", error);
+      setModalMessage("중복된 이메일 혹은 닉네임이 존재합니다.");
       setModalVisible(true);
     }
   };
@@ -129,6 +129,7 @@ const LoginScreen = () => {
           visible={modalVisible}
           message={modalMessage}
           onClose={() => setModalVisible(false)}
+          onConfirm={() => setModalVisible(false)}
         />
       </SafeAreaView>
     </View>

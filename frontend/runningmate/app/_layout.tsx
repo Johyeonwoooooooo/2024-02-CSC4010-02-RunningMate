@@ -10,7 +10,7 @@ import { AuthProvider, useAuth } from "../context/AuthContext";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// https://docs.expo.dev/router/advanced/tabs/ *참고*
+// https://docs.expo.dev/router/EXPERT/tabs/ *참고*
 
 function RootLayout() {
   const colorScheme = useColorScheme();

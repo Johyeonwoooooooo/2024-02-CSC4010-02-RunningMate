@@ -19,8 +19,8 @@ import { useNavigation } from "@react-navigation/native";
 const LEVEL_MAPPING = {
   초보: "BEGINNER",
   중수: "INTERMEDIATE",
-  고수: "ATHLETE",
-  선수: "EXPERT",
+  고수: "EXPERT",
+  선수: "ATHLETE",
 };
 
 const CreateRunningRoom = () => {
@@ -51,11 +51,19 @@ const CreateRunningRoom = () => {
     maxParticipants: "",
   });
 
-  const [timeData, setTimeData] = useState({
-    startTime: initTimes.defaultStartTime,
-    endTime: initTimes.defaultEndTime,
-    showStartPicker: false,
-    showEndPicker: false,
+  const [timeData, setTimeData] = useState(() => {
+    const today = new Date();
+    const now = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+    const endTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
+    console.log(now, '하씨발')
+    return {
+        startTime: now,
+        endTime: endTime,
+        showStartPicker: false,
+        showEndPicker: false,
+        tempStartTime: now,
+        tempEndTime: endTime,
+    };
   });
 
   const [errors, setErrors] = useState({
@@ -83,34 +91,34 @@ const CreateRunningRoom = () => {
 
   // 시간 포맷팅
   const formatTime = (date) => {
-    if (!date || !(date instanceof Date)) return "시간 선택";
+    if (!date || !(date instanceof Date) || isNaN(date)) return "시간 선택";
+    
+    const displayDate = new Date(date.getTime());
+    displayDate.setHours(displayDate.getHours() - 9);  // 현재 시간에서 9시간을 뺌
+    const hours = displayDate.getHours().toString().padStart(2, '0');
+    const minutes = displayDate.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+};
 
-    try {
-      return date.toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-    } catch (error) {
-      console.error("Time formatting error:", error);
-      return "시간 오류";
-    }
-  };
-  console.log("timeData.startTime", timeData.startTime);
+
+
+
+  console.log("startTime", timeData.startTime);
+  console.log("endTime", timeData.endTime);
   // 시간 검증
   const validateTimes = (start, end) => {
     const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9); // 현재 시간을 KST로 변환
     const errors = {};
 
-    const minStartTime = new Date(currentTime.getTime());
+    const minStartTime = currentTime;
     if (start < minStartTime) {
-      errors.startTime = "시작 시간은 현재 시간 이후여야 합니다.";
+        errors.startTime = "시작 시간은 현재 시간 이후여야 합니다.";
     }
 
     const minEndTime = new Date(start.getTime() + 30 * 60 * 1000);
     if (end < minEndTime) {
-      errors.endTime =
-        "종료 시간은 시작 시간으로부터 최소 30분 이후여야 합니다.";
+        errors.endTime = "종료 시간은 시작 시간으로부터 최소 30분 이후여야 합니다.";
     }
 
     return errors;
@@ -119,49 +127,69 @@ const CreateRunningRoom = () => {
   // 시간 선택 핸들러
   const handleStartTimeChange = (event, selectedDate) => {
     if (Platform.OS === "android") {
-      setTimeData((prev) => ({ ...prev, showStartPicker: false }));
+        setTimeData((prev) => ({ ...prev, showStartPicker: false }));
     }
-
+    
     if (selectedDate) {
-      console.log("Selected start time:", selectedDate);
+        // 선택된 시간에 9시간을 더해서 KST로 저장
+        const kstDate = new Date(selectedDate.getTime() + 9 * 60 * 60 * 1000);
+        setTimeData(prev => ({
+            ...prev,
+            tempStartTime: kstDate,
+        }));
+    }
+  };
 
-      const timeErrors = validateTimes(selectedDate, timeData.endTime);
-      if (timeErrors.startTime) {
+
+  // 확인 버튼 핸들러 추가
+  const handleConfirmStartTime = () => {
+    const timeErrors = validateTimes(timeData.tempStartTime, timeData.endTime);
+    if (timeErrors.startTime) {
         Alert.alert("시간 오류", timeErrors.startTime);
         return;
-      }
-
-      const newEndTime = new Date(selectedDate.getTime() + 60 * 60 * 1000);
-      setTimeData((prev) => ({
-        ...prev,
-        startTime: selectedDate,
-        endTime: newEndTime,
-        showStartPicker: false,
-      }));
     }
-  };
 
+    // 종료 시간도 KST 기준으로 설정
+    const newEndTime = new Date(timeData.tempStartTime);
+    newEndTime.setHours(newEndTime.getHours() + 1);
+
+    setTimeData(prev => ({
+        ...prev,
+        startTime: prev.tempStartTime,
+        endTime: newEndTime,
+        tempEndTime: newEndTime,
+        showStartPicker: false,
+    }));
+  };
+   
   const handleEndTimeChange = (event, selectedDate) => {
     if (Platform.OS === "android") {
-      setTimeData((prev) => ({ ...prev, showEndPicker: false }));
+        setTimeData((prev) => ({ ...prev, showEndPicker: false }));
     }
-
+    
     if (selectedDate) {
-      console.log("Selected end time:", selectedDate);
-
-      const timeErrors = validateTimes(timeData.startTime, selectedDate);
-      if (timeErrors.endTime) {
-        Alert.alert("시간 오류", timeErrors.endTime);
-        return;
-      }
-
-      setTimeData((prev) => ({
-        ...prev,
-        endTime: selectedDate,
-        showEndPicker: false,
-      }));
+        // 선택된 시간에 9시간을 더해서 KST로 저장
+        const kstDate = new Date(selectedDate.getTime() + 9 * 60 * 60 * 1000);
+        setTimeData(prev => ({
+            ...prev,
+            tempEndTime: kstDate,
+        }));
     }
   };
+
+const handleConfirmEndTime = () => {
+  const timeErrors = validateTimes(timeData.startTime, timeData.tempEndTime);
+  if (timeErrors.endTime) {
+    Alert.alert("시간 오류", timeErrors.endTime);
+    return;
+  }
+
+  setTimeData(prev => ({
+    ...prev,
+    endTime: prev.tempEndTime,
+    showEndPicker: false,
+  }));
+};
 
   // 방 생성 핸들러
   const handleCreateRoom = async () => {
@@ -282,7 +310,7 @@ const CreateRunningRoom = () => {
             >
               <Ionicons name="time-outline" size={24} color="#666" />
               <Text style={styles.timeSelectorText}>
-                시작 시간: {formatTime(timeData.startTime)}
+                시작 시간: {formatTime(new Date(timeData.startTime.getTime()))}
               </Text>
             </TouchableOpacity>
 
@@ -298,7 +326,7 @@ const CreateRunningRoom = () => {
                 color="#666"
               />
               <Text style={styles.timeSelectorText}>
-                종료 시간: {formatTime(timeData.endTime)}
+                종료 시간: {formatTime(new Date(timeData.endTime.getTime()))}
               </Text>
             </TouchableOpacity>
           </View>
@@ -358,11 +386,12 @@ const CreateRunningRoom = () => {
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
                 <DateTimePicker
-                  value={timeData.startTime}
+                  value={new Date(timeData.startTime.getTime() - 9 * 60 * 60 * 1000)}
                   mode="time"
                   display="spinner"
                   onChange={handleStartTimeChange}
                   minuteInterval={5}
+                  timeZoneName="Asia/Seoul"
                 />
                 <View style={styles.modalButtons}>
                   <TouchableOpacity
@@ -371,6 +400,7 @@ const CreateRunningRoom = () => {
                       setTimeData((prev) => ({
                         ...prev,
                         showStartPicker: false,
+                        tempStartTime: prev.startTime,  // 취소 시 이전 값으로 복원
                       }))
                     }
                   >
@@ -378,12 +408,7 @@ const CreateRunningRoom = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.modalButton, styles.modalButtonConfirm]}
-                    onPress={() =>
-                      setTimeData((prev) => ({
-                        ...prev,
-                        showStartPicker: false,
-                      }))
-                    }
+                    onPress={handleConfirmStartTime}
                   >
                     <Text style={styles.modalButtonTextConfirm}>확인</Text>
                   </TouchableOpacity>
@@ -393,12 +418,13 @@ const CreateRunningRoom = () => {
           </Modal>
         ) : (
           <DateTimePicker
-            value={timeData.startTime}
+            value={new Date(timeData.startTime.getTime() - 9 * 60 * 60 * 1000)}
             mode="time"
             is24Hour={true}
             display="default"
             onChange={handleStartTimeChange}
             minuteInterval={5}
+            timeZoneName="Asia/Seoul"
           />
         ))}
 
@@ -412,11 +438,12 @@ const CreateRunningRoom = () => {
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
                 <DateTimePicker
-                  value={timeData.endTime}
+                  value={new Date(timeData.endTime.getTime() - 9 * 60 * 60 * 1000)}
                   mode="time"
                   display="spinner"
                   onChange={handleEndTimeChange}
                   minuteInterval={5}
+                  timeZoneName="Asia/Seoul"
                 />
                 <View style={styles.modalButtons}>
                   <TouchableOpacity
@@ -441,12 +468,13 @@ const CreateRunningRoom = () => {
           </Modal>
         ) : (
           <DateTimePicker
-            value={timeData.endTime}
+            value={new Date(timeData.endTime.getTime() - 9 * 60 * 60 * 1000)}
             mode="time"
             is24Hour={true}
             display="default"
             onChange={handleEndTimeChange}
             minuteInterval={5}
+            timeZoneName="Asia/Seoul"
           />
         ))}
 

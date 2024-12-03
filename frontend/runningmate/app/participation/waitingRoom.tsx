@@ -72,7 +72,7 @@ const RunningWaitingRoom = () => {
         throw new Error("Invalid data format received");
       }
     } catch (err) {
-      console.error("Error fetching participants:", err);
+      // console.error("Error fetching participants:", err);
       setError("참가자 목록을 불러오는데 실패했습니다.");
     }
   };
@@ -147,6 +147,7 @@ const RunningWaitingRoom = () => {
     if (!isActive) return;
     const now = new Date();
     const start = new Date(startTime);
+    start.setHours(start.getHours() - 9); // UTC -> KST 변환
     const diff = start - now;
 
     if (diff <= 0) {
@@ -236,15 +237,18 @@ const RunningWaitingRoom = () => {
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>러닝 시간</Text>
             <Text style={styles.infoValue}>
-              {new Date(startTime).toLocaleTimeString("ko-KR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}{" "}
-              ~
-              {new Date(endTime).toLocaleTimeString("ko-KR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+            {new Date(new Date(startTime).getTime() - 9 * 60 * 60 * 1000).toLocaleTimeString("ko-KR", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true, // 오전/오후 표시
+              timeZone: "Asia/Seoul"
+            })} ~
+            {new Date(new Date(endTime).getTime() - 9 * 60 * 60 * 1000).toLocaleTimeString("ko-KR", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+              timeZone: "Asia/Seoul"
+            })}
             </Text>
           </View>
         </View>
