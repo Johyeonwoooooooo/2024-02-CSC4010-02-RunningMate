@@ -261,7 +261,7 @@ export default function MyPageScreen() {
         await fetchUserPosts();
       }
     } catch (error) {
-      console.error("Error refreshing data:", error);
+      // console.error("Error refreshing data:", error);
     } finally {
       setRefreshing(false);
     }
@@ -280,7 +280,7 @@ export default function MyPageScreen() {
         console.error("Error fetching user profile:", await response.text());
       }
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      // console.error("Error fetching user profile:", error);
     } finally {
       setLoading(false);
     }
@@ -294,7 +294,7 @@ export default function MyPageScreen() {
         setUserPosts(data);
       }
     } catch (error) {
-      console.error("Error fetching user posts:", error);
+      // console.error("Error fetching user posts:", error);
     }
   };
 
@@ -307,7 +307,7 @@ export default function MyPageScreen() {
       const data = await response.json();
       setRecords(data);
     } catch (error) {
-      console.error("Error fetching records:", error);
+      // console.error("Error fetching records:", error);
     }
   };
 

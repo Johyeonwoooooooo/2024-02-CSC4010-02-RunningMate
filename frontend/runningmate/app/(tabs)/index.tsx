@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -9,6 +9,7 @@ import {
   FlatList,
   Text,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
@@ -24,8 +25,7 @@ const DUMMY_COURSES = [
     name: "한강 러닝 코스",
     distance: "5km",
     difficulty: "초급",
-    image:
-      "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage1.png",
+    image: "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage1.png",
     estimatedTime: "30분",
   },
   {
@@ -33,8 +33,7 @@ const DUMMY_COURSES = [
     name: "올림픽 공원 코스",
     distance: "7km",
     difficulty: "중급",
-    image:
-      "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage2.png",
+    image: "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage2.png",
     estimatedTime: "45분",
   },
   {
@@ -42,8 +41,7 @@ const DUMMY_COURSES = [
     name: "남산 트레일",
     distance: "8km",
     difficulty: "고급",
-    image:
-      "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage3.png",
+    image: "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage3.png",
     estimatedTime: "50분",
   },
   {
@@ -51,8 +49,7 @@ const DUMMY_COURSES = [
     name: "청계천 러닝",
     distance: "4km",
     difficulty: "초급",
-    image:
-      "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage4.png",
+    image: "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage4.png",
     estimatedTime: "25분",
   },
   {
@@ -60,8 +57,7 @@ const DUMMY_COURSES = [
     name: "한강 산책",
     distance: "2km",
     difficulty: "초급",
-    image:
-      "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage5.png",
+    image: "https://runningmatebucket1.s3.ap-northeast-2.amazonaws.com/mainPage5.png",
     estimatedTime: "250분",
   },
 ];
@@ -69,45 +65,55 @@ const DUMMY_COURSES = [
 const HomeScreen = () => {
   const navigation = useNavigation();
   const courseListRef = useRef(null);
-  const [liked, setLiked] = useState<{ [key: number]: boolean }>({});
+  const [liked, setLiked] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
 
-  // 서버 데이터를 위한 상태 추가
+  // 서버 데이터를 위한 상태
   const [runningSpotPosts, setRunningSpotPosts] = useState([]);
   const [runningCertPosts, setRunningCertPosts] = useState([]);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log(runningCertPosts, "gggggggggggg");
-  // 서버에서 데이터 가져오기
-  useEffect(() => {
-    const fetchMainPageData = async () => {
-      try {
-        const response = await fetch(`${API_URL}/mainPage`);
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
 
-        // 데이터 설정
-        setRunningSpotPosts(data.mainPageRunningSpotPostList || []);
-        setRunningCertPosts(data.mainPageRunningCertPostList || []);
-        setGroups(data.mainPageGroupList || []);
-        setLoading(false);
-      } catch (err) {
-        // console.error("Error fetching main page data:", err);
-        setError(err.message);
-        setLoading(false);
+  // 데이터 가져오기 함수
+  const fetchMainPageData = async () => {
+    try {
+      const response = await fetch(`${API_URL}/mainPage`);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
-    };
+      const data = await response.json();
 
+      setRunningSpotPosts(data.mainPageRunningSpotPostList || []);
+      setRunningCertPosts(data.mainPageRunningCertPostList || []);
+      setGroups(data.mainPageGroupList || []);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 초기 데이터 로딩
+  useEffect(() => {
     fetchMainPageData();
   }, []);
+
+  // 새로고침 핸들러
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchMainPageData();
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   const router = useRouter();
-  // 게시물 클릭 핸들러 수정
+
   const handlePostPress = (post) => {
-    console.log(post.postTag, "postttt");
     const tabIndex = post.postTag === true ? 0 : 1;
-    console.log(tabIndex, "tabIndexxxxx");
     router.push({
       pathname: "/community",
       params: {
@@ -117,12 +123,11 @@ const HomeScreen = () => {
     });
   };
 
-  // 더보기 버튼 핸들러 수정
   const handleMorePress = (tabIndex) => {
     router.push({
       pathname: "/community",
       params: {
-        initialTab: tabIndex, // 0 또는 1
+        initialTab: tabIndex,
       },
     });
   };
@@ -144,12 +149,10 @@ const HomeScreen = () => {
     </TouchableOpacity>
   );
 
-  // 게시물 렌더링 함수 통합
   const renderPost = ({ item }) => {
-    const postId =
-      item?.postId?.toString() ||
-      item?.id?.toString() ||
-      Math.random().toString();
+    const postId = item?.postId?.toString() || 
+                  item?.id?.toString() || 
+                  Math.random().toString();
 
     const formatDate = (dateString) => {
       if (!dateString) return "날짜 없음";
@@ -213,7 +216,18 @@ const HomeScreen = () => {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor="#0000ff"
+          title="새로고침 중..."
+          titleColor="#999999"
+        />
+      }
+    >
       <View style={styles.header}>
         <Text style={styles.headerEmoji}>🏃‍♂️</Text>
         <Text style={styles.headerTitle}>Running Mate</Text>
@@ -311,8 +325,8 @@ const HomeScreen = () => {
                       hour: "2-digit",
                       minute: "2-digit",
                       hour12: true,
-                    })}{" "}
-                    ~
+                    })}
+                    {" ~ "}
                     {new Date(item.endTime).toLocaleTimeString("ko-KR", {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -431,6 +445,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
+  
   spotContainer: {
     padding: 16,
     backgroundColor: "#fff",
@@ -510,12 +525,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
+    backgroundColor: "#f0f0f0",
   },
   groupLevel: {
     fontSize: 12,
     fontWeight: "600",
+    color: "#666",
   },
   groupInfo: {
+    marginTop: 8,
     gap: 8,
   },
   groupDetail: {
@@ -540,5 +558,5 @@ const styles = StyleSheet.create({
     color: "#666",
   },
 });
-
+  
 export default HomeScreen;
