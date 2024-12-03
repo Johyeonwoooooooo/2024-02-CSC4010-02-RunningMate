@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RunningGroupRepository extends JpaRepository<RunningGroup, Long> {
+    List<RunningGroup> findAllByActivateTrueAndGroupTagNot(GroupTag groupTag);
     List<RunningGroup> findAllByActivateTrueAndGroupTagNotOrderByStartTimeAsc(GroupTag groupTag);
     RunningGroup findByGroupId(Long groupId);
     RunningGroup findByGroupTagAndActivateTrue(GroupTag groupTag);
