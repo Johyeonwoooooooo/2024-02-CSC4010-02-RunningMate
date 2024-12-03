@@ -70,14 +70,14 @@ public class UserDTO {
     @AllArgsConstructor
     public static class MyRecordResponse { // 날짜, 거리, 일주일 거리 총합
         private LocalDateTime recordDate;
-        private Long dailyDistance;
-        private Long weekDistance; // 총 거리
+        private Double dailyDistance;
+        private Double weekDistance; // 총 거리
         private Double weekCalories; // 총 칼로리
 
         public MyRecordResponse(Record record) {
             this.recordDate = record.getRunningStartTime().atStartOfDay(); // LocalDate to LocalDateTime
-            this.dailyDistance = record.getDistance();
-            this.weekDistance = 0L; // 계산 후 세팅
+            this.dailyDistance = record.getDistance() / 1000.0;
+            this.weekDistance = 0.0; // 계산 후 세팅
             this.weekCalories = 0.0; // 계산 후 세팅
         }
     }

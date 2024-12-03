@@ -134,14 +134,14 @@ public class UserServiceImpl implements UserService{
                 .collect(Collectors.groupingBy(Record::getRunningStartTime));
 
         List<UserDTO.MyRecordResponse> responses = new ArrayList<>();
-        long totalDistance = 0;
+        double totalDistance = 0;
         double totalCalories = 0;
 
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             List<Record> dailyRecords = groupedRecords.getOrDefault(date, new ArrayList<>());
 
             // 하루 동안의 거리와 칼로리 계산
-            long dailyDistance = dailyRecords.stream().mapToLong(Record::getDistance).sum();
+            Double dailyDistance = dailyRecords.stream().mapToLong(Record::getDistance).sum() / 1000.0;
             Double dailyCalories = dailyRecords.stream().mapToDouble(Record::getCalories).sum();
 
             // 누적 거리 및 칼로리
