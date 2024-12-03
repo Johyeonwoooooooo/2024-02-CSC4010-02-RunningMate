@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -42,47 +42,32 @@ const RunningMateSearch = () => {
   const [runningRooms, setRunningRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedLevel, setSelectedLevel] = useState(null);
-  const [inputText, setInputText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
-  const [selectedTimeText, setSelectedTimeText] =
-    useState("러닝 시작 시간 입력");
+  const [selectedTimeText, setSelectedTimeText] = useState("러닝 시작 시간 입력");
   const [joiningRoom, setJoiningRoom] = useState(false);
 
   const navigation = useNavigation();
   const router = useRouter();
 
-  const executeSearch = () => {
-    const trimmedText = inputText.trim();
-    setSearchQuery(trimmedText);
-
-    // 검색어가 변경된 후 API 호출
-    setTimeout(() => {
-      fetchRunningRooms();
-    }, 0);
-  };
-
-  const fetchRunningRooms = async () => {
+  const fetchRunningRooms = useCallback(async (query = "", level = null) => {
     setLoading(true);
     try {
       let url = "http://43.200.193.236:8080/running";
+      const params = new URLSearchParams();
 
-      if (selectedLevel || searchQuery.trim()) {
-        const params = new URLSearchParams();
-
-        if (selectedLevel) {
-          params.append("groupTag", selectedLevel);
-        }
-
-        if (searchQuery.trim()) {
-          params.append("searchWord", searchQuery.trim());
-        }
-
-        url = `http://43.200.193.236:8080/running/filtering?${params.toString()}`;
+      if (level) {
+        params.append("groupTag", level);
+      }
+      
+      if (query.trim()) {
+        params.append("searchWord", query.trim());
       }
 
-      console.log("Fetching URL:", url);
+      if (params.toString()) {
+        url = `http://43.200.193.236:8080/running/filtering?${params.toString()}`;
+      }
 
       const response = await fetch(url);
 
@@ -91,17 +76,13 @@ const RunningMateSearch = () => {
       }
 
       const responseText = await response.text();
-      console.log("Raw response:", responseText);
-
       if (!responseText.trim()) {
         setRunningRooms([]);
         return;
       }
 
       const data = JSON.parse(responseText);
-      console.log("Parsed data:", data);
-
-      if (!data || !Array.isArray(data) || data.length === 0) {
+      if (!data || !Array.isArray(data)) {
         setRunningRooms([]);
         return;
       }
@@ -120,13 +101,24 @@ const RunningMateSearch = () => {
 
       setRunningRooms(formattedRooms);
     } catch (error) {
-      // console.error("Error fetching running rooms:", error);
+      console.error("Error fetching running rooms:", error);
       setRunningRooms([]);
       Alert.alert("오류", "러닝방 목록을 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const executeSearch = useCallback((query) => {
+    setSearchQuery(query);
+    fetchRunningRooms(query, selectedLevel);
+  }, [selectedLevel, fetchRunningRooms]);
+
+  const handleLevelSelect = useCallback((levelId) => {
+    const newLevel = selectedLevel === levelId ? null : levelId;
+    setSelectedLevel(newLevel);
+    fetchRunningRooms(searchQuery, newLevel);
+  }, [searchQuery, selectedLevel, fetchRunningRooms]);
 
   const handleJoinRoom = async (room) => {
     if (joiningRoom) return;
@@ -178,75 +170,9 @@ const RunningMateSearch = () => {
       Alert.alert("성공", "러닝 방 참가가 완료되었습니다.");
     } catch (error) {
       console.error("Joining room error:", error);
-      Alert.alert("참가 실패", error.message, [{ text: "확인" }]);
+      Alert.alert("참가 실패", error.message);
     } finally {
       setJoiningRoom(false);
-    }
-  };
-
-  const handleLevelSelect = async (levelId) => {
-    console.log("Selected level:", levelId); // 선택된 레벨 로깅
-
-    // 현재 선택된 레벨과 같은 레벨을 클릭한 경우 필터 해제
-    const newLevel = selectedLevel === levelId ? null : levelId;
-    setSelectedLevel(newLevel);
-
-    try {
-      let url = "http://43.200.193.236:8080/running";
-
-      // 검색어나 레벨 필터가 있는 경우에만 필터링 URL 사용
-      if (newLevel || searchQuery.trim()) {
-        const params = new URLSearchParams();
-
-        if (newLevel) {
-          params.append("groupTag", newLevel);
-        }
-
-        if (searchQuery.trim()) {
-          params.append("searchWord", searchQuery.trim());
-        }
-
-        url = `http://43.200.193.236:8080/running/filtering?${params.toString()}`;
-      }
-
-      console.log("Fetching URL after level select:", url); // URL 로깅
-      setLoading(true);
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch rooms");
-      }
-
-      const responseText = await response.text();
-      console.log("Response after level select:", responseText); // 응답 로깅
-
-      if (!responseText.trim()) {
-        setRunningRooms([]);
-        return;
-      }
-
-      const data = JSON.parse(responseText);
-
-      const formattedRooms = data.map((room) => ({
-        id: room.groupId,
-        level: convertGroupTag(room.groupTag),
-        title: room.groupTitle,
-        time: formatTime(room.startTime, room.endTime),
-        distance: `${room.targetDistance}km`,
-        startTime: room.startTime,
-        endTime: room.endTime,
-        targetDistance: room.targetDistance,
-        maxParticipants: room.maxParticipants,
-      }));
-
-      setRunningRooms(formattedRooms);
-    } catch (error) {
-      console.error("Error during level filtering:", error);
-      setRunningRooms([]);
-      Alert.alert("오류", "러닝방 목록을 불러오는데 실패했습니다.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -257,26 +183,8 @@ const RunningMateSearch = () => {
       EXPERT: "고수",
       ATHLETE: "선수",
     };
-
-    // 이미 한글인 경우 그대로 반환
-    if (Object.values(levels).includes(tag)) {
-      return tag;
-    }
-
-    return levels[tag] || "초보";
+    return levels[tag] || tag;
   };
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchRunningRooms();
-      return () => {
-        setRunningRooms([]);
-        setLoading(true);
-        setSearchQuery("");
-        setInputText("");
-        setSelectedLevel(null);
-      };
-    }, [])
-  );
 
   const formatTime = (start, end) => {
     const formatDateTime = (dateStr) => {
@@ -298,6 +206,7 @@ const RunningMateSearch = () => {
       setSelectedTimeText(`${hours}:${minutes}`);
     }
   };
+
   const handleQuickJoin = async () => {
     try {
       const response = await fetch(
@@ -316,9 +225,6 @@ const RunningMateSearch = () => {
       }
 
       const data = await response.json();
-      console.log("Quick join success:", data);
-
-      // 성공 시 러닝방으로 이동
       router.push({
         pathname: "/participation/runningRecord",
         params: {
@@ -337,6 +243,19 @@ const RunningMateSearch = () => {
       Alert.alert("오류", error.message);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchRunningRooms();
+      return () => {
+        setRunningRooms([]);
+        setLoading(true);
+        setSearchQuery("");
+        setSelectedLevel(null);
+      };
+    }, [fetchRunningRooms])
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.searchContainer}>
@@ -344,12 +263,15 @@ const RunningMateSearch = () => {
           <TextInput
             style={styles.searchInput}
             placeholder="방 이름을 검색하세요."
-            value={inputText}
-            onChangeText={setInputText}
-            onSubmitEditing={executeSearch}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={() => executeSearch(searchQuery)}
             returnKeyType="search"
           />
-          <TouchableOpacity style={styles.searchIcon} onPress={executeSearch}>
+          <TouchableOpacity 
+            style={styles.searchIcon} 
+            onPress={() => executeSearch(searchQuery)}
+          >
             <Ionicons name="search" size={20} color="#666" />
           </TouchableOpacity>
         </View>
@@ -376,21 +298,21 @@ const RunningMateSearch = () => {
           ))}
         </View>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.timeSelector}
           onPress={() => setShowTimePicker(true)}
         >
           <Ionicons name="time-outline" size={24} color="#000" />
           <Text style={styles.timeSelectorText}>{selectedTimeText}</Text>
           <Ionicons name="chevron-down" size={24} color="#000" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <View style={styles.headerContainer}>
         <Text style={styles.sectionTitle}>클럽에서 참가</Text>
         <TouchableOpacity
           style={styles.refreshButton}
-          onPress={fetchRunningRooms}
+          onPress={() => fetchRunningRooms(searchQuery, selectedLevel)}
         >
           <Ionicons name="refresh" size={24} color="#007AFF" />
         </TouchableOpacity>
@@ -654,7 +576,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
   },
-  // 모달 관련 스타일
   modalView: {
     backgroundColor: "white",
     borderTopLeftRadius: 20,
