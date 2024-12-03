@@ -97,7 +97,7 @@ public class RunningServiceImpl implements RunningService {
 
     @Override
     public List<RunningDTO.RunningGroupViewResponse> viewRunningGroups() {
-        List<RunningGroup> groupList = groupRepository.findAllByActivateTrueAndGroupTagNot(GroupTag.QUICK);
+        List<RunningGroup> groupList = groupRepository.findAllByActivateTrueAndGroupTagNotOrderByStartTimeAsc(GroupTag.QUICK);
         return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();
     }
 
