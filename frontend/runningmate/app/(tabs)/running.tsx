@@ -101,7 +101,7 @@ const RunningMateSearch = () => {
 
       setRunningRooms(formattedRooms);
     } catch (error) {
-      console.error("Error fetching running rooms:", error);
+      // console.error("Error fetching running rooms:", error);
       setRunningRooms([]);
       Alert.alert("오류", "러닝방 목록을 불러오는데 실패했습니다.");
     } finally {
@@ -169,7 +169,7 @@ const RunningMateSearch = () => {
 
       Alert.alert("성공", "러닝 방 참가가 완료되었습니다.");
     } catch (error) {
-      console.error("Joining room error:", error);
+      // console.error("Joining room error:", error);
       Alert.alert("참가 실패", error.message);
     } finally {
       setJoiningRoom(false);
@@ -240,7 +240,7 @@ const RunningMateSearch = () => {
       });
     } catch (error) {
       console.error("Error in quick join:", error);
-      Alert.alert("오류", error.message);
+      Alert.alert("빠른 참가 실패", error.message);
     }
   };
 
@@ -387,8 +387,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F3F8",
     borderRadius: 25,
     paddingHorizontal: 16,
-    marginBottom: 16,
-    height: 44,
+    marginBottom: 20,
+    height: 40,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -413,8 +413,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   levelButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 25,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "#ddd",
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
   },

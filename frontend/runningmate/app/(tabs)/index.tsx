@@ -94,7 +94,7 @@ const HomeScreen = () => {
         setGroups(data.mainPageGroupList || []);
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching main page data:", err);
+        // console.error("Error fetching main page data:", err);
         setError(err.message);
         setLoading(false);
       }
