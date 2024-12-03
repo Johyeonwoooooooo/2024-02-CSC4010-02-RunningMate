@@ -1,0 +1,83 @@
+{
+  "User": [
+    {
+      "id": "7a51",
+      "userid": 1,
+      "userEmail": "test@example.com",
+      "userPassword": "password123",
+      "userNickname": "test",
+      "userWeight": 70,
+      "userHeight": 180
+    },
+    {
+      "id": "2372",
+      "userid": 2,
+      "userEmail": "qwer@a.a",
+      "userPassword": "1234",
+      "userNickname": "Qwer",
+      "userWeight": 100,
+      "userHeight": 100
+    },
+    {
+      "id": "e292",
+      "userid": 3,
+      "userEmail": "Al@aa.aa",
+      "userPassword": "fibGin-5finno-canroh",
+      "userNickname": "Apql",
+      "userWeight": 30,
+      "userHeight": 150
+    }
+  ],
+
+  "Record": [
+    {
+      "recordId": 1,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2024-11-06T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 2,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2024-11-07T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 3,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2024-11-08T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 4,
+      "userId": 2,
+      "distance": 1000,
+      "runningTime": "2024-11-09T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 5,
+      "userId": 2,
+      "distance": 300,
+      "runningTime": "2024-11-10T09:00:00Z",
+      "calories": 200
+    },
+    {
+      "recordId": 6,
+      "userId": 2,
+      "distance": 500,
+      "runningTime": "2024-11-11T09:00:00Z",
+      "calories": 300
+    },
+    {
+      "recordId": 7,
+      "userId": 2,
+      "distance": 300,
+      "runningTime": "2024-11-12T09:00:00Z",
+      "calories": 200
+    }
+  ]
+}
