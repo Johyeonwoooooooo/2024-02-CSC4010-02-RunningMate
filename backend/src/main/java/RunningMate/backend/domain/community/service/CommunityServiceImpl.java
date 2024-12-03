@@ -178,7 +178,7 @@ public class CommunityServiceImpl implements CommunityService{
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        if (user.get().getUserNickname().equals("admin")) { // 관리자는 모든 글 삭제 가능
+        if (user.get().getUserEmail().equals("administer") || user.get().getUserNickname().equals("administer")) { // 관리자는 모든 글 삭제 가능
             postRepository.delete(post);
             return;
         }

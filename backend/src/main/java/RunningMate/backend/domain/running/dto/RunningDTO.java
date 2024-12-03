@@ -90,10 +90,12 @@ public class RunningDTO {
         private Long recordId;
         private Duration runningTime;
         private Double calories;
+        private Double distance;
         public ParticipateQuickRunningResponse(Record record){
             this.recordId = record.getRecordId();
             this.runningTime = record.getRunningTime();
             this.calories = record.getCalories();
+            this.distance = Double.valueOf(record.getDistance()) / 1000;
         }
     }
 
@@ -149,12 +151,13 @@ public class RunningDTO {
         private Long ranking;
         private String userNickname;
         private boolean yourRecord;
-        private Long distance;
+        private Double distance;
 
         public LeaderboardResponse(LeaderBoard leaderBoard, boolean yourRecord){
             this.ranking = leaderBoard.getCurrentRanking();
             this.userNickname = leaderBoard.getRecord().getUser().getUserNickname();
-            this.distance = leaderBoard.getRecord().getDistance();
+            double kilometers = leaderBoard.getRecord().getDistance() / 1000.0;
+            this.distance =  Math.round(kilometers * 1000.0) / 1000.0;
             this.yourRecord = yourRecord;
         }
     }

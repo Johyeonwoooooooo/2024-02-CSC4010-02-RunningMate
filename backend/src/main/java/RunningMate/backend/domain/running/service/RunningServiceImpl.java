@@ -351,7 +351,7 @@ public class RunningServiceImpl implements RunningService {
         int size = leaderboardResponses.size();
         if(size < 3){
             for(int i = 0; i < 3- size; i++){
-                leaderboardResponses.add(new RunningDTO.LeaderboardResponse(Long.valueOf(size+1+i), "-", false,  0L));
+                leaderboardResponses.add(new RunningDTO.LeaderboardResponse(Long.valueOf(size+1+i), "-", false,  0.0));
             }
         }
         return leaderboardResponses;

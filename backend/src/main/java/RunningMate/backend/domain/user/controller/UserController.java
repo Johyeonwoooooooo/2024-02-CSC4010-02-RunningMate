@@ -36,7 +36,7 @@ public class UserController {
             User user = userService.signUp(request);
             return ResponseEntity.ok("회원가입에 성공하였습니다.");
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.internalServerError().body("회원가입 중 오류가 발생했습니다.");
         }
     }
 
@@ -53,7 +53,7 @@ public class UserController {
             log.info("{} 님 로그인, userId = {}", user.getUserNickname(), user.getUserId());
             return ResponseEntity.ok().body(user.getUserNickname() + "님, 로그인 성공하셨습니다!");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("로그인 실패: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("로그인 실패: " + e.getMessage());
         }
     }
 
@@ -85,7 +85,7 @@ public class UserController {
 
             return ResponseEntity.ok().body(userService.profile(optionalUser));
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
@@ -101,7 +101,7 @@ public class UserController {
             User user = userService.updateProfile(request, optionalUser);
             return ResponseEntity.ok().body(user.getUserNickname() + user.getUserWeight() + user.getUserHeight());
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
