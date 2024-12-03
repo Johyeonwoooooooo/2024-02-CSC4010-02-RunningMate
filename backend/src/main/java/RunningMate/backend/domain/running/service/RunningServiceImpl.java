@@ -105,10 +105,10 @@ public class RunningServiceImpl implements RunningService {
     public List<RunningDTO.RunningGroupViewResponse> filteringGroup(GroupTag groupTag, String searchWord) {
         List<RunningGroup> groupList;
         if(groupTag == null){
-            groupList = groupRepository.findAllByGroupTitleContainsAndActivateTrue(searchWord);
+            groupList = groupRepository.findAllByGroupTitleContainsAndActivateTrueOrderByStartTimeASC(searchWord);
         }
         else {
-            groupList = groupRepository.findAllByGroupTagAndGroupTitleContainsAndActivateTrue(groupTag, searchWord);
+            groupList = groupRepository.findAllByGroupTagAndGroupTitleContainsAndActivateTrueOrderByStartTimeASC(groupTag, searchWord);
         }
 
         return groupList.stream().map(RunningDTO.RunningGroupViewResponse::new).toList();

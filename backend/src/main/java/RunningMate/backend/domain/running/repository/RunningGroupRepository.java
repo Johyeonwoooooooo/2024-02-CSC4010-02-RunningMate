@@ -14,6 +14,6 @@ public interface RunningGroupRepository extends JpaRepository<RunningGroup, Long
     RunningGroup findByGroupTagAndActivateTrue(GroupTag groupTag);
     List<RunningGroup> findAllByGroupTagAndActivateTrue(GroupTag groupTag);
     List<RunningGroup> findAllByEndTimeBeforeAndActivateTrue(LocalDateTime now);
-    List<RunningGroup> findAllByGroupTagAndGroupTitleContainsAndActivateTrue(GroupTag groupTag, String search);
-    List<RunningGroup> findAllByGroupTitleContainsAndActivateTrue(String search);
+    List<RunningGroup> findAllByGroupTagAndGroupTitleContainsAndActivateTrueOrderByStartTimeASC(GroupTag groupTag, String search);
+    List<RunningGroup> findAllByGroupTitleContainsAndActivateTrueOrderByStartTimeASC(String search);
 }
