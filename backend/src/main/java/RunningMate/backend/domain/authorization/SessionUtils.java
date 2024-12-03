@@ -17,4 +17,5 @@ public class SessionUtils {
         Optional<User> user = userRepository.findUserByUserId((Long) userId);
         return user;
     }
+
 }
