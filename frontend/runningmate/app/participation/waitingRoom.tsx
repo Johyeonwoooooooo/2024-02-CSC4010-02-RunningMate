@@ -48,7 +48,7 @@ const RunningWaitingRoom = () => {
       console.log("Fetching participants for recordId:", numericRecordId);
 
       const response = await fetch(
-        `http:localhost:8080/running/participants?recordId=${numericRecordId}`
+        `http://43.200.193.236:8080/running/participants?recordId=${numericRecordId}`
       );
       console.log(response);
       console.log("API Response status:", response.status);
@@ -89,7 +89,7 @@ const RunningWaitingRoom = () => {
       });
 
       const response = await fetch(
-        `http:localhost:8080/running/cancel?recordId=${numericRecordId}`,
+        `http://43.200.193.236:8080/running/cancel?recordId=${numericRecordId}`,
         {
           method: "DELETE",
           headers: {

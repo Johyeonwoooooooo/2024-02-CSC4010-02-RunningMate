@@ -19,8 +19,8 @@ import { useNavigation } from "@react-navigation/native";
 const LEVEL_MAPPING = {
   초보: "BEGINNER",
   중수: "INTERMEDIATE",
-  고수: "ATHLETE",
-  선수: "EXPERT",
+  고수: "EXPERT",
+  선수: "ATHLETE",
 };
 
 const CreateRunningRoom = () => {
@@ -222,7 +222,7 @@ const handleConfirmEndTime = () => {
       console.log("Request Data:", requestData);
 
       const response = await fetch(
-        "http:localhost:8080/running/create",
+        "http://43.200.193.236:8080/running/create",
         {
           method: "POST",
           headers: {

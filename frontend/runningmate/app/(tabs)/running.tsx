@@ -19,8 +19,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 const DIFFICULTY_LEVELS = [
   { id: "BEGINNER", label: "초보" },
   { id: "INTERMEDIATE", label: "중수" },
-  { id: "ADVANCED", label: "고수" },
-  { id: "EXPERT", label: "선수" },
+  { id: "EXPERT", label: "고수" },
+  { id: "ATHLETE", label: "선수" },
 ];
 
 const RoomCard = ({ room, onPress }) => (
@@ -66,7 +66,7 @@ const RunningMateSearch = () => {
   const fetchRunningRooms = async () => {
     setLoading(true);
     try {
-      let url = "http:localhost:8080/running";
+      let url = "http://43.200.193.236:8080/running";
 
       if (selectedLevel || searchQuery.trim()) {
         const params = new URLSearchParams();
@@ -79,7 +79,7 @@ const RunningMateSearch = () => {
           params.append("searchWord", searchQuery.trim());
         }
 
-        url = `http:localhost:8080/running/filtering?${params.toString()}`;
+        url = `http://43.200.193.236:8080/running/filtering?${params.toString()}`;
       }
 
       console.log("Fetching URL:", url);
@@ -134,7 +134,7 @@ const RunningMateSearch = () => {
     setJoiningRoom(true);
     try {
       const response = await fetch(
-        `http:localhost:8080/running/${room.id}/participate`,
+        `http://43.200.193.236:8080/running/${room.id}/participate`,
         {
           method: "POST",
           headers: {
@@ -192,7 +192,7 @@ const RunningMateSearch = () => {
     setSelectedLevel(newLevel);
 
     try {
-      let url = "http:localhost:8080/running";
+      let url = "http://43.200.193.236:8080/running";
 
       // 검색어나 레벨 필터가 있는 경우에만 필터링 URL 사용
       if (newLevel || searchQuery.trim()) {
@@ -206,7 +206,7 @@ const RunningMateSearch = () => {
           params.append("searchWord", searchQuery.trim());
         }
 
-        url = `http:localhost:8080/running/filtering?${params.toString()}`;
+        url = `http://43.200.193.236:8080/running/filtering?${params.toString()}`;
       }
 
       console.log("Fetching URL after level select:", url); // URL 로깅
@@ -254,8 +254,8 @@ const RunningMateSearch = () => {
     const levels = {
       BEGINNER: "초보",
       INTERMEDIATE: "중수",
-      ADVANCED: "고수",
-      EXPERT: "선수",
+      EXPERT: "고수",
+      ATHLETE: "선수",
     };
 
     // 이미 한글인 경우 그대로 반환
@@ -301,7 +301,7 @@ const RunningMateSearch = () => {
   const handleQuickJoin = async () => {
     try {
       const response = await fetch(
-        "http:localhost:8080/running/quickrunning/participate",
+        "http://43.200.193.236:8080/running/quickrunning/participate",
         {
           method: "POST",
           headers: {

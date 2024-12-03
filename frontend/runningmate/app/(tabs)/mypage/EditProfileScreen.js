@@ -31,7 +31,7 @@ export default function EditProfileScreen() {
   // 프로필 데이터 불러오기 함수
   const fetchProfileData = async () => {
     try {
-      const BASE_URL = "http:localhost:8080";
+      const BASE_URL = "http://43.200.193.236:8080";
 
       const response = await axios.get(`${BASE_URL}/user/profile`);
       if (response.data) {
@@ -93,7 +93,7 @@ export default function EditProfileScreen() {
         userHeight: parseInt(height, 10),
       };
 
-      const BASE_URL = "http:localhost:8080";
+      const BASE_URL = "http://43.200.193.236:8080";
 
       const response = await axios.post(
         `${BASE_URL}/user/profile/update`,
