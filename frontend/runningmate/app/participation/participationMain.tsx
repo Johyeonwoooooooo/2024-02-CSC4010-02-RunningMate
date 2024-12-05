@@ -55,7 +55,7 @@ const CreateRunningRoom = () => {
     const today = new Date();
     const now = new Date(today.getTime() + 9 * 60 * 60 * 1000);
     const endTime = new Date(today.getTime() + 9 * 60 * 60 * 1000);
-    console.log(now, '하씨발')
+    
     return {
         startTime: now,
         endTime: endTime,
